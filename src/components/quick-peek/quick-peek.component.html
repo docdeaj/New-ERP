@@ -1,0 +1,92 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <!-- Backdrop -->
+  <div class="absolute inset-0 bg-gray-900/50 backdrop-blur-sm animate-[fade-in_180ms_ease-in-out]" (click)="onClose()"></div>
+
+  <!-- Modal Content -->
+  <div class="relative w-full max-w-lg bg-white dark:bg-gray-800 rounded-2xl shadow-2xl animate-[slide-down_180ms_cubic-bezier(0.2,0.8,0.2,1)]"
+       role="dialog" aria-modal="true">
+    
+    @if (item()) {
+      <!-- Header -->
+      <div class="flex items-start justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+        <div>
+          @switch (normalizedItemType()) {
+            @case ('invoice') {
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                Invoice {{ asInvoice(item()).invoiceNumber }}
+              </h3>
+              <p class="text-sm text-gray-500">{{ asInvoice(item()).customerName }}</p>
+            }
+            @case ('product') {
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white">{{ product()?.name }}</h3>
+              <p class="text-sm text-gray-500 font-mono">SKU: {{ product()?.sku }}</p>
+            }
+          }
+        </div>
+        <button type="button" (click)="onClose()" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white">
+          <i class="fa-solid fa-times w-5 h-5"></i>
+          <span class="sr-only">Close modal</span>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="p-6 space-y-6">
+        @switch (normalizedItemType()) {
+          @case ('invoice') {
+            @let invoice = asInvoice(item());
+             <div class="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p class="text-gray-500 dark:text-gray-400">Balance Due</p>
+                <p class="font-semibold text-lg tabular-nums text-red-600 dark:text-red-400">{{ invoice.balance | currency:'LKR ' }}</p>
+              </div>
+              <div class="text-right">
+                <p class="text-gray-500 dark:text-gray-400">Status</p>
+                <p><span [class]="'px-2.5 py-1 font-semibold rounded-full ' + getStatusColor(invoice.status)">{{ invoice.status }}</span></p>
+              </div>
+            </div>
+            <div class="h-48 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-y-auto border dark:border-gray-600">
+                <app-invoice-pdf [invoice]="invoice"></app-invoice-pdf>
+            </div>
+          }
+          @case ('product') {
+             @if(product(); as p) {
+                <img [src]="p.imageUrl" class="w-full h-48 object-cover rounded-lg" alt="Product Image"/>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-gray-100 dark:bg-gray-700/50 p-3 rounded-lg">
+                        <p class="text-xs text-gray-500">Purchase Cost</p>
+                        <p class="font-bold text-lg tabular-nums">{{ p.cost | currency:'LKR ' }}</p>
+                    </div>
+                    <div class="bg-gray-100 dark:bg-gray-700/50 p-3 rounded-lg">
+                        <p class="text-xs text-gray-500">Selling Price</p>
+                        <p class="font-bold text-lg tabular-nums">{{ p.price | currency:'LKR ' }}</p>
+                    </div>
+                </div>
+                <div [class]="'p-3 rounded-lg ' + (isLoss() ? 'bg-red-100 dark:bg-red-900/50' : 'bg-green-100 dark:bg-green-900/50')">
+                    <p [class]="'text-xs ' + (isLoss() ? 'text-red-600 dark:text-red-300' : 'text-green-600 dark:text-green-300')">
+                        Calculated Margin
+                        @if(isLoss()) { <span class="font-bold">(LOSS)</span> }
+                    </p>
+                    <p [class]="'font-bold text-lg tabular-nums ' + (isLoss() ? 'text-red-800 dark:text-red-200' : 'text-green-800 dark:text-green-200')">
+                        {{ profitMargin() | number:'1.1-1' }}%
+                    </p>
+                </div>
+             }
+          }
+          @default {
+            <p>No preview available for this item type.</p>
+          }
+        }
+      </div>
+      
+      <!-- Footer Actions -->
+      <div class="flex items-center p-4 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-700">
+        @if (normalizedItemType() === 'invoice') {
+          <button (click)="downloadPdf()" type="button" class="text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:outline-none focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:focus:ring-indigo-800">
+            <i class="fa-solid fa-file-arrow-down mr-2"></i>Download PDF
+          </button>
+        }
+        <button type="button" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 disabled:opacity-50" disabled>Edit</button>
+      </div>
+    }
+  </div>
+</div>

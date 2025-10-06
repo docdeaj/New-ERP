@@ -1,0 +1,25 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <h2 class="text-xl font-semibold">Inventory Status</h2>
+    <button (click)="openAddNewProductDrawer()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 flex items-center gap-2">
+      <i class="fa-solid fa-plus"></i>
+      <span>Add New Product</span>
+    </button>
+  </div>
+  
+  <app-data-table 
+    [columns]="columns" 
+    [data]="inventory()"
+    context="inventory"
+    (rowAction)="handleRowAction($event)"
+    (bulkAction)="handleBulkAction($event)">
+  </app-data-table>
+</div>
+
+@if (isTransferModalOpen()) {
+  <app-stock-transfer-modal 
+    [selectedItemIds]="selectedIdsForTransfer()"
+    (close)="closeTransferModal()"
+    (confirmTransfer)="handleConfirmTransfer($event)">
+  </app-stock-transfer-modal>
+}

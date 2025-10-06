@@ -1,0 +1,37 @@
+<div class="flex flex-col h-full">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-lg font-semibold text-gray-800 dark:text-white">{{ monthDisplay() }}</h3>
+    <div class="flex items-center gap-1">
+      <button (click)="changeMonth(-1)" class="w-8 h-8 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+        <i class="fa-solid fa-chevron-left text-sm"></i>
+      </button>
+      <button (click)="changeMonth(1)" class="w-8 h-8 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+        <i class="fa-solid fa-chevron-right text-sm"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Calendar Grid -->
+  <div class="grid grid-cols-7 gap-y-2 flex-1">
+    <!-- Weekday Headers -->
+    @for (day of weekdays; track day) {
+      <div class="text-center text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase">
+        {{ day }}
+      </div>
+    }
+
+    <!-- Day Cells -->
+    @for (day of calendarGrid(); track day.date) {
+      <div class="flex items-center justify-center">
+        <button 
+          [class]="'w-9 h-9 flex items-center justify-center rounded-full font-semibold transition-colors text-sm ' + 
+                   (day.isToday ? 'bg-indigo-600 text-white' : 
+                   (day.isCurrentMonth ? 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700' : 
+                   'text-gray-300 dark:text-gray-600'))">
+          {{ day.dayOfMonth }}
+        </button>
+      </div>
+    }
+  </div>
+</div>

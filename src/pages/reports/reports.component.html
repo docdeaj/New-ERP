@@ -1,0 +1,94 @@
+<div class="space-y-8">
+  <!-- Section: Daily Close Pack -->
+  <div>
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-2xl font-bold">Daily Close Pack</h2>
+      <span class="text-sm font-medium text-gray-500 dark:text-gray-400">For: {{ currentDate | date:'longDate' }}</span>
+    </div>
+
+    @if (isLoading()) {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+        @for (_ of [1,2,3,4,5,6]; track $index) {
+          <div class="h-28 bg-gray-200 dark:bg-gray-700 rounded-2xl"></div>
+        }
+      </div>
+    } @else if (dailyReport(); as report) {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Total Sales -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6 flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center bg-green-100 dark:bg-green-900">
+            <i class="fa-solid fa-arrow-up-right-dots text-2xl text-green-600 dark:text-green-400"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Total Sales</p>
+            <p class="text-2xl font-bold tabular-nums">{{ formatCurrency(report.totalSales) }}</p>
+          </div>
+        </div>
+        <!-- Total Expenses -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6 flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center bg-red-100 dark:bg-red-900">
+            <i class="fa-solid fa-arrow-trend-down text-2xl text-red-600 dark:text-red-400"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Total Expenses</p>
+            <p class="text-2xl font-bold tabular-nums">{{ formatCurrency(report.totalExpenses) }}</p>
+          </div>
+        </div>
+        <!-- Net -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6 flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center bg-indigo-100 dark:bg-indigo-900">
+            <i class="fa-solid fa-scale-balanced text-2xl text-indigo-600 dark:text-indigo-400"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Net</p>
+            <p class="text-2xl font-bold tabular-nums">{{ formatCurrency(report.net) }}</p>
+          </div>
+        </div>
+        <!-- Cash Sales -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6 flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center bg-blue-100 dark:bg-blue-900">
+            <i class="fa-solid fa-money-bill-wave text-2xl text-blue-600 dark:text-blue-400"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Cash Sales</p>
+            <p class="text-xl font-semibold tabular-nums">{{ formatCurrency(report.cashSales) }}</p>
+          </div>
+        </div>
+        <!-- Non-Cash Sales -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6 flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center bg-purple-100 dark:bg-purple-900">
+            <i class="fa-solid fa-credit-card text-2xl text-purple-600 dark:text-purple-400"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Card/Other Sales</p>
+            <p class="text-xl font-semibold tabular-nums">{{ formatCurrency(report.nonCashSales) }}</p>
+          </div>
+        </div>
+        <!-- Pending Cheques -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6 flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center bg-yellow-100 dark:bg-yellow-900">
+            <i class="fa-solid fa-money-check-dollar text-2xl text-yellow-600 dark:text-yellow-400"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Pending Cheques</p>
+            <p class="text-xl font-semibold tabular-nums">{{ formatCurrency(report.chequesPending) }}</p>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Section: Period Trends -->
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold">Period Trends</h3>
+      <div class="flex items-center gap-2">
+        <button class="px-3 py-1 text-sm font-semibold bg-gray-200/50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50" disabled><i class="fa-solid fa-file-pdf mr-2"></i>Export PDF</button>
+        <button class="px-3 py-1 text-sm font-semibold bg-gray-200/50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50" disabled><i class="fa-solid fa-file-csv mr-2"></i>Export CSV</button>
+      </div>
+    </div>
+    <div class="h-80 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+      <p class="text-gray-500">[Sales and expenses chart placeholder]</p>
+    </div>
+  </div>
+</div>

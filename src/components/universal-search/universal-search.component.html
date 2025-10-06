@@ -1,0 +1,167 @@
+<!-- Backdrop -->
+<div class="absolute inset-0 bg-gray-900/50 backdrop-blur-sm animate-[fade-in_180ms_ease-in-out]" (click)="onClose()"></div>
+
+<!-- Search Modal -->
+<div 
+  class="relative w-full max-w-5xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl flex flex-col animate-[slide-down_180ms_cubic-bezier(0.2,0.8,0.2,1)]"
+  aria-labelledby="search-heading">
+  
+  <!-- Header -->
+  <div class="p-4 border-b border-gray-200/50 dark:border-gray-700/50 flex flex-col gap-3">
+    <!-- Search Input -->
+    <div class="flex items-center">
+      @if (isLoading()) {
+        <i class="fa-solid fa-spinner fa-spin text-gray-400 dark:text-gray-500 mx-2"></i>
+      } @else {
+        <i class="fa-solid fa-magnifying-glass text-gray-400 dark:text-gray-500 mx-2"></i>
+      }
+      <input #searchInput
+        type="text" 
+        id="search-heading"
+        placeholder="Search everything..." 
+        class="w-full bg-transparent text-lg text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none"
+        (input)="onInput($event)"
+        [value]="query()" />
+      <span class="text-xs text-gray-400 dark:text-gray-500 bg-gray-200/50 dark:bg-gray-700/50 px-2 py-1 rounded-md">ESC</span>
+    </div>
+    <!-- Filter Chips -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-1">
+       @for(filter of ['All', 'Invoices', 'Products', 'POs', 'Recurring']; track filter) {
+        <button class="px-3 py-1 text-sm font-semibold rounded-full transition-colors whitespace-nowrap"
+                [class]="filter === 'All' ? 'bg-indigo-600 text-white' : 'bg-gray-200/80 dark:bg-gray-700/80 hover:bg-gray-300 dark:hover:bg-gray-600'">
+            {{filter}}
+        </button>
+       }
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="flex max-h-[60vh] min-h-[40vh] overflow-hidden">
+    <!-- Left: Results List -->
+    <div class="w-[48%] border-r border-gray-200/50 dark:border-gray-700/50 overflow-y-auto" role="listbox">
+      @if (results().length === 0 && !isLoading()) {
+        <p class="p-6 text-center text-gray-500">No results found for "{{ query() }}"</p>
+      } @else {
+        @for (group of results(); track group.group; let g = $index) {
+          <div>
+            <h3 class="sticky top-0 bg-gray-100/80 dark:bg-gray-900/80 backdrop-blur-sm px-4 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ group.group }}</h3>
+            <ul>
+              @for (item of group.items; track item.title + item.secondary; let i = $index) {
+                <li (mouseover)="setActive(g, i)" (click)="handleSelect()"
+                    [class]="'flex items-center gap-4 px-4 py-2 border-b border-gray-100 dark:border-gray-700/50 last:border-b-0 cursor-pointer transition-colors duration-100 ' + (activeGroupIndex() === g && activeItemIndex() === i ? 'bg-indigo-500/20' : 'hover:bg-indigo-500/10')"
+                    role="option" [attr.aria-selected]="activeGroupIndex() === g && activeItemIndex() === i">
+                  <div class="flex items-center justify-center w-8 h-8 text-lg bg-gray-200 dark:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-300">
+                    <i [class]="item.icon"></i>
+                  </div>
+                  <div class="flex-1 overflow-hidden">
+                    <p class="font-semibold text-gray-800 dark:text-white truncate" [innerHTML]="item.title | highlight : query()"></p>
+                    @if (item.secondary) {
+                      <p class="text-sm text-gray-500 dark:text-gray-400 truncate" [innerHTML]="item.secondary | highlight : query()"></p>
+                    }
+                  </div>
+                  @if(item.meta) {
+                    <div class="text-right text-xs whitespace-nowrap text-gray-500 dark:text-gray-400">
+                      @if(item.meta.amount) { <span class="font-semibold tabular-nums">{{ item.meta.amount | currency:'LKR '}}</span> }
+                      @if(item.meta.status) { <span class="font-bold mx-1">•</span> <span class="font-semibold">{{item.meta.status}}</span> }
+                    </div>
+                  }
+                </li>
+              }
+            </ul>
+          </div>
+        }
+      }
+    </div>
+
+    <!-- Right: Preview Pane -->
+    <div class="w-[52%] p-6 overflow-y-auto" role="region" [class.ring-2]="focusTarget() === 'preview'" [class.ring-indigo-500]="focusTarget() === 'preview'" [class.rounded-b-2xl]="focusTarget() === 'preview'">
+      @if (selectedItem(); as item) {
+        <!-- Common Header -->
+        <div class="flex items-start justify-between mb-4">
+          <h3 class="text-2xl font-bold" [innerHTML]="item.title | highlight:query()"></h3>
+          @if(item.meta?.status) {
+            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-200 dark:bg-gray-700">{{item.meta.status}}</span>
+          }
+        </div>
+        
+        <!-- Preview Templates -->
+        @switch (item.type) {
+          @case ('invoice') {
+            @let invoice = asInvoice(item.data);
+            <div class="flex items-center justify-between mb-2">
+                 <p class="text-sm text-gray-500">{{invoice.customerName}} • Due: {{invoice.dueDate | date:'mediumDate'}}</p>
+                 <button (click)="downloadPreviewPdf()" class="text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"><i class="fa-solid fa-file-arrow-down mr-1"></i>Download PDF</button>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="h-48 bg-gray-50 dark:bg-gray-900 rounded-lg flex items-center justify-center col-span-1 overflow-y-auto border dark:border-gray-700">
+                    <app-invoice-pdf [invoice]="invoice"></app-invoice-pdf>
+                </div>
+                <div class="col-span-1 space-y-3">
+                    <div class="bg-gray-100 dark:bg-gray-700/50 p-3 rounded-lg"><p class="text-xs text-gray-500">Total</p><p class="font-bold text-lg tabular-nums">{{ invoice.amount | currency:'LKR ' }}</p></div>
+                    <div class="bg-green-100 dark:bg-green-900/50 p-3 rounded-lg"><p class="text-xs text-green-600">Paid</p><p class="font-bold text-lg tabular-nums">{{ invoice.totalPaid | currency:'LKR ' }}</p></div>
+                    <div class="bg-red-100 dark:bg-red-900/50 p-3 rounded-lg"><p class="text-xs text-red-600">Balance</p><p class="font-bold text-lg tabular-nums">{{ invoice.balance | currency:'LKR ' }}</p></div>
+                </div>
+            </div>
+          }
+          @case ('product') {
+             @let p = asProduct(item.data);
+             <img [src]="p.imageUrl" class="w-full h-40 object-cover rounded-lg mb-4" alt="Product Image"/>
+             <div class="grid grid-cols-3 gap-2 text-center text-sm mb-4">
+              @for(loc of ['mainWarehouse', 'downtownStore', 'online']; track loc) {
+                <div class="bg-gray-100 dark:bg-gray-700/50 p-2 rounded-lg">
+                  <p class="text-xs text-gray-500 capitalize">{{loc.replace('Warehouse',' WH')}}</p>
+                  <p class="font-bold tabular-nums">{{ p.stock[loc] - (p.committed?.[loc] || 0) }} <span class="text-xs">Avail.</span></p>
+                </div>
+              }
+             </div>
+             <div class="grid grid-cols-3 gap-2 text-center text-sm">
+                <div class="bg-gray-100 dark:bg-gray-700/50 p-2 rounded-lg"><p class="text-xs text-gray-500">Cost</p><p class="font-bold tabular-nums">{{ p.cost | currency:'LKR ' }}</p></div>
+                <div class="bg-gray-100 dark:bg-gray-700/50 p-2 rounded-lg"><p class="text-xs text-gray-500">Price</p><p class="font-bold tabular-nums">{{ p.price | currency:'LKR ' }}</p></div>
+                <div class="bg-gray-100 dark:bg-gray-700/50 p-2 rounded-lg"><p class="text-xs text-gray-500">Margin</p><p class="font-bold tabular-nums">{{ ((p.price - p.cost) / p.price) * 100 | number:'1.0-0' }}%</p></div>
+             </div>
+          }
+           @case ('po') {
+            @let po = asPurchaseOrder(item.data);
+            <p class="text-sm text-gray-500 mb-4">{{po.supplierName}} • Expected: {{po.expectedDate | date:'mediumDate'}}</p>
+            <div class="bg-gray-100 dark:bg-gray-700/50 p-3 rounded-lg mb-4"><p class="text-xs text-gray-500">Total Value</p><p class="font-bold text-2xl tabular-nums">{{ po.amount | currency:'LKR ' }}</p></div>
+            <p class="text-xs font-semibold uppercase text-gray-500 mb-2">Items ({{po.lineItems?.length}})</p>
+            <ul class="text-sm space-y-1">
+              @for(line of po.lineItems; track line.productId) {
+                <li class="flex justify-between items-center"><span [innerHTML]="line.productName | highlight:query()"></span> <span class="text-xs tabular-nums bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded-full">{{line.quantity}} units</span></li>
+              }
+            </ul>
+          }
+          @case ('recurring') {
+            @let expense = asRecurringExpense(item.data);
+            <p class="text-sm text-gray-500 mb-4">Cadence: <span class="font-semibold">{{expense.cadence}}</span> • Next Due: <span class="font-semibold">{{expense.nextDueDate | date:'mediumDate'}}</span></p>
+            <div class="bg-gray-100 dark:bg-gray-700/50 p-3 rounded-lg"><p class="text-xs text-gray-500">Amount</p><p class="font-bold text-3xl tabular-nums">{{ expense.amount | currency:'LKR ' }}</p></div>
+          }
+          @default {
+             <div class="flex flex-col items-center justify-center h-full text-center text-gray-400 dark:text-gray-500">
+                <i [class]="item.icon + ' text-4xl mb-4'"></i>
+                <p class="font-semibold text-lg" [innerHTML]="item.title | highlight:query()"></p>
+                <p class="text-sm" [innerHTML]="item.secondary | highlight:query()"></p>
+              </div>
+          }
+        }
+      } @else {
+        <div class="flex flex-col items-center justify-center h-full text-center text-gray-400 dark:text-gray-500">
+          <i class="fa-solid fa-eye text-4xl mb-4"></i>
+          <p class="font-semibold">Preview</p>
+          <p class="text-sm">Select an item to see details</p>
+        </div>
+      }
+    </div>
+  </div>
+  
+  <!-- Footer -->
+  <div class="p-2 border-t border-gray-200/50 dark:border-gray-700/50 flex items-center justify-between text-xs">
+    <div class="flex items-center gap-2 text-gray-500">
+      <span class="font-semibold">Recents:</span>
+      @for(r of recents(); track r) {
+        <button class="hover:underline">{{r}}</button>
+      }
+    </div>
+    <span class="text-gray-400">Aurora Search</span>
+  </div>
+</div>

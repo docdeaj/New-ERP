@@ -1,0 +1,115 @@
+<div class="flex flex-col lg:flex-row gap-6 h-[calc(100vh-120px)]" cdk-key-manager-root>
+  <!-- Left Side: Product Grid -->
+  <div class="flex-1 flex flex-col bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden">
+    <!-- Toolbar -->
+    <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-4">
+      <div class="relative flex-1">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        <input #searchInput type="text" placeholder="Search products or scan barcode... ( / )" class="w-full bg-gray-100 dark:bg-gray-700 border-transparent rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)">
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title="Sort"><i class="fa-solid fa-sort"></i></button>
+        <button (click)="holdOrder()" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title="Hold Order (Alt+H)"><i class="fa-solid fa-pause"></i></button>
+        <button (click)="isHeldOrdersVisible.set(true)" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors relative" title="View Held Orders">
+          <i class="fa-solid fa-inbox"></i>
+          @if(heldOrders().length > 0) {
+            <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">{{heldOrders().length}}</span>
+          }
+        </button>
+      </div>
+    </div>
+    <!-- Product Grid -->
+    <div class="flex-1 p-4 overflow-y-auto">
+      <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+        @for (product of filteredAndSortedProducts(); track product.id) {
+          <div (click)="addToCart(product)" class="relative group bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3 flex flex-col text-center cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 hover:bg-indigo-50 dark:hover:bg-indigo-900/50">
+            <div class="relative w-full aspect-square">
+              <img [src]="product.imageUrl" [alt]="product.name" class="w-full h-full object-cover rounded-lg">
+              <div class="absolute top-1.5 right-1.5" [title]="'Stock Available: ' + getAvailableStock(product)">
+                <svg class="w-8 h-8 transform -rotate-90" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-200 dark:text-gray-600" />
+                  <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"
+                          [class]="getStockRingColor(product)"
+                          stroke-dasharray="57" [style.stroke-dashoffset]="getStockRingDashOffset(product)" />
+                </svg>
+              </div>
+            </div>
+            <h3 class="mt-2 font-semibold text-sm text-gray-800 dark:text-gray-100 truncate w-full">{{ product.name }}</h3>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ product.sku }}</p>
+            <div class="flex items-center justify-center gap-1">
+              @if(product.flags?.price_below_cost) {
+                <i class="fa-solid fa-circle-exclamation text-yellow-500 text-xs" title="Price is below cost"></i>
+              }
+              <p class="mt-1 font-bold text-indigo-600 dark:text-indigo-400 tabular-nums">LKR {{ product.price | currency:'':'':'1.0-0' }}</p>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Side: Cart -->
+  <div class="w-full lg:w-96 flex flex-col bg-white dark:bg-gray-800 rounded-2xl shadow-md">
+    <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center"><h2 class="text-xl font-bold">Current Sale</h2><button (click)="clearCart()" class="text-sm font-semibold text-red-500 hover:text-red-700 disabled:opacity-50" [disabled]="cart().length === 0"><i class="fa-solid fa-trash-can mr-1"></i>Clear</button></div>
+    <div class="flex-1 p-2 overflow-y-auto">
+      @if (cart().length === 0) { <div class="h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500"><i class="fa-solid fa-cart-plus text-5xl mb-4"></i><p>Click products to add.</p></div> } @else {
+        <div class="space-y-2">
+          @for (item of cart(); track item.id) {
+            <div class="flex items-center gap-3 p-2 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+              <img [src]="item.imageUrl" [alt]="item.name" class="w-12 h-12 rounded-md object-cover">
+              <div class="flex-1">
+                <p class="font-semibold text-sm truncate flex items-center gap-1.5">{{ item.name }} @if(item.flags?.price_below_cost){ <i class="fa-solid fa-circle-exclamation text-yellow-500" title="Price is below cost"></i> }</p>
+                <p class="text-xs text-gray-500">{{ item.price | currency:'LKR ' }}</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button (click)="updateQuantity(item.id, item.quantity - 1)" class="w-6 h-6 rounded-md bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors">-</button>
+                @if (editingCartItemId() === item.id) {
+                  <input #quantityInput type="number" [value]="item.quantity" (blur)="updateQuantity(item.id, quantityInput.value)" (keydown.enter)="updateQuantity(item.id, quantityInput.value)" class="w-10 text-center bg-white dark:bg-gray-800 rounded-md border-indigo-500 border-2" autofocus>
+                } @else {
+                  <span (click)="editingCartItemId.set(item.id)" class="font-bold tabular-nums w-10 text-center cursor-pointer">{{ item.quantity }}</span>
+                }
+                <button (click)="updateQuantity(item.id, item.quantity + 1)" class="w-6 h-6 rounded-md bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors">+</button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+    <div class="p-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
+      <div class="flex justify-between text-sm"><span class="text-gray-500 dark:text-gray-400">Subtotal</span><span class="font-semibold tabular-nums">{{ cartSubtotal() | currency:'LKR ' }}</span></div>
+      <div class="flex justify-between text-sm"><span class="text-gray-500 dark:text-gray-400">Tax (10%)</span><span class="font-semibold tabular-nums">{{ cartTax() | currency:'LKR ' }}</span></div>
+      <div class="flex justify-between text-lg font-bold"><span>Total</span><span class="tabular-nums">{{ cartTotal() | currency:'LKR ' }}</span></div>
+      @if(cartHasWarning()) { <div class="!mt-3 p-2 text-xs bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300 rounded-lg flex items-center gap-2"><i class="fa-solid fa-circle-exclamation"></i><span>Cart contains items priced below cost.</span></div> }
+      <button (click)="isCheckoutVisible.set(true)" [disabled]="cart().length === 0" class="w-full mt-2 bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"><i class="fa-solid fa-lock mr-2"></i><span>Pay Now</span></button>
+    </div>
+  </div>
+</div>
+
+@if (isCheckoutVisible()) { <app-checkout-modal [total]="cartTotal()" (close)="isCheckoutVisible.set(false)" (paymentComplete)="handleCheckoutComplete($event)"></app-checkout-modal> }
+@if (isHeldOrdersVisible()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-gray-900/50 backdrop-blur-sm animate-[fade-in_180ms_ease-in-out]" (click)="isHeldOrdersVisible.set(false)"></div>
+    <div class="relative w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl animate-[slide-down_180ms_cubic-bezier(0.2,0.8,0.2,1)]">
+      <div class="p-4 border-b flex justify-between items-center"><h3 class="text-xl font-bold">Held Orders</h3><button (click)="isHeldOrdersVisible.set(false)" class="p-2 rounded-full"><i class="fa-solid fa-times"></i></button></div>
+      <div class="p-4 max-h-96 overflow-y-auto">
+        @if(heldOrders().length === 0) { <p class="text-center text-gray-500">No orders on hold.</p> } @else {
+          <div class="space-y-3">
+            @for(order of heldOrders(); track $index; let i = $index) {
+              <div class="p-3 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-between">
+                <div>
+                  <p class="font-semibold">Order #{{i + 1}} <span class="text-xs text-gray-500">({{order.length}} items)</span></p>
+                  <p class="font-bold tabular-nums">{{ getHeldOrderTotal(order) | currency:'LKR ' }}</p>
+                </div>
+                <button (click)="restoreOrder(i)" class="bg-indigo-600 text-white font-bold py-2 px-3 rounded-lg text-sm">Restore</button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
+<div aria-live="polite" class="sr-only">{{ liveRegionMessage() }}</div>
+<style>
+ circle { transition: stroke-dashoffset 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
+</style>

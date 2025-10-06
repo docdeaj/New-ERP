@@ -1,0 +1,22 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <!-- Backdrop -->
+  <div class="absolute inset-0 bg-gray-900/50 backdrop-blur-sm animate-[fade-in_180ms_ease-in-out]" (click)="onClose()"></div>
+
+  <!-- Modal -->
+  <div class="relative w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl animate-[slide-down_180ms_cubic-bezier(0.2,0.8,0.2,1)]" role="dialog" aria-modal="true">
+    <!-- Header -->
+    <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+      <h3 class="text-xl font-bold">Checkout</h3>
+      <button (click)="onClose()" class="text-gray-400 hover:text-gray-800 dark:hover:text-white transition-colors p-2 rounded-full">
+        <i class="fa-solid fa-times text-xl"></i>
+      </button>
+    </div>
+
+    <!-- Reusable Payment Form Component -->
+    <app-payment-form 
+      [totalAmount]="total()"
+      (paymentSuccess)="onPaymentSuccess($event)">
+    </app-payment-form>
+
+  </div>
+</div>

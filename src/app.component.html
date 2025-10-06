@@ -1,0 +1,24 @@
+<div class="relative min-h-screen">
+  <app-sidebar 
+    [isCollapsed]="isSidebarCollapsed()" 
+    (toggleCollapse)="toggleSidebar()">
+  </app-sidebar>
+
+  <main [class]="'p-4 sm:p-6 transition-all duration-300 ease-in-out ' + mainContentMargin()">
+    <app-topbar (openSearch)="isSearchOpen.set(true)"></app-topbar>
+    <div class="mt-6">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+  
+  @if (isSearchOpen()) {
+    <app-universal-search (close)="closeSearch()"></app-universal-search>
+  }
+
+  @if (isDrawerOpen()) {
+    <app-universal-add-drawer 
+      [context]="drawerContext()"
+      (close)="closeDrawer()">
+    </app-universal-add-drawer>
+  }
+</div>

@@ -1,0 +1,174 @@
+<div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden relative">
+  <!-- Table Header -->
+  <div class="p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700 min-h-[68px]">
+    <div class="flex items-center gap-4">
+      <div 
+        (click)="toggleSelectAll()"
+        [class]="'w-6 h-6 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-200 ' + (selectionMode() ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600')">
+        @if (isAllSelected()) {
+          <i class="fa-solid fa-check text-white text-sm"></i>
+        } @else if (selectionMode()) {
+           <div class="w-2 h-2 bg-white rounded-full"></div>
+        }
+      </div>
+      @if (selectionMode()) {
+        <div class="flex items-baseline gap-2">
+          <span class="font-bold text-gray-700 dark:text-gray-200 tabular-nums">{{ selectedCount() }}</span>
+          <span class="text-gray-500 dark:text-gray-400 text-sm">selected</span>
+        </div>
+      }
+    </div>
+    
+    <div class="flex items-center gap-2">
+      <!-- Search Input / Button -->
+      <div class="relative flex items-center">
+         <button (click)="onToggleSearch()" class="flex items-center justify-center w-10 h-10 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+            <i class="fa-solid fa-magnifying-glass"></i>
+         </button>
+         <div [class]="'absolute right-0 transition-all duration-300 ease-in-out ' + (isSearchVisible() ? 'w-64 opacity-100' : 'w-0 opacity-0')" [style.pointer-events]="isSearchVisible() ? 'auto' : 'none'">
+           <input #searchInput
+             type="text" 
+             placeholder="Search table..."
+             [value]="searchQuery()"
+             (input)="onSearchInput($event)"
+             (blur)="isSearchVisible.set(false)"
+             class="w-full pl-4 pr-10 py-2 bg-gray-100 dark:bg-gray-900/50 border border-gray-300 dark:border-gray-600 focus:border-indigo-500 focus:ring-indigo-500 rounded-full transition-colors">
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+             <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+            </div>
+         </div>
+      </div>
+      <!-- Other header buttons like filters can go here -->
+    </div>
+  </div>
+
+  <!-- Table Content -->
+  <div class="overflow-x-auto">
+    <cdk-virtual-scroll-viewport itemSize="65" class="h-[60vh]">
+      <table class="w-full min-w-[800px] text-sm text-left text-gray-500 dark:text-gray-400">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-10">
+          <tr>
+            @for (col of columns(); track col.key) {
+              <th scope="col" class="px-6 py-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" (click)="toggleSort(col.key)">
+                <div class="flex items-center">
+                  {{ col.label }}
+                  @if (sortColumn() === col.key) {
+                    <i class="fa-solid ml-2" [class.fa-arrow-up]="sortDirection() === 'asc'" [class.fa-arrow-down]="sortDirection() === 'desc'"></i>
+                  }
+                </div>
+              </th>
+            }
+            <th scope="col" class="px-6 py-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (filteredAndSortedData().length === 0) {
+            <tr>
+                <td [colSpan]="columns().length + 1" class="text-center py-16 text-gray-500">
+                    <i class="fa-solid fa-ghost text-4xl mb-4"></i>
+                    <p>No results found.</p>
+                </td>
+            </tr>
+          } @else {
+            @for (item of filteredAndSortedData(); track item.id; let i = $index) {
+              <tr 
+                (mousedown)="onRowMouseDown(item)"
+                (mouseup)="cancelLongPress()"
+                (mouseleave)="cancelLongPress()"
+                (click)="onRowClick(item)"
+                [class]="'border-b dark:border-gray-700 cursor-pointer transition-colors duration-150 ' + (selectedIds().has(item.id) ? 'bg-indigo-50 dark:bg-indigo-900/50' : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600/50')">
+                @for (col of columns(); track col.key) {
+                  <td class="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                    @switch (col.type) {
+                      @case ('avatar') {
+                        <div class="flex items-center gap-3">
+                          @if (col.avatarUrlKey && item[col.avatarUrlKey]) {
+                            <img [src]="item[col.avatarUrlKey]" alt="Avatar" class="w-10 h-10 rounded-full object-cover">
+                          }
+                          <span>{{ item[col.key] }}</span>
+                        </div>
+                      }
+                      @case ('currency') {
+                        <span class="tabular-nums">{{ item[col.key] | currency:'LKR ':'symbol':'1.2-2' }}</span>
+                      }
+                      @case ('date') {
+                        <span>{{ item[col.key] | date:'mediumDate' }}</span>
+                      }
+                      @case ('chip') {
+                        <span [class]="'px-2.5 py-1 text-xs font-semibold rounded-full ' + getStatusColor(item[col.key] + '')">{{ item[col.key] }}</span>
+                      }
+                      @case ('number') {
+                         <span class="tabular-nums">{{ item[col.key] }}</span>
+                      }
+                      @default {
+                        <span>{{ item[col.key] }}</span>
+                      }
+                    }
+                  </td>
+                }
+                <td class="px-6 py-4 text-right">
+                  <div class="relative inline-block text-left">
+                    <button (click)="onMenuButtonClick($event, item.id)" class="text-gray-500 hover:text-gray-800 dark:hover:text-white p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                      <i class="fa-solid fa-ellipsis-vertical"></i>
+                    </button>
+                    @if (isActionMenuOpen() === item.id) {
+                      <div (click)="$event.stopPropagation()"
+                           class="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none z-20 animate-[fade-in-scale_100ms_ease-in-out]">
+                        <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+                          @for (action of availableRowActions(); track action.key) {
+                            <a href="#" (click)="onActionClick($event, action.key, item)"
+                               class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem">
+                              <i [class]="action.icon + ' w-4 text-center text-gray-500'"></i>
+                              <span>{{ action.label }}</span>
+                            </a>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </cdk-virtual-scroll-viewport>
+  </div>
+  
+  <!-- Bulk Actions Bar -->
+  @if (selectionMode()) {
+    <div class="absolute bottom-4 left-1/2 -translate-x-1/2 w-auto bg-gray-800/80 dark:bg-gray-900/80 backdrop-blur-md text-white rounded-xl shadow-lg px-4 py-2 flex items-center gap-2 animate-[slide-up_180ms_cubic-bezier(0.2,0.8,0.2,1)]">
+      @if (selectionContextualSum() > 0) {
+        <div class="flex items-baseline gap-2 pr-3 border-r border-white/20">
+          <span class="text-sm font-semibold tabular-nums">{{ selectionContextualSum() | currency:'LKR ' }}</span>
+          <span class="text-xs opacity-70">Sum</span>
+        </div>
+      }
+      @for(action of availableBulkActions(); track action.key) {
+        <button (click)="onBulkAction(action.key)" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors" [title]="action.label">
+          <i [class]="action.icon"></i>
+        </button>
+      }
+      <div class="w-px h-6 bg-white/20"></div>
+      <button (click)="clearSelection()" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors" title="Cancel"><i class="fa-solid fa-times"></i></button>
+    </div>
+  }
+</div>
+
+@if (quickPeekItem()) {
+  <app-quick-peek 
+    [item]="quickPeekItem()" 
+    [itemType]="context()"
+    (close)="quickPeekItem.set(null)">
+  </app-quick-peek>
+}
+
+<style>
+  @keyframes fade-in-scale {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .animate-\[fade-in-scale_100ms_ease-in-out\] {
+    animation: fade-in-scale 100ms ease-in-out;
+  }
+</style>

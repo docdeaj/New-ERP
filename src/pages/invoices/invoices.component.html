@@ -1,0 +1,18 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <!-- The header search is now inside the data-table component -->
+    <h2 class="text-xl font-semibold">All Invoices</h2>
+    <button (click)="openAddNewInvoiceDrawer()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 flex items-center gap-2">
+      <i class="fa-solid fa-plus"></i>
+      <span>Add New Invoice</span>
+    </button>
+  </div>
+  
+  <app-data-table 
+    [columns]="columns" 
+    [data]="invoices()"
+    context="invoice"
+    (rowAction)="handleRowAction($event)"
+    (bulkAction)="handleBulkAction($event)">
+  </app-data-table>
+</div>
