@@ -17,8 +17,8 @@ let MOCK_PRODUCTS: Product[] = [
 ];
 
 let MOCK_EXPENSES: Expense[] = [
-    { id: 1, category: 'Utilities', amount: 15000, date: '2024-07-20', vendor: 'Electricity Board', status: 'Paid' },
-    { id: 2, category: 'Rent', amount: 75000, date: '2024-07-01', vendor: 'City Properties', status: 'Paid' },
+    { id: 1, category: 'Utilities', amount: 15000, date: '2024-07-20', vendor: 'Electricity Board', status: 'Paid', notes: 'Monthly electricity bill for the office premises.' },
+    { id: 2, category: 'Rent', amount: 75000, date: '2024-07-01', vendor: 'City Properties', status: 'Paid', notes: 'Office rent for July.' },
 ];
 
 let MOCK_RECURRING_EXPENSES: RecurringExpense[] = [

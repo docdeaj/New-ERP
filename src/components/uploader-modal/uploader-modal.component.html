@@ -28,10 +28,17 @@
           <input #fileInput type="file" multiple class="hidden" (change)="onFileSelect($event)" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,application/pdf">
         </div>
       } @else {
+        <!-- Error Summary Banner -->
+        @if (filesWithErrorsCount() > 0) {
+          <div class="p-3 mb-4 rounded-lg bg-amber-900/50 text-amber-300 text-sm flex items-center gap-3">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span>{{ filesWithErrorsCount() }} file(s) have issues and will be skipped. Please remove them or add valid files.</span>
+          </div>
+        }
         <div formArrayName="files" class="space-y-4">
           @for(file of filesToUpload(); track file.previewUrl; let i = $index) {
             <div [formGroupName]="i" class="flex gap-4 p-3 bg-surface-inset rounded-lg shadow-sm" [class.ring-2]="file.error" [class.ring-red-500]="file.error">
-              <img [src]="file.previewUrl" [alt]="file.file.name" class="w-24 h-24 rounded-md object-cover flex-shrink-0">
+              <img [src]="file.previewUrl" [alt]="file.file.name" class="w-24 h-24 rounded-md object-cover flex-shrink-0" [class.opacity-50]="file.error">
               <div class="flex-1 space-y-2">
                 <div class="flex justify-between items-start">
                   <div>
@@ -50,8 +57,9 @@
                   </div>
                   <p class="text-xs text-primary-400">{{ file.progress < 100 ? 'Uploading...' : 'Processing...' }}</p>
                  } @else if (file.error) {
-                    <div class="p-2 rounded-md bg-red-900/50 text-red-300 text-sm font-semibold">
-                      {{ file.error }}
+                    <div class="p-2 rounded-md bg-red-900/50 text-red-300 text-sm font-semibold flex items-start gap-2">
+                      <i class="fa-solid fa-triangle-exclamation mt-1 flex-shrink-0"></i>
+                      <span>{{ file.error }}</span>
                     </div>
                  } @else {
                     <div class="grid grid-cols-2 gap-2">
@@ -88,13 +96,13 @@
         <button (click)="onClose()" [disabled]="isUploading()" type="button" class="aurora-button-secondary inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-4 py-2 rounded-xl">
             Cancel
         </button>
-        <button (click)="uploadAll()" [disabled]="isUploading() || filesToUpload().length === 0 || filesToUpload().every(f => f.error)" type="button" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl min-w-[120px]">
+        <button (click)="uploadAll()" [disabled]="isUploadDisabled()" type="button" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl min-w-[120px]">
            @if(isUploading()) {
             <i class="fa-solid fa-spinner fa-spin"></i>
             <span>Uploading...</span>
            } @else {
              <i class="fa-solid fa-upload"></i>
-            <span>Upload {{ filesToUpload().filter(f => !f.error).length }} File(s)</span>
+            <span>Upload {{ validFilesCount() }} File(s)</span>
            }
         </button>
       </div>

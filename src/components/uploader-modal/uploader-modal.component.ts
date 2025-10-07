@@ -39,6 +39,18 @@ export class UploaderModalComponent {
   get filesFormArray() {
     return this.uploadForm.get('files') as FormArray;
   }
+
+  filesWithErrorsCount = computed(() => {
+    return this.filesToUpload().filter(f => !!f.error).length;
+  });
+
+  validFilesCount = computed(() => {
+    return this.filesToUpload().filter(f => !f.error).length;
+  });
+
+  isUploadDisabled = computed(() => {
+    return this.isUploading() || this.filesToUpload().length === 0 || this.filesToUpload().every(f => !!f.error);
+  });
   
   onClose() {
     if (!this.isUploading()) {
@@ -75,6 +87,7 @@ export class UploaderModalComponent {
   addFiles(fileList: FileList) {
     const MAX_SIZE_MB = 25;
     const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'application/pdf'];
+    const ALLOWED_EXTENSIONS_MSG = 'jpeg, png, gif, webp, mp4, pdf';
 
     for (let i = 0; i < fileList.length; i++) {
       const file = fileList[i];
@@ -82,9 +95,9 @@ export class UploaderModalComponent {
       let error: string | undefined;
 
       if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-        error = `Exceeds ${MAX_SIZE_MB}MB limit`;
+        error = `File size (${this.formatBytes(file.size)}) exceeds ${MAX_SIZE_MB}MB limit.`;
       } else if (!ALLOWED_TYPES.includes(file.type)) {
-        error = `Unsupported type: ${file.type}`;
+        error = `Unsupported file type. Allowed: ${ALLOWED_EXTENSIONS_MSG}.`;
       }
       
       const previewUrl = URL.createObjectURL(file);

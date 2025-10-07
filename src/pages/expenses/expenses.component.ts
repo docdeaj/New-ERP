@@ -27,6 +27,7 @@ export class ExpensesComponent {
   columns: ColumnDefinition<Expense>[] = [
     { key: 'category', label: 'Category', type: 'string' },
     { key: 'vendor', label: 'Vendor', type: 'string' },
+    { key: 'notes', label: 'Notes', type: 'string' },
     { key: 'date', label: 'Date', type: 'date' },
     { key: 'amount', label: 'Amount', type: 'currency' },
     { key: 'status', label: 'Status', type: 'chip' },

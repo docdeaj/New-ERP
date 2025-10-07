@@ -29,7 +29,6 @@ export class CustomerPickerComponent {
 
   // --- State Signals ---
   private api = inject(ApiService);
-  // FIX: Explicitly type injected service to resolve type inference issues.
   private fb: FormBuilder = inject(FormBuilder);
   
   query = signal('');
