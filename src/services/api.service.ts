@@ -51,12 +51,19 @@ let MOCK_PURCHASE_ORDERS: PurchaseOrder[] = [
 
 let MOCK_CONTACTS: Contact[] = [
   { id: 1, name: 'Tech Innovators Inc.', type: 'Customer', email: 'contact@techinnovators.com', phone: '+94 112 345 678', avatarUrl: 'https://picsum.photos/seed/1/40/40', stats: { open_invoices: 1, balance_lkr: 100000 } },
-  { id: 2, name: 'Creative Solutions', type: 'Customer', email: 'hello@creative.lk', phone: '+94 77 123 4567', avatarUrl: 'https://picsum.photos/seed/2/40/40', stats: { open_invoices: 1, balance_lkr: 8500.50 }, tags: ['VIP'] },
-  { id: 3, name: 'Global Exports', type: 'Customer', email: 'exports@global.com', phone: '+94 115 555 888', avatarUrl: 'https://picsum.photos/seed/3/40/40', stats: { open_invoices: 0, balance_lkr: 0 } },
-  { id: 4, name: 'Local Supplies Co.', type: 'Customer', email: 'supplies@local.net', phone: '+94 33 987 6543', avatarUrl: 'https://picsum.photos/seed/4/40/40' },
+  { id: 2, name: 'Creative Solutions', type: 'Customer', email: 'hello@creative.lk', phone: '0771234567', avatarUrl: 'https://picsum.photos/seed/2/40/40', stats: { open_invoices: 1, balance_lkr: 8500.50 }, tags: ['VIP'] },
+  { id: 3, name: 'Global Exports', type: 'Customer', email: 'sales@globalexports.com', phone: '0719876543', avatarUrl: 'https://picsum.photos/seed/3/40/40', stats: { open_invoices: 0, balance_lkr: 0 } },
+  { id: 4, name: 'Local Supplies Co.', type: 'Customer', email: 'info@localsupplies.lk', phone: '0752223344', avatarUrl: 'https://picsum.photos/seed/4/40/40' },
   { id: 5, name: 'Pixel Perfect Designs', type: 'Customer', email: 'designs@pixelperfect.io', phone: '+94 71 555 1212', avatarUrl: 'https://picsum.photos/seed/q1/40/40', stats: { open_invoices: 0, balance_lkr: 0 } },
   { id: 6, name: 'Global Tech Suppliers', type: 'Supplier', email: 'sales@globaltech.com', phone: '+94 76 999 8888', avatarUrl: 'https://picsum.photos/seed/s1/40/40' },
   { id: 7, name: 'Office Essentials Ltd.', type: 'Supplier', email: 'contact@office-essentials.com', phone: '+94 112 123 123', avatarUrl: 'https://picsum.photos/seed/s2/40/40' },
+  { id: 8, name: 'Island Wide Logistics', type: 'Customer', email: 'dispatch@islandlog.lk', phone: '+94 112 999 000', avatarUrl: 'https://picsum.photos/seed/c8/40/40', stats: { open_invoices: 3, balance_lkr: 25000 }, tags: ['VIP'] },
+  { id: 9, name: 'Ceylon Tea Exports', type: 'Customer', email: 'exports@ceylontea.com', phone: '+94 77 888 7777', avatarUrl: 'https://picsum.photos/seed/c9/40/40', stats: { open_invoices: 0, balance_lkr: 0 } },
+  { id: 10, name: 'Kandy Spice Emporium', type: 'Customer', email: 'spices@kandy.lk', phone: '+94 81 222 3333', avatarUrl: 'https://picsum.photos/seed/c10/40/40', stats: { open_invoices: 0, balance_lkr: 0 } },
+  { id: 11, name: 'Galle Gems & Jewellery', type: 'Customer', email: 'gems@galle.lk', phone: '+94 91 444 5555', avatarUrl: 'https://picsum.photos/seed/c11/40/40', stats: { open_invoices: 1, balance_lkr: 120000 } },
+  { id: 12, name: 'Colombo Construction Co.', type: 'Customer', email: 'info@construction.lk', phone: '+94 11 777 6666', avatarUrl: 'https://picsum.photos/seed/c12/40/40', stats: { open_invoices: 5, balance_lkr: 550000 }, tags: ['VIP'] },
+  { id: 13, name: 'M Leather', type: 'Customer', email: 'orders@mleather.lk', phone: '0765558899', avatarUrl: 'https://picsum.photos/seed/mleather/40/40', stats: { open_invoices: 0, balance_lkr: 0 } },
+  { id: 14, name: 'Colombo Traders', type: 'Customer', email: 'contact@coltraders.lk', phone: '0703332211', avatarUrl: 'https://picsum.photos/seed/coltraders/40/40', stats: { open_invoices: 2, balance_lkr: 45000 } },
 ];
 
 const MOCK_AR_AGING: ArAgingRow[] = [
@@ -90,6 +97,21 @@ const filterData = <T,>(data: T[], query: string): T[] => {
     const lowerQuery = query.toLowerCase();
     return data.filter(item => Object.values(item as any).some(val => String(val).toLowerCase().includes(lowerQuery)));
 }
+
+const normalize = (x: string | null | undefined): string => {
+  if (!x) return '';
+  return x.toLowerCase().normalize('NFKD').replace(/\s+/g, ' ').trim();
+};
+
+const filterContacts = (data: Contact[], query: string): Contact[] => {
+    const search = normalize(query);
+    if (!search) return data;
+    return data.filter(contact => 
+        normalize(contact.name).includes(search) ||
+        normalize(contact.email).includes(search) ||
+        normalize(contact.phone).includes(search)
+    );
+};
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -269,7 +291,11 @@ export class ApiService {
     deleteMany: async (ids: (string|number)[]): Promise<void> => { MOCK_PURCHASE_ORDERS = this.deleteManyFrom(MOCK_PURCHASE_ORDERS, ids); }
   };
   contacts = { 
-    list: async(params?: { query?: string }): Promise<Contact[]> => { await new Promise(res => setTimeout(res, 50)); return params?.query ? filterData(MOCK_CONTACTS, params.query) : [...MOCK_CONTACTS].sort((a,b) => b.id - a.id); },
+    list: async(params?: { query?: string }): Promise<Contact[]> => { 
+      await new Promise(res => setTimeout(res, 50)); 
+      const data = params?.query ? filterContacts(MOCK_CONTACTS, params.query) : [...MOCK_CONTACTS];
+      return data.sort((a,b) => a.name.localeCompare(b.name));
+    },
     update: async (id: number, data: Partial<Contact>): Promise<Contact> => { return this.updateOneIn(MOCK_CONTACTS, id, data); },
     deleteMany: async (ids: (string|number)[]): Promise<void> => { MOCK_CONTACTS = this.deleteManyFrom(MOCK_CONTACTS, ids); }
   };

@@ -1,17 +1,24 @@
 <div class="w-full h-full">
-    @if(data().length > 1) {
+    @if(data().length > 1 && lastPoint(); as lastPt) {
         <svg [attr.viewBox]="viewBox" 
              class="overflow-visible"
-             [class]="color()"
-             style="filter: drop-shadow(0 1px 3px currentColor);">
+             [class]="color()">
+            <!-- Faint zero-line baseline, slightly above the bottom -->
+            <line x1="0" y1="22.5" x2="100" y2="22.5" stroke="currentColor" stroke-width="0.25" opacity="0.15" />
+
+            <!-- Main sparkline path -->
             <path 
                 [attr.d]="path()"
                 fill="none"
-                stroke-width="1.5"
+                stroke-width="1.25"
                 stroke-linecap="round"
                 stroke-linejoin="round"
-                class="stroke-current">
+                class="stroke-current"
+                style="filter: drop-shadow(0 1px 2px var(--shadow-color) / 0.5);">
             </path>
+            
+            <!-- End point marker -->
+            <circle [attr.cx]="lastPt.x" [attr.cy]="lastPt.y" r="1.5" fill="currentColor" />
         </svg>
     }
 </div>

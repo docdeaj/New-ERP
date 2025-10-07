@@ -1,14 +1,7 @@
 <div class="flex flex-col gap-3 sm:gap-4">
-  <div class="flex items-center justify-between">
-    <!-- The header search is now inside the data-table component -->
-    <h2 class="text-xl font-semibold">All Invoices</h2>
-    <button (click)="openAddNewInvoiceDrawer()" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl transition-all duration-150 ease-in-out">
-      <i class="fa-solid fa-plus"></i>
-      <span>Add New Invoice</span>
-    </button>
-  </div>
-  
   <app-data-table 
+    title="All Invoices"
+    description="A list of all invoices issued to customers, showing their status and amounts."
     [columns]="columns" 
     [data]="invoices()"
     [initialSearchQuery]="initialQuery()"
@@ -17,5 +10,9 @@
     (rowAction)="handleRowAction($event)"
     (bulkAction)="handleBulkAction($event)"
     (emptyStateAction)="handleEmptyStateAction()">
+    <button table-tools (click)="openAddNewInvoiceDrawer()" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl transition-all duration-150 ease-in-out">
+      <i class="fa-solid fa-plus"></i>
+      <span>Add New Invoice</span>
+    </button>
   </app-data-table>
 </div>

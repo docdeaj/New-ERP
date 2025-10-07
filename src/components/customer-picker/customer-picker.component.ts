@@ -17,6 +17,7 @@ type FilterType = 'all' | 'balance' | 'frequent';
   host: {
     '(document:click)': 'onDocumentClick($event)',
     '(keydown)': 'onKeyDown($event)',
+    '(window:resize)': 'onResize()'
   }
 })
 export class CustomerPickerComponent {
@@ -54,11 +55,12 @@ export class CustomerPickerComponent {
   quickCreateForm = this.fb.group({
     name: ['', Validators.required],
     phone: [''],
-    email: ['', Validators.email],
+    email: ['', [Validators.email]],
     avatarUrl: [''],
   });
 
   // --- Computed State ---
+  dropdownStyle = signal<{ top: string, left: string, width: string }>({ top: '0', left: '0', width: 'auto' });
   results = computed(() => {
     const raw = this.rawResults();
     const filter = this.activeFilter();
@@ -124,29 +126,40 @@ export class CustomerPickerComponent {
       this.isDropdownOpen.set(false);
     }
   }
+  
+  onResize() {
+    if (this.isDropdownOpen()) {
+      this.updateDropdownPosition();
+    }
+  }
 
   onKeyDown(event: KeyboardEvent) {
-    if (!this.isDropdownOpen()) return;
+    if (!this.isDropdownOpen() || this.isQuickCreateVisible()) return;
+    const resultsCount = this.results().length;
 
     switch (event.key) {
       case 'ArrowDown':
         event.preventDefault();
-        this.activeIndex.update(i => (i + 1) % this.results().length);
+        if (resultsCount > 0) {
+            this.activeIndex.update(i => (i + 1) % resultsCount);
+        }
         break;
       case 'ArrowUp':
         event.preventDefault();
-        this.activeIndex.update(i => (i - 1 + this.results().length) % this.results().length);
+        if (resultsCount > 0) {
+            this.activeIndex.update(i => (i - 1 + resultsCount) % resultsCount);
+        }
         break;
       case 'Enter':
         event.preventDefault();
-        if (this.results().length > 0) {
+        if (resultsCount > 0 && this.activeResult()) {
           this.selectItem(this.activeResult());
         } else if (this.query()) {
           this.showQuickCreate();
         }
         break;
       case 'Tab':
-        if (this.results().length > 0) {
+        if (resultsCount > 0 && this.activeResult()) {
           this.selectItem(this.activeResult());
         }
         break;
@@ -163,11 +176,24 @@ export class CustomerPickerComponent {
     this.rawResults.set(recents); // Initially show recents
   }
 
+  updateDropdownPosition() {
+    const rect = this.pickerContainer()?.nativeElement.getBoundingClientRect();
+    if (rect) {
+      this.dropdownStyle.set({
+        top: `${rect.bottom + 6}px`,
+        left: `${rect.left}px`,
+        width: `${rect.width}px`,
+      });
+    }
+  }
+
   openDropdown() {
     this.isDropdownOpen.set(true);
     if (!this.query()) {
       this.rawResults.set(this.recents());
     }
+     // Use setTimeout to allow view to render before calculating position
+    setTimeout(() => this.updateDropdownPosition());
   }
   
   setFilter(filter: FilterType) {
@@ -199,6 +225,20 @@ export class CustomerPickerComponent {
     if (this.quickCreateForm.invalid) return;
 
     this.isSaving.set(true);
+    const newName = this.quickCreateForm.value.name || '';
+    
+    // Check for existing customer (case/space insensitive)
+    const allCustomers = await this.api.contacts.list();
+    const normalizedNewName = (newName || '').toLowerCase().trim();
+    const existingCustomer = allCustomers.find(c => c.type === 'Customer' && (c.name || '').toLowerCase().trim() === normalizedNewName);
+
+    if (existingCustomer) {
+      this.liveRegionMessage.set(`Customer ${existingCustomer.name} already exists. Selecting.`);
+      this.selectItem(existingCustomer);
+      this.isSaving.set(false);
+      return;
+    }
+
     const newContactData: Partial<Contact> = {
       name: this.quickCreateForm.value.name || '',
       phone: this.quickCreateForm.value.phone || '',

@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, OnInit, computed } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
@@ -33,6 +33,13 @@ export class ReportsComponent implements OnInit {
   
   // UI State
   activeDateRange = signal('This Month');
+
+  // Computed descriptions for data tables
+  arAgingDescription = computed(() => `Outstanding receivables grouped by aging buckets for ${this.activeDateRange()}.`);
+  apAgingDescription = computed(() => `Supplier payables grouped by aging buckets for ${this.activeDateRange()}.`);
+  chequeRegisterDescription = computed(() => `All recorded cheques for ${this.activeDateRange()}. Currency is LKR.`);
+  recurringForecastDescription = computed(() => `Upcoming scheduled expenses for ${this.activeDateRange()}. Currency is LKR.`);
+  taxSummaryDescription = computed(() => `Summary of taxes collected on sales for ${this.activeDateRange()}.`);
 
   // Column Definitions for Data Tables
   arAgingColumns: ColumnDefinition<ArAgingRow>[] = [

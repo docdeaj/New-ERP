@@ -21,7 +21,8 @@
               <span>{{ kpi.delta.toFixed(1) }}% vs yesterday</span>
             </div>
           </div>
-          <div class="h-10 mt-2">
+          <div class="h-10 mt-2 relative">
+            <span class="absolute -top-1 right-0 text-xs text-charcoal-500">LKR {{ salesTrendMax() | number:'1.0-0' }}k</span>
             <app-sparkline-chart [data]="salesTrend()" color="text-green-500"></app-sparkline-chart>
           </div>
         } @else {
@@ -45,7 +46,8 @@
             <span>{{ kpi.delta.toFixed(1) }}% vs yesterday</span>
           </div>
         </div>
-        <div class="h-10 mt-2">
+        <div class="h-10 mt-2 relative">
+          <span class="absolute -top-1 right-0 text-xs text-charcoal-500">LKR {{ expensesTrendMax() | number:'1.0-0' }}k</span>
           <app-sparkline-chart [data]="expensesTrend()" color="text-red-500"></app-sparkline-chart>
         </div>
          } @else {
@@ -53,13 +55,42 @@
         }
       </div>
       
-       <!-- Time & Weather -->
-       <div class="bg-surface rounded-2xl shadow-lg p-6 flex flex-col justify-center items-center">
-        <p class="text-4xl font-bold tabular-nums">{{ currentTime() | date:'h:mm:ss a' }}</p>
-        <div class="flex items-center mt-2 text-charcoal-400">
-            <i class="fa-solid fa-cloud-sun text-2xl mr-2 text-yellow-400"></i>
-            <span class="font-semibold">28°C</span>
-        </div>
+      <!-- Time & Weather -->
+      <div class="bg-surface rounded-2xl shadow-lg p-6 flex items-center gap-4">
+        @if(weatherDetails(); as weather) {
+          <!-- Time Column -->
+          <div class="w-2/5 flex flex-col justify-center items-center text-center">
+            <p class="text-5xl font-bold tabular-nums leading-none">
+              {{ currentTime() | date:'h:mm' }}
+            </p>
+            <p class="text-xl font-semibold text-charcoal-400">
+              {{ currentTime() | date:'a' }}
+            </p>
+          </div>
+
+          <!-- Weather Column -->
+          <div class="w-3/5 flex-1 space-y-2">
+            <div class="flex items-center gap-3">
+              <i [class]="weather.icon + ' text-4xl text-yellow-400'"></i>
+              <div>
+                <p class="text-3xl font-bold">{{ weather.temperature }}°C</p>
+                <p class="text-xs text-charcoal-400">{{ weather.condition }}</p>
+              </div>
+            </div>
+            <div class="text-xs text-charcoal-300 space-y-1">
+              <div class="flex justify-between">
+                <span class="font-semibold">H: {{ weather.high }}° / L: {{ weather.low }}°</span>
+                <span class="text-charcoal-400">Feels like: {{ weather.feelsLike }}°</span>
+              </div>
+              <div class="flex justify-between">
+                <span><i class="fa-solid fa-droplet w-4 text-center"></i> {{ weather.humidity }}%</span>
+                <span><i class="fa-solid fa-wind w-4 text-center"></i> {{ weather.windSpeed }} km/h</span>
+              </div>
+            </div>
+          </div>
+        } @else {
+          <div class="h-full w-full bg-charcoal-700 animate-pulse rounded-lg"></div>
+        }
       </div>
     </div>
   </div>
@@ -70,20 +101,39 @@
     <div class="bg-surface rounded-2xl shadow-lg p-6">
       <h3 class="text-lg font-semibold mb-4">Financials</h3>
       @if(arApSummary(); as summary) {
-        <div class="space-y-4">
-          <a routerLink="/reports" class="block p-3 bg-surface-raised rounded-lg hover:bg-surface-inset transition-colors">
-            <div class="flex justify-between items-center text-sm">
-              <span class="font-semibold text-charcoal-300">A/R Due</span>
-              <span class="font-bold text-lg tabular-nums text-green-400">{{ summary.ar.total | currency:'LKR ':'symbol':'1.0-0' }}</span>
+        <div class="space-y-2">
+          <a routerLink="/reports" class="flex items-center gap-4 p-3 bg-surface-raised rounded-lg hover:bg-surface-inset transition-colors">
+            <div class="w-9 h-9 flex-shrink-0 flex items-center justify-center bg-green-900/50 text-green-400 rounded-lg"><i class="fa-solid fa-wallet"></i></div>
+            <div class="flex-1">
+              <div class="flex justify-between items-center text-sm">
+                <span class="font-semibold text-charcoal-300">A/R Due</span>
+                <span class="font-bold text-lg tabular-nums text-green-400">{{ summary.ar.total | currency:'LKR ':'symbol':'1.0-0' }}</span>
+              </div>
+              @if(summary.ar.overdue > 0) {
+                <div class="flex items-center gap-2 mt-0.5">
+                  <span class="px-2 py-0.5 text-xs font-semibold bg-red-900/80 text-red-300 rounded-full">Overdue</span>
+                  <span class="text-xs text-red-400">{{ summary.ar.overdue | currency:'LKR ':'symbol':'1.0-0' }}</span>
+                </div>
+              }
             </div>
-            <p class="text-xs text-red-500">{{ summary.ar.overdue | currency:'LKR ':'symbol':'1.0-0' }} Overdue</p>
           </a>
-          <a routerLink="/reports" class="block p-3 bg-surface-raised rounded-lg hover:bg-surface-inset transition-colors">
-            <div class="flex justify-between items-center text-sm">
-              <span class="font-semibold text-charcoal-300">A/P Payable</span>
-              <span class="font-bold text-lg tabular-nums text-red-400">{{ summary.ap.total | currency:'LKR ':'symbol':'1.0-0' }}</span>
+          
+          <div class="h-px bg-charcoal-800/50 w-11/12 mx-auto"></div>
+      
+          <a routerLink="/reports" class="flex items-center gap-4 p-3 bg-surface-raised rounded-lg hover:bg-surface-inset transition-colors">
+            <div class="w-9 h-9 flex-shrink-0 flex items-center justify-center bg-red-900/50 text-red-400 rounded-lg"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+            <div class="flex-1">
+              <div class="flex justify-between items-center text-sm">
+                <span class="font-semibold text-charcoal-300">A/P Payable</span>
+                <span class="font-bold text-lg tabular-nums text-red-400">{{ summary.ap.total | currency:'LKR ':'symbol':'1.0-0' }}</span>
+              </div>
+               @if(summary.ap.overdue > 0) {
+                <div class="flex items-center gap-2 mt-0.5">
+                  <span class="px-2 py-0.5 text-xs font-semibold bg-yellow-900/80 text-yellow-300 rounded-full">Overdue</span>
+                  <span class="text-xs text-yellow-400">{{ summary.ap.overdue | currency:'LKR ':'symbol':'1.0-0' }}</span>
+                </div>
+              }
             </div>
-            <p class="text-xs text-yellow-500">{{ summary.ap.overdue | currency:'LKR ':'symbol':'1.0-0' }} Overdue</p>
           </a>
         </div>
       } @else {

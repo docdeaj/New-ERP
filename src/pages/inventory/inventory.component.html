@@ -1,19 +1,17 @@
 <div class="flex flex-col gap-3 sm:gap-4">
-  <div class="flex items-center justify-between">
-    <h2 class="text-xl font-semibold">Inventory Status</h2>
-    <button (click)="openAddNewProductDrawer()" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl transition-all duration-150 ease-in-out">
-      <i class="fa-solid fa-plus"></i>
-      <span>Add New Product</span>
-    </button>
-  </div>
-  
   <app-data-table 
+    title="Inventory Status"
+    description="Current stock levels across all locations."
     [columns]="columns" 
     [data]="inventory()"
     [initialSearchQuery]="initialQuery()"
     context="inventory"
     (rowAction)="handleRowAction($event)"
     (bulkAction)="handleBulkAction($event)">
+    <button table-tools (click)="openAddNewProductDrawer()" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl transition-all duration-150 ease-in-out">
+      <i class="fa-solid fa-plus"></i>
+      <span>Add New Product</span>
+    </button>
   </app-data-table>
 </div>
 

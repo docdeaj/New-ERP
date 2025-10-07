@@ -1,17 +1,15 @@
 <div class="flex flex-col gap-3 sm:gap-4">
-  <div class="flex items-center justify-between">
-    <h2 class="text-xl font-semibold">All Quotations</h2>
-    <button (click)="openAddNewQuotationDrawer()" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl transition-all duration-150 ease-in-out">
-      <i class="fa-solid fa-plus"></i>
-      <span>Add New Quotation</span>
-    </button>
-  </div>
-  
   <app-data-table 
+    title="All Quotations"
+    description="Manage price quotes sent to potential customers."
     [columns]="columns" 
     [data]="quotations()"
     context="quotation"
     (rowAction)="handleRowAction($event)"
     (bulkAction)="handleBulkAction($event)">
+    <button table-tools (click)="openAddNewQuotationDrawer()" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl transition-all duration-150 ease-in-out">
+      <i class="fa-solid fa-plus"></i>
+      <span>Add New Quotation</span>
+    </button>
   </app-data-table>
 </div>

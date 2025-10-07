@@ -31,49 +31,54 @@
 
   <!-- Dropdown -->
   @if (isDropdownOpen()) {
-    <div class="absolute top-full left-0 right-0 mt-1.5 z-20 bg-surface/90 backdrop-blur-xl rounded-lg shadow-2xl overflow-hidden animate-[slide-down-fade_180ms_cubic-bezier(0.2,0.8,0.2,1)]">
+    <div class="fixed z-[60] bg-surface-raised/95 backdrop-blur-xl rounded-lg shadow-2xl overflow-hidden animate-[slide-down-fade_180ms_cubic-bezier(0.2,0.8,0.2,1)] border border-charcoal-700/30"
+         [style.top]="dropdownStyle().top"
+         [style.left]="dropdownStyle().left"
+         [style.width]="dropdownStyle().width">
       @if (isQuickCreateVisible()) {
         <!-- Quick Create Form -->
-        <div class="relative">
-          <div class="p-4 bg-surface" [formGroup]="quickCreateForm">
-            <p class="text-sm font-semibold mb-3">Create New Customer</p>
-            <div class="flex items-center gap-4">
-               <div class="relative">
-                <div class="w-16 h-16 bg-surface-inset rounded-full flex items-center justify-center border-2 border-dashed border-charcoal-700 shadow-inner">
-                    @if (quickCreateForm.get('avatarUrl')?.value; as imageUrl) {
-                        <img [src]="imageUrl" alt="Avatar Preview" class="w-full h-full object-cover rounded-full">
-                    } @else {
-                        <i class="fa-solid fa-user text-2xl text-charcoal-400"></i>
-                    }
+        <form (ngSubmit)="saveNewCustomer()">
+          <div class="relative">
+            <div class="p-4 bg-surface" [formGroup]="quickCreateForm">
+              <p class="text-sm font-semibold mb-3">Create New Customer</p>
+              <div class="flex items-center gap-4">
+                 <div class="relative">
+                  <div class="w-16 h-16 bg-surface-inset rounded-full flex items-center justify-center border-2 border-dashed border-charcoal-700 shadow-inner">
+                      @if (quickCreateForm.get('avatarUrl')?.value; as imageUrl) {
+                          <img [src]="imageUrl" alt="Avatar Preview" class="w-full h-full object-cover rounded-full">
+                      } @else {
+                          <i class="fa-solid fa-user text-2xl text-charcoal-400"></i>
+                      }
+                  </div>
+                  <button (click)="openMediaBrowser()" type="button" class="absolute bottom-0 right-0 w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center border-2 border-surface hover:bg-primary-700" title="Choose Avatar">
+                    <i class="fa-solid fa-pen-to-square text-xs"></i>
+                  </button>
+                 </div>
+                <div class="flex-1 space-y-2">
+                  <input type="text" formControlName="name" placeholder="Full Name (required)" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
+                  <input type="tel" formControlName="phone" placeholder="Phone" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
+                  <input type="email" formControlName="email" placeholder="Email" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
                 </div>
-                <button (click)="openMediaBrowser()" type="button" class="absolute bottom-0 right-0 w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center border-2 border-surface hover:bg-primary-700" title="Choose Avatar">
-                  <i class="fa-solid fa-pen-to-square text-xs"></i>
+              </div>
+              <div class="flex items-center justify-end gap-2 mt-3">
+                <button (click)="isQuickCreateVisible.set(false)" type="button" class="aurora-button-secondary inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-3 py-1.5 text-sm rounded-xl transition-all duration-150 ease-in-out">Cancel</button>
+                <button type="submit" [disabled]="quickCreateForm.invalid || isSaving()" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-3 py-1.5 text-sm rounded-xl transition-all duration-150 ease-in-out">
+                  @if (isSaving()) {
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                  } @else {
+                    <span>Create & Select</span>
+                  }
                 </button>
-               </div>
-              <div class="flex-1 space-y-2">
-                <input type="text" formControlName="name" placeholder="Full Name (required)" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
-                <input type="tel" formControlName="phone" placeholder="Phone" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
-                <input type="email" formControlName="email" placeholder="Email" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
               </div>
             </div>
-            <div class="flex items-center justify-end gap-2 mt-3">
-              <button (click)="isQuickCreateVisible.set(false)" type="button" class="aurora-button-secondary inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-3 py-1.5 text-sm rounded-xl transition-all duration-150 ease-in-out">Cancel</button>
-              <button (click)="saveNewCustomer()" [disabled]="quickCreateForm.invalid || isSaving()" type="button" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-3 py-1.5 text-sm rounded-xl transition-all duration-150 ease-in-out">
-                @if (isSaving()) {
-                  <i class="fa-solid fa-spinner fa-spin"></i>
-                } @else {
-                  <span>Create & Select</span>
-                }
-              </button>
-            </div>
+            @if (isMediaBrowserOpen()) {
+              <app-mini-media-browser 
+                (close)="isMediaBrowserOpen.set(false)"
+                (select)="onMediaSelect($event)">
+              </app-mini-media-browser>
+            }
           </div>
-          @if (isMediaBrowserOpen()) {
-            <app-mini-media-browser 
-              (close)="isMediaBrowserOpen.set(false)"
-              (select)="onMediaSelect($event)">
-            </app-mini-media-browser>
-          }
-        </div>
+        </form>
       } @else {
         <!-- Dropdown Header -->
         <div class="p-2 flex items-center justify-between">
@@ -82,11 +87,6 @@
                 <button (click)="setFilter('balance')" [class]="'px-2 py-1 text-xs font-semibold rounded-lg transition-colors ' + (activeFilter() === 'balance' ? 'bg-surface-inset text-primary shadow-inner' : 'bg-surface-raised hover:bg-surface-inset')">With Balance</button>
                 <button (click)="setFilter('frequent')" [class]="'px-2 py-1 text-xs font-semibold rounded-lg transition-colors ' + (activeFilter() === 'frequent' ? 'bg-surface-inset text-primary shadow-inner' : 'bg-surface-raised hover:bg-surface-inset')">Frequent</button>
             </div>
-            @if(query()){
-                <button (click)="showQuickCreate()" type="button" class="px-2 py-1 text-xs font-semibold text-primary hover:bg-primary-900/50 rounded-md">
-                    <i class="fa-solid fa-plus mr-1"></i> New
-                </button>
-            }
         </div>
         <!-- Search Results List -->
         @if (results().length > 0) {
@@ -96,9 +96,8 @@
                   (click)="selectItem(customer)" 
                   (mouseenter)="activeIndex.set(i); onMouseOver($event, customer)"
                   (mouseleave)="onMouseOut()"
-                  class="flex items-center gap-3 px-3 py-2.5 cursor-pointer h-[58px] transition-colors"
-                  [class.bg-surface-inset]="activeIndex() === i"
-                  [class.shadow-inner]="activeIndex() === i">
+                  class="flex items-center gap-3 py-2.5 cursor-pointer h-[58px] transition-colors border-l-2"
+                  [class]="activeIndex() === i ? 'bg-primary/10 border-primary pl-2.5 pr-3' : 'border-transparent pl-3 pr-3'">
                 <img [src]="customer.avatarUrl" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
                 <div class="flex-1 overflow-hidden">
                   <p class="font-semibold truncate">{{ customer.name }}</p>
@@ -120,13 +119,22 @@
             </ul>
           </cdk-virtual-scroll-viewport>
         } @else {
-           <div class="p-6 text-center text-sm text-charcoal-500">
-              <i class="fa-solid fa-ghost block mx-auto text-2xl mb-2"></i>
-              No customers found.
-              @if(query()) {
-                <p class="text-xs mt-1">Press <span class="font-semibold bg-charcoal-700/50 px-1.5 py-0.5 rounded">Enter</span> to create "{{query()}}".</p>
-              }
-            </div>
+           <div class="p-3">
+            @if(query() && !isLoading()) {
+              <div (click)="showQuickCreate()"
+                   (mouseenter)="activeIndex.set(0)"
+                   class="flex items-center gap-3 p-3 cursor-pointer h-[58px] transition-colors rounded-lg border-l-2"
+                   [class]="activeIndex() === 0 ? 'bg-primary/10 border-primary' : 'border-transparent'">
+                <div class="w-8 h-8 flex items-center justify-center bg-surface-inset rounded-full"><i class="fa-solid fa-plus text-primary"></i></div>
+                <div class="flex-1"><p class="font-semibold">Create new customer "{{query()}}"</p></div>
+              </div>
+            } @else if (!isLoading()) {
+               <div class="p-6 text-center text-sm text-charcoal-500">
+                <i class="fa-solid fa-users block mx-auto text-2xl mb-2"></i>
+                Start typing to search for a customer.
+              </div>
+            }
+           </div>
         }
       }
     </div>

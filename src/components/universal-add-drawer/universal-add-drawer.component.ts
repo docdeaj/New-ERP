@@ -1,3 +1,4 @@
+
 import { Component, ChangeDetectionStrategy, input, output, computed, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormArray, FormGroup } from '@angular/forms';
@@ -8,6 +9,7 @@ import { ApiService } from '../../services/api.service';
 import { startWith } from 'rxjs/operators';
 import { CustomerPickerComponent } from '../customer-picker/customer-picker.component';
 import { GeminiService } from '../../services/gemini.service';
+import { SettingsService } from '../../services/settings.service';
 
 @Component({
   selector: 'app-universal-add-drawer',
@@ -24,6 +26,7 @@ export class UniversalAddDrawerComponent {
   private api = inject(ApiService);
   private uiState = inject(UiStateService);
   private geminiService = inject(GeminiService);
+  private settingsService = inject(SettingsService);
 
   isMediaBrowserOpen = signal(false);
   mediaFieldContext = signal<'expense-attachment' | 'product-image' | 'contact-avatar' | null>(null);
@@ -38,7 +41,8 @@ export class UniversalAddDrawerComponent {
   // --- Form Totals Calculation ---
   private currentItems = signal<any[]>([]);
   subtotal = computed(() => this.currentItems().reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0));
-  tax = computed(() => this.subtotal() * 0.1); // 10% tax
+  taxRate = this.settingsService.get<number>('regional.tax.vat_rate');
+  tax = computed(() => this.subtotal() * (this.taxRate() / 100));
   total = computed(() => this.subtotal() + this.tax());
 
   constructor() {

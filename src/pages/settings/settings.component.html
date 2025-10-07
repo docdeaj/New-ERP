@@ -1,0 +1,57 @@
+
+<div class="flex flex-col lg:flex-row gap-8">
+  <!-- Left: Navigation Sidebar -->
+  <aside class="lg:w-64">
+    <div class="sticky top-20">
+      <h2 class="text-lg font-semibold mb-3 px-2">Settings</h2>
+      <nav class="space-y-1">
+        @for (section of sections(); track section) {
+          <a 
+            [href]="'#' + getSectionId(section)"
+            (click)="scrollToSection(section, $event)"
+            class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors border-l-2"
+            [class]="activeSection() === section 
+              ? 'bg-primary/10 text-primary-200 border-primary' 
+              : 'text-charcoal-300 border-transparent hover:bg-surface-raised'">
+            {{ section }}
+          </a>
+        }
+      </nav>
+    </div>
+  </aside>
+
+  <!-- Right: Content -->
+  <main #contentArea class="flex-1 min-w-0 space-y-10">
+    <!-- Search Bar -->
+    <div class="sticky top-0 z-10 py-4 bg-charcoal-950/80 backdrop-blur-sm">
+      <app-settings-search 
+        [settings]="allSettings()"
+        (jumpTo)="handleJumpToSetting($event)">
+      </app-settings-search>
+    </div>
+
+    <!-- Settings Sections -->
+    @for (group of groupedSettings(); track group.section) {
+      <section [id]="getSectionId(group.section)" class="scroll-mt-24">
+        <h3 class="text-2xl font-bold text-brand-text mb-1">{{ group.section }}</h3>
+        <p class="text-charcoal-400 mb-6">Manage {{ group.section.toLowerCase() }} settings for your workspace.</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          @for (setting of group.settings; track setting.key) {
+            <app-setting-card 
+              [id]="getSettingId(setting.key)"
+              [setting]="setting">
+            </app-setting-card>
+          }
+        </div>
+      </section>
+    }
+  </main>
+</div>
+
+<style>
+.setting-highlight {
+  transition: all 300ms ease-in-out;
+  box-shadow: 0 0 0 3px rgb(var(--color-primary-500) / 0.6), var(--shadow-lg);
+  transform: scale(1.01);
+}
+</style>

@@ -43,6 +43,8 @@ export class DataTableComponent<T extends { id: any, amount?: number }> {
   context = input<string>('default'); // For context-aware actions/math
   initialSearchQuery = input<string | null>(null);
   emptyStateConfig = input<EmptyStateConfig | null>(null);
+  title = input<string>('');
+  description = input<string | null>(null);
   rowAction = output<{ action: string, item: T }>();
   bulkAction = output<{ action: string, selectedIds: (string | number)[] }>();
   emptyStateAction = output<void>();
@@ -72,6 +74,10 @@ export class DataTableComponent<T extends { id: any, amount?: number }> {
   private isLongPress = false; // This flag prevents click event after a long press
 
   private uiStateService = inject(UiStateService);
+  
+  // Accessibility IDs
+  titleId = computed(() => `dt-title-${this.context()}`);
+  descriptionId = computed(() => `dt-description-${this.context()}`);
 
   constructor() {
     // Effect to trigger search from global keypress

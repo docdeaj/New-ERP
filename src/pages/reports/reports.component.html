@@ -1,21 +1,21 @@
 <div class="space-y-6">
   <!-- Sticky Filter Bar -->
-  <div class="sticky top-0 z-20 bg-surface/80 backdrop-blur-md -mx-4 -mt-2 px-4 py-2">
-    <div class="flex items-center justify-between">
+  <div class="sticky top-[-1px] z-20 bg-surface/90 backdrop-blur-md h-16 border-b border-charcoal-800/50">
+    <div class="flex items-center justify-between h-full">
       <div class="flex items-center gap-1.5">
         @for (range of ['Today', 'This Week', 'This Month', 'This Year']; track range) {
           <button 
             (click)="onDateRangeChange(range)"
-            [class]="'px-3 py-1.5 text-sm font-semibold rounded-xl transition-colors ' + (activeDateRange() === range ? 'bg-primary text-white shadow-sm' : 'hover:bg-surface-inset')">
+            [class]="'px-4 h-10 text-sm font-semibold rounded-lg transition-colors border-l-2 ' + (activeDateRange() === range ? 'bg-primary/20 text-primary-200 border-primary' : 'text-charcoal-200 bg-surface-raised border-transparent hover:bg-surface-inset')">
             {{ range }}
           </button>
         }
       </div>
       <div class="flex items-center gap-2">
-        <button class="aurora-button-secondary inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-3 py-1.5 text-sm rounded-xl transition-all duration-150 ease-in-out" disabled>
+        <button class="aurora-button-danger inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 text-sm rounded-xl" disabled>
           <i class="fa-solid fa-file-pdf"></i>Export PDF
         </button>
-         <button class="aurora-button-secondary inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-3 py-1.5 text-sm rounded-xl transition-all duration-150 ease-in-out" disabled>
+         <button class="aurora-button-success inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 text-sm rounded-xl" disabled>
           <i class="fa-solid fa-file-csv"></i>Export CSV
         </button>
       </div>
@@ -31,8 +31,9 @@
   } @else if (summary(); as summaryData) {
     <!-- Section: Daily Close Pack -->
     <div id="summary-section">
-      <h2 class="text-xl font-bold mb-4">Summary</h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+      <h2 class="text-xl font-bold">Summary</h2>
+      <p class="text-sm text-charcoal-400 mt-1">Key performance indicators for {{ activeDateRange() }}. Currency is LKR.</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 mt-3">
         
         <!-- Net Sales -->
         <div class="bg-surface rounded-2xl shadow-md p-5 cursor-pointer hover:shadow-lg transition-shadow" (click)="navigateTo('/invoices')">
@@ -90,22 +91,25 @@
     <!-- Section: Period Trends -->
     <div id="trends-section" class="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-6">
       <div class="2xl:col-span-2 bg-surface rounded-2xl shadow-md p-6">
-        <h3 class="text-lg font-semibold mb-4">Sales Over Time</h3>
-        <div class="h-72">
+        <h3 class="text-lg font-semibold">Sales Over Time</h3>
+        <p class="text-sm text-charcoal-400 mt-1">Sales performance for {{ activeDateRange() }}.</p>
+        <div class="h-72 mt-3">
           @if(salesTrend(); as trend) {
             <app-simple-bar-chart [labels]="trend.labels" [datasets]="trend.datasets"></app-simple-bar-chart>
           }
         </div>
       </div>
       <div class="bg-surface rounded-2xl shadow-md p-6">
-        <h3 class="text-lg font-semibold mb-4">Payment Mix</h3>
-        <div class="h-72">
+        <h3 class="text-lg font-semibold">Payment Mix</h3>
+        <p class="text-sm text-charcoal-400 mt-1">Breakdown of payment methods used for {{ activeDateRange() }}.</p>
+        <div class="h-72 mt-3">
           <app-donut-chart [data]="summaryData.paymentMix"></app-donut-chart>
         </div>
       </div>
       <div class="2xl:col-span-3 bg-surface rounded-2xl shadow-md p-6">
-        <h3 class="text-lg font-semibold mb-4">Top Products</h3>
-         <div class="overflow-x-auto">
+        <h3 class="text-lg font-semibold">Top Products</h3>
+        <p class="text-sm text-charcoal-400 mt-1">Best-selling products by revenue for {{ activeDateRange() }}.</p>
+         <div class="overflow-x-auto mt-3">
           <table class="w-full text-left text-sm">
             <thead class="text-xs text-charcoal-400 uppercase">
               <tr>
@@ -134,8 +138,9 @@
      <!-- Section: Inventory Snapshot -->
     @if (inventorySnapshot(); as snapshot) {
       <div id="inventory-snapshot-section">
-        <h2 class="text-xl font-bold mb-4">Inventory Snapshot</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <h2 class="text-xl font-bold">Inventory Snapshot</h2>
+        <p class="text-sm text-charcoal-400 mt-1">Current stock valuation and performance metrics for {{ activeDateRange() }}.</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 mt-3">
           <!-- Stock Valuation Card -->
           <div class="bg-surface rounded-2xl shadow-md p-5">
             <p class="text-sm font-semibold text-charcoal-400">Stock Valuation</p>
@@ -159,8 +164,9 @@
         
         <!-- Slow Movers Table -->
         <div class="bg-surface rounded-2xl shadow-md p-6">
-            <h3 class="text-lg font-semibold mb-4">Slow-Moving Items</h3>
-            <div class="overflow-x-auto">
+            <h3 class="text-lg font-semibold">Slow-Moving Items</h3>
+            <p class="text-sm text-charcoal-400 mt-1">Products with the lowest sales activity for {{ activeDateRange() }}.</p>
+            <div class="overflow-x-auto mt-3">
                 <table class="w-full text-left text-sm">
                     <thead class="text-xs text-charcoal-400 uppercase">
                         <tr>
@@ -194,45 +200,50 @@
 
      <!-- Section: Operational Tables -->
      <div class="space-y-6">
-        <div id="ar-aging-section">
-            <h2 class="text-xl font-bold mb-4">A/R Aging</h2>
+        <div id="ar-aging-section" class="space-y-3">
             <app-data-table
+                title="A/R Aging"
+                [description]="arAgingDescription()"
                 context="ar-aging"
                 [columns]="arAgingColumns"
                 [data]="arAgingData()"
                 (rowAction)="handleRowAction($event, 'ar-aging')">
             </app-data-table>
         </div>
-        <div id="ap-aging-section">
-            <h2 class="text-xl font-bold mb-4">A/P Aging</h2>
+        <div id="ap-aging-section" class="space-y-3">
             <app-data-table
+                title="A/P Aging"
+                [description]="apAgingDescription()"
                 context="ap-aging"
                 [columns]="apAgingColumns"
                 [data]="apAgingData()"
                 (rowAction)="handleRowAction($event, 'ap-aging')">
             </app-data-table>
         </div>
-        <div id="cheque-register-section">
-            <h2 class="text-xl font-bold mb-4">Cheque Register</h2>
+        <div id="cheque-register-section" class="space-y-3">
             <app-data-table
+                title="Cheque Register"
+                [description]="chequeRegisterDescription()"
                 context="cheque-register"
                 [columns]="chequeRegisterColumns"
                 [data]="chequeRegisterData()"
                 (rowAction)="handleRowAction($event, 'cheque-register')">
             </app-data-table>
         </div>
-        <div id="recurring-forecast-section">
-            <h2 class="text-xl font-bold mb-4">Recurring Forecast</h2>
+        <div id="recurring-forecast-section" class="space-y-3">
             <app-data-table
+                title="Recurring Forecast"
+                [description]="recurringForecastDescription()"
                 context="recurring-forecast"
                 [columns]="recurringForecastColumns"
                 [data]="recurringForecastData()"
                 (rowAction)="handleRowAction($event, 'recurring-forecast')">
             </app-data-table>
         </div>
-        <div id="tax-summary-section">
-            <h2 class="text-xl font-bold mb-4">Tax Summary</h2>
+        <div id="tax-summary-section" class="space-y-3">
             <app-data-table
+                title="Tax Summary"
+                [description]="taxSummaryDescription()"
                 context="tax-summary"
                 [columns]="taxSummaryColumns"
                 [data]="taxSummaryData()"

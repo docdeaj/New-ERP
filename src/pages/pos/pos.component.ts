@@ -89,12 +89,24 @@ export class PosComponent {
   }
 
   updateQuantity(productId: number, newQuantity: number | string) {
+    const product = this.products().find(p => p.id === productId);
+    if (!product) return;
+
     const quantity = typeof newQuantity === 'string' ? parseInt(newQuantity, 10) : newQuantity;
     if (isNaN(quantity) || quantity <= 0) {
       this.removeFromCart(productId);
-    } else {
-      this.cart.update(current => current.map(item => item.id === productId ? { ...item, quantity } : item));
+      return;
     }
+    
+    const serverAvailable = this.getTotalStock(product) - this.getCommittedStock(product);
+    if (quantity > serverAvailable) {
+        this.liveRegionMessage.set(`Only ${serverAvailable} units of ${product.name} are available.`);
+        this.cart.update(current => current.map(item => item.id === productId ? { ...item, quantity: serverAvailable } : item));
+        this.editingCartItemId.set(null);
+        return;
+    }
+
+    this.cart.update(current => current.map(item => item.id === productId ? { ...item, quantity } : item));
     this.editingCartItemId.set(null);
   }
 
@@ -159,8 +171,17 @@ export class PosComponent {
     this.isSortDropdownOpen.set(false);
   }
 
-  getAvailableStock(p: Product): number { return Object.values(p.stock).reduce((a,b) => a+b, 0) - Object.values(p.committed).reduce((a,b) => a+b, 0); }
-  getTotalStock(p: Product): number { return Object.values(p.stock).reduce((a,b) => a+b, 0); }
+  private getQuantityInCart(productId: number): number {
+    return this.cart().find(item => item.id === productId)?.quantity || 0;
+  }
+  private getTotalStock(p: Product): number { return Object.values(p.stock).reduce((a,b) => a+b, 0); }
+  private getCommittedStock(p: Product): number { return Object.values(p.committed).reduce((a,b) => a+b, 0); }
+
+  getAvailableStock(p: Product): number { 
+    const serverAvailable = this.getTotalStock(p) - this.getCommittedStock(p);
+    const inCart = this.getQuantityInCart(p.id);
+    return serverAvailable - inCart;
+  }
   
   getStockRingDashOffset(p: Product): number {
     const total = this.getTotalStock(p);

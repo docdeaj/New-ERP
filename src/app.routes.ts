@@ -1,3 +1,4 @@
+
 import { Routes } from '@angular/router';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { InvoicesComponent } from './pages/invoices/invoices.component';
@@ -14,6 +15,7 @@ import { PlaceholderComponent } from './pages/placeholder.component';
 import { ExpensesComponent } from './pages/expenses/expenses.component';
 import { PaymentWorkspaceComponent } from './pages/payment-workspace/payment-workspace.component';
 import { RecurringExpensesComponent } from './pages/recurring-expenses/recurring-expenses.component';
+import { SettingsComponent } from './pages/settings/settings.component';
 
 
 export const APP_ROUTES: Routes = [
@@ -31,7 +33,7 @@ export const APP_ROUTES: Routes = [
   { path: 'contacts', component: ContactsComponent, title: 'Contacts' },
   { path: 'media', component: MediaLibraryComponent, title: 'Media Library' },
   { path: 'reports', component: ReportsComponent, title: 'Reports' },
-  { path: 'settings', component: PlaceholderComponent, title: 'Settings' },
+  { path: 'settings', component: SettingsComponent, title: 'Settings' },
   { path: 'recurring', component: RecurringExpensesComponent, title: 'Recurring Expenses' },
   { path: '**', redirectTo: 'dashboard' } 
 ];

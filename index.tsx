@@ -10,6 +10,7 @@ import { importProvidersFrom } from '@angular/core';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CalendarDataService } from './src/services/calendar-data.service';
+import { SettingsService } from './src/services/settings.service';
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -17,7 +18,8 @@ bootstrapApplication(AppComponent, {
     provideRouter(APP_ROUTES, withHashLocation()),
     provideHttpClient(),
     importProvidersFrom(ScrollingModule, FormsModule, ReactiveFormsModule),
-    CalendarDataService
+    CalendarDataService,
+    SettingsService
   ],
 }).catch((err) => console.error(err));
 

@@ -13,7 +13,7 @@
               <i class="fa-solid fa-sort"></i>
           </button>
           @if(isSortDropdownOpen()) {
-              <div class="absolute top-full right-0 mt-2 w-48 bg-surface-raised rounded-lg shadow-lg z-10 animate-[fade-in-scale_100ms_ease-in-out]">
+              <div class="absolute top-full right-0 mt-2 w-48 bg-surface-raised rounded-lg shadow-lg z-10 animate-[fade-in-scale_100ms_ease-in-out] border border-charcoal-700/30">
                   <div class="p-1">
                       @for(option of sortOptions; track option) {
                           <button (click)="selectSort(option)" class="w-full text-left px-3 py-1.5 text-sm rounded-md flex justify-between items-center"

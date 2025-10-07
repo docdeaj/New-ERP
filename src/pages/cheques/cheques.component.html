@@ -1,17 +1,15 @@
 <div class="flex flex-col gap-3 sm:gap-4">
-  <div class="flex items-center justify-between">
-    <h2 class="text-xl font-semibold">Cheque Register</h2>
-    <button (click)="openAddNewDrawer()" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl transition-all duration-150 ease-in-out">
-      <i class="fa-solid fa-plus"></i>
-      <span>Record Cheque</span>
-    </button>
-  </div>
-  
   <app-data-table 
+    title="Cheque Register"
+    description="A log of all incoming and outgoing cheques."
     [columns]="columns" 
     [data]="cheques()"
     context="cheque"
     (rowAction)="handleRowAction($event)"
     (bulkAction)="handleBulkAction($event)">
+    <button table-tools (click)="openAddNewDrawer()" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl transition-all duration-150 ease-in-out">
+      <i class="fa-solid fa-plus"></i>
+      <span>Record Cheque</span>
+    </button>
   </app-data-table>
 </div>

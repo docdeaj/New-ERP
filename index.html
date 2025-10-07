@@ -8,6 +8,9 @@
   <link rel="icon" type="image/x-icon" href="favicon.ico" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibVdXEyjU61WIYOKTsmxGtOoItRIgVRg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <style>
@@ -19,6 +22,7 @@
       --color-slate-50: 248 250 252; --color-slate-100: 241 245 249; --color-slate-200: 226 232 240; --color-slate-300: 203 213 225; --color-slate-400: 148 163 184; --color-slate-500: 100 116 139; --color-slate-600: 71 85 105; --color-slate-700: 51 65 85; --color-slate-800: 30 41 59; --color-slate-900: 15 23 42; --color-slate-950: 2 6 23;
       --color-charcoal-50: 249 250 251; --color-charcoal-100: 243 244 246; --color-charcoal-200: 229 231 235; --color-charcoal-300: 209 213 219; --color-charcoal-400: 156 163 175; --color-charcoal-500: 107 114 128; --color-charcoal-600: 75 85 99; --color-charcoal-700: 55 55 61; --color-charcoal-800: 34 34 38; --color-charcoal-900: 23 23 26; --color-charcoal-950: 10 10 12;
       --color-green-400: 74 222 128; --color-green-500: 34 197 94; --color-green-600: 22 163 74; --color-green-900: 20 83 45;
+      --color-red-400: 248 113 113; --color-red-500: 239 68 68; --color-red-600: 220 38 38; --color-red-900: 127 29 29;
 
 
       --bg: rgb(var(--color-charcoal-950));
@@ -143,10 +147,32 @@
         box-shadow: var(--focus-ring), var(--shadow-lg);
     }
     
+    .aurora-button-danger {
+      background-image: linear-gradient(to bottom, rgb(var(--color-red-500)), rgb(var(--color-red-600)));
+      box-shadow: var(--shadow-md);
+      text-shadow: 0 -1px 1px rgb(var(--color-red-900) / 0.5);
+      border: none;
+      transition: transform 150ms ease-out, box-shadow 150ms ease-out, background-image 150ms ease-out;
+    }
+    .aurora-button-danger:hover {
+      background-image: linear-gradient(to bottom, rgb(var(--color-red-400)), rgb(var(--color-red-500)));
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-1px);
+    }
+    .aurora-button-danger:active {
+      transform: translateY(1px);
+      box-shadow: var(--inner-shadow);
+    }
+     .aurora-button-danger:focus-visible {
+        outline: none;
+        box-shadow: var(--focus-ring), var(--shadow-lg);
+    }
+    
     /* Unified Disabled State */
     .aurora-button-primary:disabled,
     .aurora-button-secondary:disabled,
-    .aurora-button-success:disabled {
+    .aurora-button-success:disabled,
+    .aurora-button-danger:disabled {
         opacity: 0.6;
         cursor: not-allowed;
         transform: translateY(0);
@@ -193,6 +219,8 @@
     input[type="date"]::-webkit-calendar-picker-indicator:hover {
         filter: invert(80%) brightness(1.5);
     }
+
+    .font-cinzel { font-family: 'Cinzel', serif; }
   </style>
 <script>
     tailwind.config = {
@@ -200,6 +228,7 @@
         extend: {
           colors: {
             green: { 400: 'rgb(var(--color-green-400) / <alpha-value>)', 500: 'rgb(var(--color-green-500) / <alpha-value>)', 600: 'rgb(var(--color-green-600) / <alpha-value>)', 900: 'rgb(var(--color-green-900) / <alpha-value>)' },
+            red: { 400: 'rgb(var(--color-red-400) / <alpha-value>)', 500: 'rgb(var(--color-red-500) / <alpha-value>)', 600: 'rgb(var(--color-red-600) / <alpha-value>)', 900: 'rgb(var(--color-red-900) / <alpha-value>)' },
             primary: { 50: 'rgb(var(--color-primary-50) / <alpha-value>)', 100: 'rgb(var(--color-primary-100) / <alpha-value>)', 200: 'rgb(var(--color-primary-200) / <alpha-value>)', 300: 'rgb(var(--color-primary-300) / <alpha-value>)', 400: 'rgb(var(--color-primary-400) / <alpha-value>)', 500: 'rgb(var(--color-primary-500) / <alpha-value>)', 600: 'rgb(var(--color-primary-600) / <alpha-value>)', 700: 'rgb(var(--color-primary-700) / <alpha-value>)', 800: 'rgb(var(--color-primary-800) / <alpha-value>)', 900: 'rgb(var(--color-primary-900) / <alpha-value>)', 950: 'rgb(var(--color-primary-950) / <alpha-value>)' },
             slate: { 50: 'rgb(var(--color-slate-50) / <alpha-value>)', 100: 'rgb(var(--color-slate-100) / <alpha-value>)', 200: 'rgb(var(--color-slate-200) / <alpha-value>)', 300: 'rgb(var(--color-slate-300) / <alpha-value>)', 400: 'rgb(var(--color-slate-400) / <alpha-value>)', 500: 'rgb(var(--color-slate-500) / <alpha-value>)', 600: 'rgb(var(--color-slate-600) / <alpha-value>)', 700: 'rgb(var(--color-slate-700) / <alpha-value>)', 800: 'rgb(var(--color-slate-800) / <alpha-value>)', 900: 'rgb(var(--color-slate-900) / <alpha-value>)', 950: 'rgb(var(--color-slate-950) / <alpha-value>)' },
             charcoal: { 50: 'rgb(var(--color-charcoal-50) / <alpha-value>)', 100: 'rgb(var(--color-charcoal-100) / <alpha-value>)', 200: 'rgb(var(--color-charcoal-200) / <alpha-value>)', 300: 'rgb(var(--color-charcoal-300) / <alpha-value>)', 400: 'rgb(var(--color-charcoal-400) / <alpha-value>)', 500: 'rgb(var(--color-charcoal-500) / <alpha-value>)', 600: 'rgb(var(--color-charcoal-600) / <alpha-value>)', 700: 'rgb(var(--color-charcoal-700) / <alpha-value>)', 800: 'rgb(var(--color-charcoal-800) / <alpha-value>)', 900: 'rgb(var(--color-charcoal-900) / <alpha-value>)', 950: 'rgb(var(--color-charcoal-950) / <alpha-value>)' },

@@ -67,10 +67,8 @@
       <!-- Right side: Receipt History -->
       <div class="lg:col-span-2">
         <div class="bg-surface rounded-2xl shadow-md">
-           <div class="p-4">
-             <h3 class="font-semibold">Receipt History</h3>
-           </div>
            <app-data-table
+             title="Receipt History"
              context="receipt-history"
              [columns]="receiptColumns"
              [data]="receipts()">
