@@ -309,7 +309,7 @@ export interface ReportView {
   name: string;
   description: string;
   query: ReportQuery;
-  visualizationType: 'table' | 'bar' | 'pivot';
+  visualizationType: 'table' | 'bar' | 'pivot' | 'donut';
   owner: {
     name: string;
     avatarUrl: string;

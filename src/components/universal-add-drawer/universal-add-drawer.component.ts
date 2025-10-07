@@ -1,5 +1,6 @@
 
 
+
 import { Component, ChangeDetectionStrategy, input, output, computed, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormArray, FormGroup } from '@angular/forms';
@@ -23,8 +24,7 @@ export class UniversalAddDrawerComponent {
   context = input.required<DrawerContext | null>();
   close = output<void>();
 
-  // FIX: Explicitly type injected service to resolve type inference issues.
-  private fb: FormBuilder = inject(FormBuilder);
+  private fb = inject(FormBuilder);
   private api = inject(ApiService);
   private uiState = inject(UiStateService);
   private geminiService = inject(GeminiService);
@@ -139,7 +139,6 @@ export class UniversalAddDrawerComponent {
     }
 
     group.get('productId')?.valueChanges.subscribe(id => {
-      // FIX: The value of 'productId' can be null, causing a strict null check error. Add a guard to ensure 'id' is truthy before use.
       if (id) {
         const product = this.products().find(p => p.id === +id);
         if (product) {
@@ -326,82 +325,4 @@ export class UniversalAddDrawerComponent {
 
       if (this.isEditMode() && currentItem) {
         switch(this.context()) {
-          case 'new-invoice': await this.api.invoices.update(currentItem.id, payload); break;
-          case 'new-expense': await this.api.expenses.update(currentItem.id, payload); break;
-          case 'new-product': await this.api.products.update(currentItem.id, payload); break;
-          case 'new-contact': await this.api.contacts.update(currentItem.id, payload); break;
-          case 'new-po': await this.api.purchaseOrders.update(currentItem.id, payload); break;
-          case 'new-quotation': await this.api.quotations.update(currentItem.id, payload); break;
-          case 'new-cheque': await this.api.cheques.update(currentItem.id, payload); break;
-          case 'new-recurring-expense': await this.api.recurringExpenses.update(currentItem.id, payload); break;
-        }
-      } else {
-         switch(this.context()) {
-          case 'new-invoice': await this.api.createInvoice(payload); break;
-          case 'new-po': await this.api.createPurchaseOrder(payload); break;
-          case 'new-quotation': await this.api.createQuotation(payload); break;
-          case 'new-expense':
-            if (payload.isRecurring) {
-              await this.api.createRecurringExpense({
-                description: payload.notes || 'Recurring Expense',
-                category: payload.category, amount: payload.amount, cadence: payload.cadence,
-                nextDueDate: payload.nextDueDate, vendor: payload.vendor,
-              });
-            } else { await this.api.createExpense(payload); }
-            break;
-          case 'new-product': await this.api.createProduct(payload); break;
-          case 'new-contact': await this.api.createContact(payload); break;
-          case 'new-cheque': await this.api.createCheque(payload); break;
-          case 'record-sale': await this.api.createSale(payload); break;
-          case 'record-payment': await this.api.createCustomerPayment(payload); break;
-          default: console.warn(`No save handler for context: ${this.context()}`);
-        }
-      }
-
-      this.uiState.closeDrawer();
-    } catch (error) {
-      console.error('Failed to save:', error);
-    } finally {
-      this.isSaving.set(false);
-    }
-  }
-
-  getCurrentForm(): FormGroup | null {
-    switch(this.context()) {
-      case 'new-invoice': return this.invoiceForm;
-      case 'new-expense': return this.expenseForm;
-      case 'new-product': return this.productForm;
-      case 'new-contact': return this.contactForm;
-      case 'new-po': return this.purchaseOrderForm;
-      case 'new-quotation': return this.quotationForm;
-      case 'new-cheque': return this.chequeForm;
-      case 'record-sale': return this.recordSaleForm;
-      case 'record-payment': return this.recordPaymentForm;
-      default: return null;
-    }
-  }
-
-  openMediaBrowser(context: 'expense-attachment' | 'product-image' | 'contact-avatar') {
-    this.mediaFieldContext.set(context);
-    this.isMediaBrowserOpen.set(true);
-  }
-
-  closeMediaBrowser() {
-    this.isMediaBrowserOpen.set(false);
-  }
-
-  onMediaSelect(mediaItem: MediaItem) {
-    switch (this.mediaFieldContext()) {
-      case 'expense-attachment':
-        this.expenseForm.patchValue({ attachmentUrl: mediaItem.url });
-        break;
-      case 'product-image':
-        this.productForm.patchValue({ imageUrl: mediaItem.url });
-        break;
-      case 'contact-avatar':
-        this.contactForm.patchValue({ avatarUrl: mediaItem.url });
-        break;
-    }
-    this.closeMediaBrowser();
-  }
-}
+          case 'new-invoice': await this.api.invoices.update

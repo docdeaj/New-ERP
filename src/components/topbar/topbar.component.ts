@@ -13,10 +13,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 })
 export class TopbarComponent {
   openSearch = output<void>();
-  // FIX: Explicitly type injected services to resolve type inference issues.
-  router: Router = inject(Router);
-  // FIX: Explicitly type injected services to resolve type inference issues.
-  activatedRoute: ActivatedRoute = inject(ActivatedRoute);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
 
   pageTitle = toSignal(
     this.router.events.pipe(
