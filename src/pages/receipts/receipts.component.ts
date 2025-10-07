@@ -43,12 +43,16 @@ export class ReceiptsComponent {
   }
 
   handleRowAction(event: { action: string, item: Receipt }) {
-    console.log('Row Action:', event.action, 'on item:', event.item);
+    if (event.action === 'delete') {
+      this.deleteReceipts([event.item.id]);
+    } else {
+      console.log('Row Action:', event.action, 'on item:', event.item);
+    }
   }
 
   handleBulkAction(event: { action: string, selectedIds: (string | number)[] }) {
     if (event.action === 'delete') {
-      this.api.receipts.deleteMany(event.selectedIds);
+      this.deleteReceipts(event.selectedIds);
     } else {
       console.log('Bulk Action:', event.action, 'on ids:', event.selectedIds);
     }
@@ -56,5 +60,15 @@ export class ReceiptsComponent {
   
   openAddNewReceiptDrawer() {
     this.uiStateService.openDrawer('new-receipt');
+  }
+
+  deleteReceipts(ids: (string | number)[]) {
+    this.uiStateService.showConfirmation(
+      'Delete Receipts',
+      `Are you sure you want to delete ${ids.length} receipt(s)? This may affect invoice balances.`,
+      () => {
+        this.api.receipts.deleteMany(ids);
+      }
+    );
   }
 }

@@ -1,14 +1,14 @@
 <aside 
-  [class]="'fixed top-2.5 left-2.5 bottom-2.5 flex flex-col bg-surface-raised/80 dark:bg-charcoal-900/80 backdrop-blur-xl border border-brand-border dark:border-brand-border/50 rounded-2xl shadow-lg transition-all duration-300 ease-in-out z-40 ' + (isCollapsed() ? 'w-20' : 'w-64')">
+  [class]="'fixed top-2.5 left-2.5 bottom-2.5 flex flex-col bg-surface-raised/80 dark:bg-charcoal-900/80 backdrop-blur-xl rounded-2xl shadow-lg transition-all duration-300 ease-in-out z-40 ' + (isCollapsed() ? 'w-20' : 'w-64')">
 
-  <div class="flex items-center p-4 border-b border-brand-border dark:border-brand-border/50" [class.justify-center]="isCollapsed()" [class.justify-between]="!isCollapsed()">
+  <div class="flex items-center p-4" [class.justify-center]="isCollapsed()" [class.justify-between]="!isCollapsed()">
     <div class="flex items-center gap-3" [class.hidden]="isCollapsed()">
       <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-inner-sm shadow-primary-900/50">
         <i class="fa-solid fa-feather-pointed text-white"></i>
       </div>
       <span class="text-xl font-bold text-brand-text">Aurora</span>
     </div>
-    <button (click)="onToggleCollapse()" class="text-slate-500 dark:text-charcoal-400 hover:text-slate-800 dark:hover:text-charcoal-100 focus:outline-none focus:ring-2 focus:ring-primary rounded-md p-1 transition-colors">
+    <button (click)="onToggleCollapse()" class="text-slate-500 dark:text-charcoal-400 hover:text-slate-800 dark:hover:text-charcoal-100 focus:outline-none focus:ring-2 focus:ring-primary rounded-lg p-1 transition-colors">
       <i class="fa-solid" [class.fa-arrow-right-to-bracket]="!isCollapsed()" [class.fa-arrow-left-to-bracket]="isCollapsed()"></i>
     </button>
   </div>
@@ -32,7 +32,7 @@
     }
   </nav>
 
-  <div class="p-2 border-t border-brand-border dark:border-brand-border/50">
+  <div class="p-2 mt-auto">
     <a href="#" class="flex items-center p-3 text-slate-600 dark:text-charcoal-300 hover:bg-slate-500/10 rounded-xl transition-colors" [class.justify-center]="isCollapsed()">
       <img src="https://picsum.photos/seed/aurora-user/40/40" alt="User Avatar" class="w-10 h-10 rounded-full object-cover">
       @if (!isCollapsed()) {
@@ -46,13 +46,8 @@
 </aside>
 <style>
   .aurora-nav-item.active {
-    background-color: var(--surface-inset);
+    background-color: rgb(var(--color-primary-500) / 0.15);
     color: var(--primary);
-    box-shadow: var(--inner-shadow), var(--shine-inner);
-    border-top: 1px solid hsl(0 0% 100% / .1);
-  }
-  html.dark .aurora-nav-item.active {
-    border-top-color: hsl(0 0% 100% / .05);
-    border-bottom: 1px solid hsl(0 0% 0% / .2);
+    box-shadow: var(--inner-shadow), inset 0 0 0 1px rgb(var(--color-charcoal-700));
   }
 </style>

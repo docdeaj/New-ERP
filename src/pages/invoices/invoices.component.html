@@ -1,8 +1,8 @@
-<div class="space-y-6">
+<div class="flex flex-col gap-3 sm:gap-4">
   <div class="flex items-center justify-between">
     <!-- The header search is now inside the data-table component -->
     <h2 class="text-xl font-semibold">All Invoices</h2>
-    <button (click)="openAddNewInvoiceDrawer()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 flex items-center gap-2">
+    <button (click)="openAddNewInvoiceDrawer()" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl transition-all duration-150 ease-in-out">
       <i class="fa-solid fa-plus"></i>
       <span>Add New Invoice</span>
     </button>
@@ -13,7 +13,9 @@
     [data]="invoices()"
     [initialSearchQuery]="initialQuery()"
     context="invoice"
+    [emptyStateConfig]="emptyStateConfig"
     (rowAction)="handleRowAction($event)"
-    (bulkAction)="handleBulkAction($event)">
+    (bulkAction)="handleBulkAction($event)"
+    (emptyStateAction)="handleEmptyStateAction()">
   </app-data-table>
 </div>

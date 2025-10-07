@@ -28,6 +28,23 @@ export class PaymentFormComponent {
   });
 
   denominations = [5000, 2000, 1000, 500, 100, 50, 20];
+  
+  changeDueBreakdown = computed(() => {
+    const lkrDenominations = [5000, 2000, 1000, 500, 100, 50, 20, 10, 5, 2, 1];
+    let remaining = this.changeDue();
+    if (remaining <= 0) return [];
+
+    const breakdown: { value: number; count: number }[] = [];
+    for (const denom of lkrDenominations) {
+      if (remaining >= denom) {
+        const count = Math.floor(remaining / denom);
+        breakdown.push({ value: denom, count });
+        remaining -= count * denom;
+        if (remaining < 1) break; // Stop if remainder is less than the smallest coin
+      }
+    }
+    return breakdown;
+  });
 
   selectTab(tab: PaymentMethod) {
     this.activeTab.set(tab);

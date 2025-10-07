@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-t-8" />
   <title>Aurora ERP+POS</title>
   <base href="/" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -11,43 +11,43 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibVdXEyjU61WIYOKTsmxGtOoItRIgVRg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <style>
-    /* Aurora Tactile Theme Tokens */
+    /* Aurora Tactile Theme Tokens - BORDERLESS REFACTOR V7 */
     :root {
-      --noise-light: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
       --noise-dark: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
       
       --color-primary-50: 239 246 255; --color-primary-100: 219 234 254; --color-primary-200: 191 219 254; --color-primary-300: 147 197 253; --color-primary-400: 96 165 250; --color-primary-500: 59 130 246; --color-primary-600: 37 99 235; --color-primary-700: 29 78 216; --color-primary-800: 30 64 175; --color-primary-900: 30 58 138; --color-primary-950: 23 37 84;
       --color-slate-50: 248 250 252; --color-slate-100: 241 245 249; --color-slate-200: 226 232 240; --color-slate-300: 203 213 225; --color-slate-400: 148 163 184; --color-slate-500: 100 116 139; --color-slate-600: 71 85 105; --color-slate-700: 51 65 85; --color-slate-800: 30 41 59; --color-slate-900: 15 23 42; --color-slate-950: 2 6 23;
-      --color-charcoal-50: 249 250 251; --color-charcoal-100: 243 244 246; --color-charcoal-200: 229 231 235; --color-charcoal-300: 209 213 219; --color-charcoal-400: 156 163 175; --color-charcoal-500: 107 114 128; --color-charcoal-600: 75 85 99; --color-charcoal-700: 55 65 81; --color-charcoal-800: 31 41 55; --color-charcoal-900: 17 24 39; --color-charcoal-950: 3 7 18;
+      --color-charcoal-50: 249 250 251; --color-charcoal-100: 243 244 246; --color-charcoal-200: 229 231 235; --color-charcoal-300: 209 213 219; --color-charcoal-400: 156 163 175; --color-charcoal-500: 107 114 128; --color-charcoal-600: 75 85 99; --color-charcoal-700: 55 55 61; --color-charcoal-800: 34 34 38; --color-charcoal-900: 23 23 26; --color-charcoal-950: 10 10 12;
+      --color-green-400: 74 222 128; --color-green-500: 34 197 94; --color-green-600: 22 163 74; --color-green-900: 20 83 45;
 
-      --bg: rgb(var(--color-slate-100));
-      --text: rgb(var(--color-slate-800));
-      --surface: rgb(var(--color-slate-50));
-      --surface-inset: rgb(var(--color-slate-200));
-      --surface-raised: white;
-      --border: rgb(var(--color-slate-200));
-      --border-accent: rgb(var(--color-slate-300));
-      --shadow-color: 210 20% 40%;
-      --shadow-sm: 0 1px 2px 0px hsl(var(--shadow-color) / 0.1), 0 1px 1px 0px hsl(var(--shadow-color) / 0.06);
-      --shadow-md: 0 4px 6px -1px hsl(var(--shadow-color) / 0.1), 0 2px 4px -2px hsl(var(--shadow-color) / 0.1);
-      --shadow-lg: 0 10px 15px -3px hsl(var(--shadow-color) / 0.1), 0 4px 6px -4px hsl(var(--shadow-color) / 0.1);
-      --inner-shadow: inset 0 2px 4px 0px hsl(var(--shadow-color) / 0.05);
-      --shine-outer: inset 0 1px 0 0 white;
-      --shine-inner: inset 0 1px 0 0 hsl(var(--shadow-color) / 0.05);
-      --primary: rgb(var(--color-primary-600));
-    }
-    html.dark {
+
       --bg: rgb(var(--color-charcoal-950));
       --text: rgb(var(--color-charcoal-200));
-      --surface: rgb(var(--color-charcoal-900));
+      --surface: rgb(var(--color-charcoal-900) / 0.85); /* Translucent for glassmorphism */
       --surface-inset: rgb(var(--color-charcoal-950));
-      --surface-raised: rgb(var(--color-charcoal-800));
-      --border: rgb(var(--color-charcoal-800));
-      --border-accent: rgb(var(--color-charcoal-700));
-      --shadow-color: 220 20% 5%;
-      --shine-outer: inset 0 1px 0 0 hsl(0 0% 100% / 0.05);
-      --shine-inner: inset 0 1px 0 0 hsl(0 0% 0% / .2);
+      --surface-raised: rgb(var(--color-charcoal-800) / 0.85);
+      
+      --border: transparent; /* BORDER: No longer a visible stroke. */
+      --border-accent: rgb(var(--color-charcoal-700)); /* Kept for things like scrollbars */
+      --shadow-color: 220 20% 2%;
       --primary: rgb(var(--color-primary-500));
+      --text-shadow: 0 1px 2px hsl(var(--shadow-color) / 0.5);
+      --focus-ring: 0 0 0 3px rgb(var(--color-primary-500) / 0.4);
+
+
+      /* BEVEL: A realistic, tangible edge created by combining a subtle top inner highlight (the "shine") and a bottom inner shadow for depth. */
+      --bevel-highlight: inset 0 1px 0 hsl(220 15% 100% / 0.06); /* White inner highlight */
+      --bevel-lowlight: inset 0 -1px 1px hsl(var(--shadow-color) / 0.6); /* Soft inner shadow for depth */
+      --bevel: var(--bevel-highlight), var(--bevel-lowlight);
+      
+      /* SHADOWS: Rebuilt to include the new bevel effect. */
+      --shadow-sm: var(--bevel), 0 1px 2px 0 hsl(var(--shadow-color) / 0.2), 0 1px 1px 0 hsl(var(--shadow-color) / 0.1);
+      --shadow-md: var(--bevel), 0 4px 6px -1px hsl(var(--shadow-color) / 0.2), 0 2px 4px -2px hsl(var(--shadow-color) / 0.1);
+      --shadow-lg: var(--bevel), 0 10px 15px -3px hsl(var(--shadow-color) / 0.25), 0 4px 6px -4px hsl(var(--shadow-color) / 0.1);
+      --shadow-2xl: var(--bevel), 0 25px 50px -12px hsl(var(--shadow-color) / 0.4);
+
+      /* INSET: Refined for inputs and recessed panels */
+      --inner-shadow: var(--bevel), inset 0 2px 4px 0 hsl(var(--shadow-color) / 0.5);
     }
 
     body {
@@ -61,23 +61,145 @@
       position: fixed;
       top: 0; left: 0;
       width: 100vw; height: 100vh;
-      background-image: var(--noise-light);
-      opacity: 0.1;
+      background-image: radial-gradient(circle at center, hsl(230 15% 12%), var(--bg)), var(--noise-dark);
+      opacity: 0.15;
       pointer-events: none;
       z-index: -1;
     }
-    html.dark body::before { background-image: var(--noise-dark); opacity: 0.05; }
     
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border-accent); border-radius: 4px; border: 2px solid transparent; background-clip: content-box; }
     ::-webkit-scrollbar-thumb:hover { background-color: var(--primary); }
+
+    h1, h2, h3, h4, h5, h6 { text-shadow: var(--text-shadow); }
+    
+    .aurora-backdrop {
+      background-color: rgb(var(--color-charcoal-950) / 0.6);
+      backdrop-filter: blur(8px);
+    }
+
+    /* --- BUTTON SYSTEM (No @apply) --- */
+    .aurora-button-primary {
+      background-image: linear-gradient(to bottom, rgb(var(--color-primary-500)), rgb(var(--color-primary-600)));
+      box-shadow: var(--shadow-md);
+      text-shadow: 0 -1px 1px rgb(var(--color-primary-900) / 0.5);
+      border: none;
+      transition: transform 150ms ease-out, box-shadow 150ms ease-out, background-image 150ms ease-out;
+    }
+    .aurora-button-primary:hover {
+      background-image: linear-gradient(to bottom, rgb(var(--color-primary-400)), rgb(var(--color-primary-500)));
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-1px);
+    }
+    .aurora-button-primary:active {
+      transform: translateY(1px);
+      box-shadow: var(--inner-shadow);
+    }
+     .aurora-button-primary:focus-visible {
+        outline: none;
+        box-shadow: var(--focus-ring), var(--shadow-lg);
+    }
+
+
+    .aurora-button-secondary {
+      background-color: var(--surface-raised);
+      box-shadow: var(--shadow-md);
+      transition: transform 150ms ease-out, box-shadow 150ms ease-out, background-color 150ms ease-out;
+    }
+    .aurora-button-secondary:hover {
+      background-color: var(--surface-inset);
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-1px);
+    }
+    .aurora-button-secondary:active {
+      transform: translateY(1px);
+      box-shadow: var(--inner-shadow);
+      background-color: var(--surface-inset);
+    }
+    .aurora-button-secondary:focus-visible {
+        outline: none;
+        box-shadow: var(--focus-ring), var(--shadow-lg);
+    }
+
+    .aurora-button-success {
+      background-image: linear-gradient(to bottom, rgb(var(--color-green-500)), rgb(var(--color-green-600)));
+      box-shadow: var(--shadow-md);
+      text-shadow: 0 -1px 1px rgb(var(--color-green-900) / 0.5);
+      border: none;
+      transition: transform 150ms ease-out, box-shadow 150ms ease-out, background-image 150ms ease-out;
+    }
+    .aurora-button-success:hover {
+      background-image: linear-gradient(to bottom, rgb(var(--color-green-400)), rgb(var(--color-green-500)));
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-1px);
+    }
+    .aurora-button-success:active {
+      transform: translateY(1px);
+      box-shadow: var(--inner-shadow);
+    }
+     .aurora-button-success:focus-visible {
+        outline: none;
+        box-shadow: var(--focus-ring), var(--shadow-lg);
+    }
+    
+    /* Unified Disabled State */
+    .aurora-button-primary:disabled,
+    .aurora-button-secondary:disabled,
+    .aurora-button-success:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: translateY(0);
+        background-image: linear-gradient(to bottom, rgb(var(--color-charcoal-600)), rgb(var(--color-charcoal-700)));
+        box-shadow: var(--shadow-md);
+    }
+    
+    /* --- INPUT SYSTEM (No @apply) --- */
+    .aurora-input {
+      box-shadow: var(--inner-shadow), inset 0 0 0 1px rgb(var(--color-charcoal-700) / 0.5);
+      background-color: var(--surface-inset);
+      transition: box-shadow 150ms ease-in-out;
+    }
+    .aurora-input:focus {
+      outline: none;
+      box-shadow: var(--focus-ring), var(--inner-shadow), inset 0 0 0 1px rgb(var(--color-primary-500) / 0.8);
+    }
+    
+    .divider-r {
+      box-shadow: inset -1px 0 0 hsl(var(--shadow-color) / 0.1);
+    }
+
+    /* --- THEMED FORM CONTROLS --- */
+    select, input[type="text"], input[type="date"], input[type="number"], input[type="email"], input[type="tel"], textarea {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        color-scheme: dark;
+    }
+
+    select {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+        filter: invert(60%) brightness(1.2);
+        cursor: pointer;
+        transition: filter 150ms ease-in-out;
+    }
+    input[type="date"]::-webkit-calendar-picker-indicator:hover {
+        filter: invert(80%) brightness(1.5);
+    }
   </style>
 <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
+            green: { 400: 'rgb(var(--color-green-400) / <alpha-value>)', 500: 'rgb(var(--color-green-500) / <alpha-value>)', 600: 'rgb(var(--color-green-600) / <alpha-value>)', 900: 'rgb(var(--color-green-900) / <alpha-value>)' },
             primary: { 50: 'rgb(var(--color-primary-50) / <alpha-value>)', 100: 'rgb(var(--color-primary-100) / <alpha-value>)', 200: 'rgb(var(--color-primary-200) / <alpha-value>)', 300: 'rgb(var(--color-primary-300) / <alpha-value>)', 400: 'rgb(var(--color-primary-400) / <alpha-value>)', 500: 'rgb(var(--color-primary-500) / <alpha-value>)', 600: 'rgb(var(--color-primary-600) / <alpha-value>)', 700: 'rgb(var(--color-primary-700) / <alpha-value>)', 800: 'rgb(var(--color-primary-800) / <alpha-value>)', 900: 'rgb(var(--color-primary-900) / <alpha-value>)', 950: 'rgb(var(--color-primary-950) / <alpha-value>)' },
             slate: { 50: 'rgb(var(--color-slate-50) / <alpha-value>)', 100: 'rgb(var(--color-slate-100) / <alpha-value>)', 200: 'rgb(var(--color-slate-200) / <alpha-value>)', 300: 'rgb(var(--color-slate-300) / <alpha-value>)', 400: 'rgb(var(--color-slate-400) / <alpha-value>)', 500: 'rgb(var(--color-slate-500) / <alpha-value>)', 600: 'rgb(var(--color-slate-600) / <alpha-value>)', 700: 'rgb(var(--color-slate-700) / <alpha-value>)', 800: 'rgb(var(--color-slate-800) / <alpha-value>)', 900: 'rgb(var(--color-slate-900) / <alpha-value>)', 950: 'rgb(var(--color-slate-950) / <alpha-value>)' },
             charcoal: { 50: 'rgb(var(--color-charcoal-50) / <alpha-value>)', 100: 'rgb(var(--color-charcoal-100) / <alpha-value>)', 200: 'rgb(var(--color-charcoal-200) / <alpha-value>)', 300: 'rgb(var(--color-charcoal-300) / <alpha-value>)', 400: 'rgb(var(--color-charcoal-400) / <alpha-value>)', 500: 'rgb(var(--color-charcoal-500) / <alpha-value>)', 600: 'rgb(var(--color-charcoal-600) / <alpha-value>)', 700: 'rgb(var(--color-charcoal-700) / <alpha-value>)', 800: 'rgb(var(--color-charcoal-800) / <alpha-value>)', 900: 'rgb(var(--color-charcoal-900) / <alpha-value>)', 950: 'rgb(var(--color-charcoal-950) / <alpha-value>)' },
@@ -92,9 +214,8 @@
             sm: 'var(--shadow-sm)',
             md: 'var(--shadow-md)',
             lg: 'var(--shadow-lg)',
-            'inner-sm': 'var(--inner-shadow)',
-            'shine-outer': 'var(--shine-outer)',
-            'shine-inner': 'var(--shine-inner)',
+            '2xl': 'var(--shadow-2xl)',
+            'inner': 'var(--inner-shadow)',
           }
         }
       }
@@ -117,7 +238,8 @@
     "@angular/cdk/scrolling": "https://next.esm.sh/@angular/cdk@^20.2.7/scrolling?external=rxjs",
     "@angular/router": "https://next.esm.sh/@angular/router@^20.3.3?external=rxjs",
     "@angular/core/rxjs-interop": "https://next.esm.sh/@angular/core@^20.3.3/rxjs-interop?external=rxjs",
-    "@angular/forms": "https://next.esm.sh/@angular/forms@^20.3.3?external=rxjs"
+    "@angular/forms": "https://next.esm.sh/@angular/forms@^20.3.3?external=rxjs",
+    "@google/genai": "https://esm.run/@google/genai"
   }
 }
 </script>

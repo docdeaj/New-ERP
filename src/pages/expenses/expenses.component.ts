@@ -50,12 +50,18 @@ export class ExpensesComponent {
   }
 
   handleRowAction(event: { action: string, item: Expense }) {
-    console.log('Row Action:', event.action, 'on item:', event.item);
+    if (event.action === 'edit') {
+      this.editExpense(event.item);
+    } else if (event.action === 'delete') {
+      this.deleteExpenses([event.item.id]);
+    } else {
+      console.log('Row Action:', event.action, 'on item:', event.item);
+    }
   }
 
   handleBulkAction(event: { action: string, selectedIds: (string | number)[] }) {
     if (event.action === 'delete') {
-      this.api.expenses.deleteMany(event.selectedIds);
+      this.deleteExpenses(event.selectedIds);
     } else {
       console.log('Bulk Action:', event.action, 'on ids:', event.selectedIds);
     }
@@ -63,5 +69,19 @@ export class ExpensesComponent {
   
   openAddNewExpenseDrawer() {
     this.uiStateService.openDrawer('new-expense');
+  }
+
+  editExpense(expense: Expense) {
+    this.uiStateService.openDrawer('new-expense', expense);
+  }
+
+  deleteExpenses(ids: (string | number)[]) {
+    this.uiStateService.showConfirmation(
+      'Delete Expenses',
+      `Are you sure you want to delete ${ids.length} expense(s)?`,
+      () => {
+        this.api.expenses.deleteMany(ids);
+      }
+    );
   }
 }

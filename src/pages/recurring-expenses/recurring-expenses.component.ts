@@ -44,12 +44,18 @@ export class RecurringExpensesComponent {
   }
 
   handleRowAction(event: { action: string, item: RecurringExpense }) {
-    console.log('Row Action:', event.action, 'on item:', event.item);
+    if (event.action === 'edit') {
+      this.editExpense(event.item);
+    } else if (event.action === 'delete') {
+      this.deleteExpenses([event.item.id]);
+    } else {
+      console.log('Row Action:', event.action, 'on item:', event.item);
+    }
   }
 
   handleBulkAction(event: { action: string, selectedIds: (string | number)[] }) {
     if (event.action === 'delete') {
-      this.api.recurringExpenses.deleteMany(event.selectedIds);
+      this.deleteExpenses(event.selectedIds);
     } else {
       console.log('Bulk Action:', event.action, 'on ids:', event.selectedIds);
     }
@@ -57,5 +63,19 @@ export class RecurringExpensesComponent {
   
   openAddNewExpenseDrawer() {
     this.uiStateService.openDrawer('new-expense');
+  }
+
+  editExpense(expense: RecurringExpense) {
+    this.uiStateService.openDrawer('new-recurring-expense', expense);
+  }
+
+  deleteExpenses(ids: (string | number)[]) {
+    this.uiStateService.showConfirmation(
+      'Delete Recurring Expenses',
+      `Are you sure you want to delete ${ids.length} recurring expense(s)?`,
+      () => {
+        this.api.recurringExpenses.deleteMany(ids);
+      }
+    );
   }
 }

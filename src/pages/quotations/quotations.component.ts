@@ -46,6 +46,10 @@ export class QuotationsComponent {
     if (event.action === 'convert-to-invoice') {
       this.uiStateService.openDrawer('new-invoice', event.item);
       this.api.updateQuotationStatus(event.item.id, 'Accepted');
+    } else if (event.action === 'edit') {
+      this.editQuotation(event.item);
+    } else if (event.action === 'delete') {
+      this.deleteQuotations([event.item.id]);
     } else {
       console.log('Row Action:', event.action, 'on item:', event.item);
     }
@@ -53,7 +57,7 @@ export class QuotationsComponent {
 
   handleBulkAction(event: { action: string, selectedIds: (string | number)[] }) {
     if (event.action === 'delete') {
-      this.api.quotations.deleteMany(event.selectedIds);
+      this.deleteQuotations(event.selectedIds);
     } else {
       console.log('Bulk Action:', event.action, 'on ids:', event.selectedIds);
     }
@@ -61,5 +65,19 @@ export class QuotationsComponent {
   
   openAddNewQuotationDrawer() {
     this.uiStateService.openDrawer('new-quotation');
+  }
+
+  editQuotation(quotation: Quotation) {
+    this.uiStateService.openDrawer('new-quotation', quotation);
+  }
+
+  deleteQuotations(ids: (string | number)[]) {
+    this.uiStateService.showConfirmation(
+      'Delete Quotations',
+      `Are you sure you want to delete ${ids.length} quotation(s)?`,
+      () => {
+        this.api.quotations.deleteMany(ids);
+      }
+    );
   }
 }

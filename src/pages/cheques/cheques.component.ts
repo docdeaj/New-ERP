@@ -45,12 +45,18 @@ export class ChequesComponent {
   }
 
   handleRowAction(event: { action: string, item: Cheque }) {
-    console.log('Row Action:', event.action, 'on item:', event.item);
+    if (event.action === 'edit') {
+      this.editCheque(event.item);
+    } else if (event.action === 'delete') {
+      this.deleteCheques([event.item.id]);
+    } else {
+      console.log('Row Action:', event.action, 'on item:', event.item);
+    }
   }
 
   handleBulkAction(event: { action: string, selectedIds: (string | number)[] }) {
     if (event.action === 'delete') {
-      this.api.cheques.deleteMany(event.selectedIds);
+      this.deleteCheques(event.selectedIds);
     } else {
       console.log('Bulk Action:', event.action, 'on ids:', event.selectedIds);
     }
@@ -58,5 +64,19 @@ export class ChequesComponent {
   
   openAddNewDrawer() {
     this.uiStateService.openDrawer('new-cheque');
+  }
+
+  editCheque(cheque: Cheque) {
+    this.uiStateService.openDrawer('new-cheque', cheque);
+  }
+
+  deleteCheques(ids: (string | number)[]) {
+    this.uiStateService.showConfirmation(
+      'Delete Cheques',
+      `Are you sure you want to delete ${ids.length} cheque(s)?`,
+      () => {
+        this.api.cheques.deleteMany(ids);
+      }
+    );
   }
 }

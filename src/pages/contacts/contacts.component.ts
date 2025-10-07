@@ -41,12 +41,18 @@ export class ContactsComponent {
   }
 
   handleRowAction(event: { action: string, item: Contact }) {
-    console.log('Row Action:', event.action, 'on item:', event.item);
+    if (event.action === 'edit') {
+      this.editContact(event.item);
+    } else if (event.action === 'delete') {
+      this.deleteContacts([event.item.id]);
+    } else {
+      console.log('Row Action:', event.action, 'on item:', event.item);
+    }
   }
 
   handleBulkAction(event: { action: string, selectedIds: (string | number)[] }) {
     if (event.action === 'delete') {
-      this.api.contacts.deleteMany(event.selectedIds);
+      this.deleteContacts(event.selectedIds);
     } else {
       console.log('Bulk Action:', event.action, 'on ids:', event.selectedIds);
     }
@@ -54,5 +60,19 @@ export class ContactsComponent {
   
   openAddNewDrawer() {
     this.uiStateService.openDrawer('new-contact');
+  }
+
+  editContact(contact: Contact) {
+    this.uiStateService.openDrawer('new-contact', contact);
+  }
+
+  deleteContacts(ids: (string | number)[]) {
+    this.uiStateService.showConfirmation(
+      'Delete Contacts',
+      `Are you sure you want to delete ${ids.length} contact(s)?`,
+      () => {
+        this.api.contacts.deleteMany(ids);
+      }
+    );
   }
 }

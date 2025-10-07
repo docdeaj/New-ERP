@@ -55,6 +55,10 @@ export class PurchaseOrdersComponent {
         // In a real app, you might show a toast message
         console.warn('This PO has already been received or cancelled.');
       }
+    } else if (event.action === 'edit') {
+      this.editPurchaseOrder(event.item);
+    } else if (event.action === 'delete') {
+      this.deletePurchaseOrders([event.item.id]);
     } else {
       console.log('Row Action:', event.action, 'on item:', event.item);
     }
@@ -67,7 +71,7 @@ export class PurchaseOrdersComponent {
 
   handleBulkAction(event: { action: string, selectedIds: (string | number)[] }) {
     if (event.action === 'delete') {
-      this.api.purchaseOrders.deleteMany(event.selectedIds);
+      this.deletePurchaseOrders(event.selectedIds);
     } else {
       console.log('Bulk Action:', event.action, 'on ids:', event.selectedIds);
     }
@@ -80,5 +84,19 @@ export class PurchaseOrdersComponent {
   closeConversionModal() {
     this.isConversionModalOpen.set(false);
     this.selectedPoForConversion.set(null);
+  }
+
+  editPurchaseOrder(po: PurchaseOrder) {
+    this.uiStateService.openDrawer('new-po', po);
+  }
+
+  deletePurchaseOrders(ids: (string | number)[]) {
+    this.uiStateService.showConfirmation(
+      'Delete Purchase Orders',
+      `Are you sure you want to delete ${ids.length} PO(s)?`,
+      () => {
+        this.api.purchaseOrders.deleteMany(ids);
+      }
+    );
   }
 }

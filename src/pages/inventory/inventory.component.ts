@@ -62,7 +62,13 @@ export class InventoryComponent {
   }
 
   handleRowAction(event: { action: string, item: InventoryItem }) {
-    console.log('Row Action:', event.action, 'on item:', event.item);
+    if (event.action === 'edit') {
+      this.editProduct(event.item);
+    } else if (event.action === 'delete') {
+      this.deleteProducts([event.item.id]);
+    } else {
+      console.log('Row Action:', event.action, 'on item:', event.item);
+    }
   }
 
   handleBulkAction(event: { action: string, selectedIds: (string | number)[] }) {
@@ -70,7 +76,7 @@ export class InventoryComponent {
       this.selectedIdsForTransfer.set(event.selectedIds);
       this.isTransferModalOpen.set(true);
     } else if (event.action === 'delete') {
-      this.api.inventory.deleteMany(event.selectedIds);
+      this.deleteProducts(event.selectedIds);
     } else {
       console.log('Bulk Action:', event.action, 'on ids:', event.selectedIds);
     }
@@ -86,4 +92,21 @@ export class InventoryComponent {
 
   openAddNewProductDrawer() { this.uiStateService.openDrawer('new-product'); }
   closeTransferModal() { this.isTransferModalOpen.set(false); }
+  
+  editProduct(item: InventoryItem) {
+    // Inventory items are representations of products, so we open the product drawer.
+    // The API service needs to be smart enough to find the full product details if needed.
+    // For our mock service, the inventory item has enough data.
+    this.uiStateService.openDrawer('new-product', item);
+  }
+
+  deleteProducts(ids: (string | number)[]) {
+    this.uiStateService.showConfirmation(
+      'Delete Products',
+      `Are you sure you want to delete ${ids.length} product(s)? This will remove them from all inventory records.`,
+      () => {
+        this.api.inventory.deleteMany(ids);
+      }
+    );
+  }
 }

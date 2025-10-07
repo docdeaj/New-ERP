@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
-import { DataTableComponent, ColumnDefinition } from '../../components/data-table/data-table.component';
+import { DataTableComponent, ColumnDefinition, EmptyStateConfig } from '../../components/data-table/data-table.component';
 import { Invoice } from '../../models/types';
 import { ApiService } from '../../services/api.service';
 import { UiStateService } from '../../services/ui-state.service';
@@ -34,6 +34,12 @@ export class InvoicesComponent {
     { key: 'status', label: 'Status', type: 'chip' },
   ];
 
+  emptyStateConfig: EmptyStateConfig = {
+    title: 'No Invoices Yet',
+    message: 'Get started by creating your first invoice.',
+    actionText: 'Add New Invoice'
+  };
+
   constructor() {
     this.initialQuery.set(this.route.snapshot.queryParamMap.get('q'));
     this.loadInvoices(); // Initial load
@@ -53,19 +59,27 @@ export class InvoicesComponent {
   }
 
   handleRowAction(event: { action: string, item: Invoice }) {
-    if (event.action === 'record-payment') {
-      this.router.navigate(['/payment-workspace', event.item.id]);
-    } else if (event.action === 'download-pdf') {
-      this.pdfService.generatePdf(event.item);
-    } else {
-      console.log('Row Action:', event.action, 'on item:', event.item);
+    switch (event.action) {
+      case 'record-payment':
+        this.router.navigate(['/payment-workspace', event.item.id]);
+        break;
+      case 'download-pdf':
+        this.pdfService.generatePdf(event.item);
+        break;
+      case 'edit':
+        this.editInvoice(event.item);
+        break;
+      case 'delete':
+        this.deleteInvoices([event.item.id]);
+        break;
+      default:
+        console.log('Row Action:', event.action, 'on item:', event.item);
     }
   }
 
   handleBulkAction(event: { action: string, selectedIds: (string | number)[] }) {
     if (event.action === 'delete') {
-      // In a real app, you might show a confirmation dialog here
-      this.api.invoices.deleteMany(event.selectedIds);
+      this.deleteInvoices(event.selectedIds);
     } else {
       console.log('Bulk Action:', event.action, 'on ids:', event.selectedIds);
     }
@@ -73,5 +87,23 @@ export class InvoicesComponent {
   
   openAddNewInvoiceDrawer() {
     this.uiStateService.openDrawer('new-invoice');
+  }
+
+  handleEmptyStateAction() {
+    this.openAddNewInvoiceDrawer();
+  }
+
+  editInvoice(invoice: Invoice) {
+    this.uiStateService.openDrawer('new-invoice', invoice);
+  }
+
+  deleteInvoices(ids: (string | number)[]) {
+    this.uiStateService.showConfirmation(
+      'Delete Invoices',
+      `Are you sure you want to delete ${ids.length} invoice(s)? This action cannot be undone.`,
+      () => {
+        this.api.invoices.deleteMany(ids);
+      }
+    );
   }
 }

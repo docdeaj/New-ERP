@@ -1,19 +1,19 @@
 import { Injectable, signal } from '@angular/core';
 import { Invoice, Product, Contact, Kpi, InventoryItem, Quotation, Receipt, Cheque, PurchaseOrder, MediaItem, DailyReport, Expense, ReceiptPaymentMethod, LineItem, RecurringExpense, LocationKey, ReportSummary, SalesTrend, TopProductReport, ArAgingRow, ApAgingRow, InventorySnapshot, SlowMover, RecurringForecastRow, TaxSummaryRow } from '../models/types';
 
-const MOCK_INVOICES: Invoice[] = [
+let MOCK_INVOICES: Invoice[] = [
   { id: 1, invoiceNumber: 'INV-2024-001', customerName: 'Tech Innovators Inc.', customerAvatarUrl: 'https://picsum.photos/seed/1/40/40', amount: 15000.00, issueDate: '2024-07-20', dueDate: '2024-08-19', status: 'Paid', totalPaid: 15000, balance: 0, lineItems: [{productId: 1, productName: 'Wireless Mouse', quantity: 5, unitPrice: 3000, total: 15000}] },
   { id: 2, invoiceNumber: 'INV-2024-002', customerName: 'Creative Solutions', customerAvatarUrl: 'https://picsum.photos/seed/2/40/40', amount: 8500.50, issueDate: '2024-07-18', dueDate: '2024-08-17', status: 'Overdue', totalPaid: 0, balance: 8500.50 },
   { id: 3, invoiceNumber: 'INV-2024-003', customerName: 'Global Exports', customerAvatarUrl: 'https://picsum.photos/seed/3/40/40', amount: 250000.00, issueDate: '2024-07-15', dueDate: '2024-07-30', status: 'Pending', totalPaid: 150000, balance: 100000 },
   { id: 4, invoiceNumber: 'INV-2024-004', customerName: 'Local Supplies Co.', customerAvatarUrl: 'https://picsum.photos/seed/4/40/40', amount: 5000.00, issueDate: '2024-07-22', dueDate: '2024-08-21', status: 'Pending', totalPaid: 0, balance: 5000.00 },
 ];
 
-const MOCK_PRODUCTS: Product[] = [
-    { id: 1, name: 'Wireless Mouse', sku: 'WM-101', category: 'Electronics', price: 2000, cost: 800, stock: { mainWarehouse: 50, downtownStore: 15, online: 30 }, committed: { mainWarehouse: 10, downtownStore: 5, online: 15}, imageUrl: 'https://picsum.photos/seed/p1/200/200', flags: { price_below_cost: false } },
-    { id: 2, name: 'Mechanical Keyboard', sku: 'MK-202', category: 'Electronics', price: 10000, cost: 4500, stock: { mainWarehouse: 30, downtownStore: 10, online: 15 }, committed: { mainWarehouse: 5, downtownStore: 2, online: 8}, imageUrl: 'https://picsum.photos/seed/p2/200/200', flags: { price_below_cost: false } },
-    { id: 3, name: 'USB-C Hub', sku: 'UH-303', category: 'Accessories', price: 4000, cost: 1800, stock: { mainWarehouse: 80, downtownStore: 25, online: 40 }, committed: { mainWarehouse: 20, downtownStore: 10, online: 20}, imageUrl: 'https://picsum.photos/seed/p3/200/200', flags: { price_below_cost: false } },
-    { id: 4, name: '4K Webcam', sku: 'WC-401', category: 'Electronics', price: 8500, cost: 9000, stock: { mainWarehouse: 25, downtownStore: 5, online: 10 }, committed: { mainWarehouse: 5, downtownStore: 1, online: 5}, imageUrl: 'https://picsum.photos/seed/p4/200/200', flags: { price_below_cost: true } },
-    { id: 5, name: 'Ergonomic Chair', sku: 'EC-505', category: 'Furniture', price: 25000, cost: 11000, stock: { mainWarehouse: 15, downtownStore: 5, online: 0 }, committed: { mainWarehouse: 2, downtownStore: 1, online: 0}, imageUrl: 'https://picsum.photos/seed/p5/200/200', flags: { price_below_cost: false } },
+let MOCK_PRODUCTS: Product[] = [
+    { id: 1, name: 'Wireless Mouse', sku: 'WM-101', category: 'Electronics', price: 2000, cost: 800, description: 'Sleek, ergonomic wireless mouse with long-lasting battery life for ultimate productivity.', stock: { mainWarehouse: 50, downtownStore: 15, online: 30 }, committed: { mainWarehouse: 10, downtownStore: 5, online: 15}, imageUrl: 'https://picsum.photos/seed/p1/200/200', flags: { price_below_cost: false } },
+    { id: 2, name: 'Mechanical Keyboard', sku: 'MK-202', category: 'Electronics', price: 10000, cost: 4500, description: 'Experience tactile typing with this durable mechanical keyboard featuring customizable RGB backlighting.', stock: { mainWarehouse: 30, downtownStore: 10, online: 15 }, committed: { mainWarehouse: 5, downtownStore: 2, online: 8}, imageUrl: 'https://picsum.photos/seed/p2/200/200', flags: { price_below_cost: false } },
+    { id: 3, name: 'USB-C Hub', sku: 'UH-303', category: 'Accessories', price: 4000, cost: 1800, description: 'Expand your connectivity with this compact 7-in-1 USB-C hub, perfect for modern laptops.', stock: { mainWarehouse: 80, downtownStore: 25, online: 40 }, committed: { mainWarehouse: 20, downtownStore: 10, online: 20}, imageUrl: 'https://picsum.photos/seed/p3/200/200', flags: { price_below_cost: false } },
+    { id: 4, name: '4K Webcam', sku: 'WC-401', category: 'Electronics', price: 8500, cost: 9000, description: 'Crystal-clear 4K resolution for professional video calls and streaming.', stock: { mainWarehouse: 25, downtownStore: 5, online: 10 }, committed: { mainWarehouse: 25, downtownStore: 5, online: 10}, imageUrl: 'https://picsum.photos/seed/p4/200/200', flags: { price_below_cost: true } },
+    { id: 5, name: 'Ergonomic Chair', sku: 'EC-505', category: 'Furniture', price: 25000, cost: 11000, description: 'Support your back and improve posture with this fully adjustable ergonomic office chair.', stock: { mainWarehouse: 15, downtownStore: 5, online: 0 }, committed: { mainWarehouse: 2, downtownStore: 1, online: 0}, imageUrl: 'https://picsum.photos/seed/p5/200/200', flags: { price_below_cost: false } },
 ];
 
 let MOCK_EXPENSES: Expense[] = [
@@ -27,7 +27,7 @@ let MOCK_RECURRING_EXPENSES: RecurringExpense[] = [
 ];
 
 let MOCK_INVENTORY: InventoryItem[] = MOCK_PRODUCTS.map((p) => ({
-    id: p.id, productId: p.id, productName: p.name, sku: p.sku, imageUrl: p.imageUrl, onHand: p.stock, committed: p.committed
+    id: p.id, productId: p.id, productName: p.name, sku: p.sku, imageUrl: p.imageUrl, onHand: p.stock, committed: p.committed, description: p.description
 }));
 
 let MOCK_QUOTATIONS: Quotation[] = [
@@ -111,8 +111,39 @@ export class ApiService {
     return newCollection;
   }
 
+  private updateOneIn<T extends {id: number}>(collection: T[], id: number, data: Partial<T>): T {
+    const index = collection.findIndex(i => i.id === id);
+    if (index === -1) throw new Error('Item not found');
+    const updatedItem = { ...collection[index], ...data };
+    collection[index] = updatedItem;
+    this.notifyDataChange();
+    return updatedItem;
+  }
+
   dashboard = {
-    getKpis: async(): Promise<{ sales: Kpi, expenses: Kpi }> => { await new Promise(res => setTimeout(res, 300)); return { sales: { value: 125430, delta: 12.5 }, expenses: { value: 34100, delta: -5.2 } }; },
+    getKpis: async(): Promise<{ sales: Kpi, expenses: Kpi }> => {
+      await new Promise(res => setTimeout(res, 300));
+      return {
+        sales: { value: 125400, delta: 12.5 },
+        expenses: { value: 34100, delta: -5.2 }
+      };
+    },
+    getKpiTrend: async(kpi: 'sales' | 'expenses'): Promise<number[]> => {
+      await new Promise(res => setTimeout(res, 350));
+      if (kpi === 'sales') {
+        // Meaningful trend ending at today's KPI value.
+        return [105.2, 108.0, 110.5, 111.4, 118.9, 122.1, 125.4].map(v => v * 1000);
+      }
+      // Meaningful trend for expenses, reflecting the delta.
+      return [38.5, 39.1, 36.2, 35.9, 35.0, 33.8, 34.1].map(v => v * 1000);
+    },
+    getArApSummary: async(): Promise<{ar: { total: number, overdue: number }, ap: { total: number, overdue: number }}> => {
+      await new Promise(res => setTimeout(res, 200));
+      return {
+        ar: { total: 113500.50, overdue: 8500.50 },
+        ap: { total: 85000, overdue: 15000 }
+      };
+    },
     getTopSellingProducts: async(): Promise<Product[]> => { await new Promise(res => setTimeout(res, 300)); return MOCK_PRODUCTS.slice(0, 3); },
     getSalesComparisonData: async(): Promise<{ labels: string[], datasets: { label: string, data: number[] }[] }> => { await new Promise(res => setTimeout(res, 300)); return { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'], datasets: [ { label: 'Last Month', data: [65, 59, 80, 81, 56, 55, 40] }, { label: 'This Month', data: [28, 48, 40, 19, 86, 27, 90] } ] } }
   }
@@ -190,18 +221,22 @@ export class ApiService {
   invoices = { 
     list: async (params?: { query?: string }): Promise<Invoice[]> => { await new Promise(res => setTimeout(res, 50)); return params?.query ? filterData(MOCK_INVOICES, params.query) : [...MOCK_INVOICES].sort((a,b) => b.id - a.id); },
     getById: async (id: number): Promise<Invoice | undefined> => { await new Promise(res => setTimeout(res, 50)); return MOCK_INVOICES.find(i => i.id === id); },
-    deleteMany: async (ids: (string|number)[]): Promise<void> => { Object.assign(MOCK_INVOICES, this.deleteManyFrom(MOCK_INVOICES, ids)); }
+    update: async (id: number, data: Partial<Invoice>): Promise<Invoice> => { return this.updateOneIn(MOCK_INVOICES, id, data); },
+    deleteMany: async (ids: (string|number)[]): Promise<void> => { MOCK_INVOICES = this.deleteManyFrom(MOCK_INVOICES, ids); }
   };
   products = { 
     list: async (params?: { query?: string }): Promise<Product[]> => { await new Promise(res => setTimeout(res, 50)); return params?.query ? filterData(MOCK_PRODUCTS, params.query) : [...MOCK_PRODUCTS].sort((a,b) => b.id - a.id); },
-    deleteMany: async (ids: (string|number)[]): Promise<void> => { Object.assign(MOCK_PRODUCTS, this.deleteManyFrom(MOCK_PRODUCTS, ids)); }
+    update: async (id: number, data: Partial<Product>): Promise<Product> => { return this.updateOneIn(MOCK_PRODUCTS, id, data); },
+    deleteMany: async (ids: (string|number)[]): Promise<void> => { MOCK_PRODUCTS = this.deleteManyFrom(MOCK_PRODUCTS, ids); }
   };
   expenses = { 
     list: async (params?: { query?: string }): Promise<Expense[]> => { await new Promise(res => setTimeout(res, 50)); return params?.query ? filterData(MOCK_EXPENSES, params.query) : [...MOCK_EXPENSES].sort((a,b) => b.id - a.id); },
+    update: async (id: number, data: Partial<Expense>): Promise<Expense> => { return this.updateOneIn(MOCK_EXPENSES, id, data); },
     deleteMany: async (ids: (string|number)[]): Promise<void> => { MOCK_EXPENSES = this.deleteManyFrom(MOCK_EXPENSES, ids); }
   };
   recurringExpenses = { 
     list: async (params?: { query?: string }): Promise<RecurringExpense[]> => { await new Promise(res => setTimeout(res, 50)); return params?.query ? filterData(MOCK_RECURRING_EXPENSES, params.query) : [...MOCK_RECURRING_EXPENSES].sort((a,b) => b.id - a.id); },
+    update: async (id: number, data: Partial<RecurringExpense>): Promise<RecurringExpense> => { return this.updateOneIn(MOCK_RECURRING_EXPENSES, id, data); },
     deleteMany: async (ids: (string|number)[]): Promise<void> => { MOCK_RECURRING_EXPENSES = this.deleteManyFrom(MOCK_RECURRING_EXPENSES, ids); }
   };
   inventory = { 
@@ -209,12 +244,13 @@ export class ApiService {
     deleteMany: async (ids: (string|number)[]): Promise<void> => { 
       MOCK_INVENTORY = this.deleteManyFrom(MOCK_INVENTORY, ids);
       // Also delete from products
-      Object.assign(MOCK_PRODUCTS, this.deleteManyFrom(MOCK_PRODUCTS, ids));
+      MOCK_PRODUCTS = this.deleteManyFrom(MOCK_PRODUCTS, ids);
     }
   };
   media = { list: async(params?: { query?: string }): Promise<MediaItem[]> => { await new Promise(res => setTimeout(res, 50)); return params?.query ? filterData(MOCK_MEDIA, params.query) : [...MOCK_MEDIA]; } };
   quotations = { 
     list: async(params?: { query?: string }): Promise<Quotation[]> => { await new Promise(res => setTimeout(res, 50)); return params?.query ? filterData(MOCK_QUOTATIONS, params.query) : [...MOCK_QUOTATIONS].sort((a,b) => b.id - a.id); },
+    update: async (id: number, data: Partial<Quotation>): Promise<Quotation> => { return this.updateOneIn(MOCK_QUOTATIONS, id, data); },
     deleteMany: async (ids: (string|number)[]): Promise<void> => { MOCK_QUOTATIONS = this.deleteManyFrom(MOCK_QUOTATIONS, ids); }
   };
   receipts = { 
@@ -224,14 +260,17 @@ export class ApiService {
   };
   cheques = { 
     list: async(params?: { query?: string }): Promise<Cheque[]> => { await new Promise(res => setTimeout(res, 50)); return params?.query ? filterData(MOCK_CHEQUES, params.query) : [...MOCK_CHEQUES].sort((a,b) => b.id - a.id); },
+    update: async (id: number, data: Partial<Cheque>): Promise<Cheque> => { return this.updateOneIn(MOCK_CHEQUES, id, data); },
     deleteMany: async (ids: (string|number)[]): Promise<void> => { MOCK_CHEQUES = this.deleteManyFrom(MOCK_CHEQUES, ids); }
   };
   purchaseOrders = { 
     list: async(params?: { query?: string }): Promise<PurchaseOrder[]> => { await new Promise(res => setTimeout(res, 50)); return params?.query ? filterData(MOCK_PURCHASE_ORDERS, params.query) : [...MOCK_PURCHASE_ORDERS].sort((a,b) => b.id - a.id); },
+    update: async (id: number, data: Partial<PurchaseOrder>): Promise<PurchaseOrder> => { return this.updateOneIn(MOCK_PURCHASE_ORDERS, id, data); },
     deleteMany: async (ids: (string|number)[]): Promise<void> => { MOCK_PURCHASE_ORDERS = this.deleteManyFrom(MOCK_PURCHASE_ORDERS, ids); }
   };
   contacts = { 
     list: async(params?: { query?: string }): Promise<Contact[]> => { await new Promise(res => setTimeout(res, 50)); return params?.query ? filterData(MOCK_CONTACTS, params.query) : [...MOCK_CONTACTS].sort((a,b) => b.id - a.id); },
+    update: async (id: number, data: Partial<Contact>): Promise<Contact> => { return this.updateOneIn(MOCK_CONTACTS, id, data); },
     deleteMany: async (ids: (string|number)[]): Promise<void> => { MOCK_CONTACTS = this.deleteManyFrom(MOCK_CONTACTS, ids); }
   };
 

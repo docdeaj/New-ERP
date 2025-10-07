@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal, computed, afterNextRender, viewChild, ElementRef, HostListener, effect } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed, afterNextRender, viewChild, ElementRef, effect } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
@@ -14,6 +14,10 @@ type SortOption = 'Popular' | 'Name A-Z' | 'Price High-Low' | 'Price Low-High';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, FormsModule, CheckoutModalComponent, CurrencyPipe, CustomerPickerComponent],
+  host: {
+    '(window:keydown)': 'handleKeyboardEvent($event)',
+    '(document:click)': 'onDocumentClick($event)',
+  }
 })
 export class PosComponent {
   private api = inject(ApiService);
@@ -31,6 +35,7 @@ export class PosComponent {
   isSortDropdownOpen = signal(false);
   sortOptions: SortOption[] = ['Popular', 'Name A-Z', 'Price High-Low', 'Price Low-High'];
   selectedCustomer = signal<Contact | null>(null);
+  shakingProductId = signal<number | null>(null);
 
   // Elements
   searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
@@ -66,6 +71,13 @@ export class PosComponent {
   async loadProducts() { this.products.set(await this.api.products.list()); }
 
   addToCart(product: Product) {
+    if (this.getAvailableStock(product) <= 0) {
+      this.shakingProductId.set(product.id);
+      this.liveRegionMessage.set(`${product.name} is out of stock.`);
+      setTimeout(() => this.shakingProductId.set(null), 500); // Reset after animation
+      return;
+    }
+
     const existingItem = this.cart().find(item => item.id === product.id);
     if (existingItem) {
       this.updateQuantity(existingItem.id, existingItem.quantity + 1);
@@ -159,11 +171,14 @@ export class PosComponent {
   }
 
   getStockRingColor(p: Product): string {
-    const available = this.getAvailableStock(p);
     const total = this.getTotalStock(p);
-    if (available <= 0) return 'text-red-500';
-    if (available / total < 0.2) return 'text-yellow-500';
-    return 'text-indigo-500';
+    if (total === 0) return 'text-red-500'; // danger
+    const available = this.getAvailableStock(p);
+    const percentage = (available / total) * 100;
+    
+    if (percentage <= 10) return 'text-red-500'; // danger
+    if (percentage <= 30) return 'text-yellow-500'; // warn
+    return 'text-green-500'; // success
   }
 
   getHeldOrderTotal(order: CartItem[]): number {
@@ -173,7 +188,6 @@ export class PosComponent {
   }
   
   // --- Host Listeners for Keyboard Shortcuts ---
-  @HostListener('window:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
     const target = event.target as HTMLElement;
     const isTypingInInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable;
@@ -188,7 +202,6 @@ export class PosComponent {
     }
   }
 
-  @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
       if (this.isSortDropdownOpen() && !this.sortDropdownButton()?.nativeElement.contains(event.target as Node)) {
           this.isSortDropdownOpen.set(false);

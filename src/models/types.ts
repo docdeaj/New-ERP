@@ -122,6 +122,7 @@ export interface Product {
   price: number;
   cost: number;
   imageUrl: string;
+  description?: string;
   stock: {
     [key in LocationKey]: number;
   };
@@ -151,6 +152,7 @@ export interface InventoryItem {
   productName: string;
   sku: string;
   imageUrl: string;
+  description?: string;
   onHand: {
     [key in LocationKey]: number;
   };

@@ -3,10 +3,11 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormArray, FormGroup } from '@angular/forms';
 import { DrawerContext, UiStateService } from '../../services/ui-state.service';
 import { MiniMediaBrowserComponent } from '../mini-media-browser/mini-media-browser.component';
-import { MediaItem, Product, Quotation, Contact, ReceiptPaymentMethod } from '../../models/types';
+import { MediaItem, Product, Quotation, Contact, ReceiptPaymentMethod, Invoice, Expense, PurchaseOrder, Cheque, RecurringExpense } from '../../models/types';
 import { ApiService } from '../../services/api.service';
 import { startWith } from 'rxjs/operators';
 import { CustomerPickerComponent } from '../customer-picker/customer-picker.component';
+import { GeminiService } from '../../services/gemini.service';
 
 @Component({
   selector: 'app-universal-add-drawer',
@@ -22,11 +23,17 @@ export class UniversalAddDrawerComponent {
   private fb = inject(FormBuilder);
   private api = inject(ApiService);
   private uiState = inject(UiStateService);
+  private geminiService = inject(GeminiService);
 
   isMediaBrowserOpen = signal(false);
   mediaFieldContext = signal<'expense-attachment' | 'product-image' | 'contact-avatar' | null>(null);
   isSaving = signal(false);
   products = signal<Product[]>([]);
+  isGeneratingDescription = signal(false);
+
+  // --- Edit Mode State ---
+  isEditMode = computed(() => !!this.uiState.drawerData());
+  currentItem = computed(() => this.uiState.drawerData());
 
   // --- Form Totals Calculation ---
   private currentItems = signal<any[]>([]);
@@ -51,21 +58,31 @@ export class UniversalAddDrawerComponent {
       }
     });
     
-    // Effect for pre-populating forms from passed data
+    // Effect to pre-populate forms from passed data
     effect(() => {
-      const data = this.uiState.drawerData();
-      if (data && this.context() === 'new-invoice') {
+      const data = this.currentItem();
+      const ctx = this.context();
+      const form = this.getCurrentForm();
+      
+      // Reset all forms first to ensure clean state
+      this.resetAllForms();
+
+      if (this.isEditMode() && data && form) {
+        form.patchValue(data);
+        const items = form.get('items') as FormArray;
+        if (items && data.lineItems) {
+          items.clear();
+          data.lineItems.forEach((item: any) => items.push(this.createLineItem(item)));
+        }
+        
+      } else if (ctx === 'new-invoice' && data) {
+         // Special case: Converting a Quotation to an Invoice
         const quotation = data as Quotation;
-        // This is a bit of a hack since we don't have a full customer object from the quotation.
-        // In a real app, quotation would have a customer_id.
         const mockCustomer: Partial<Contact> = { name: quotation.customerName, avatarUrl: quotation.customerAvatarUrl };
-        this.invoiceForm.patchValue({
-          customer: mockCustomer as Contact
-        });
+        this.invoiceForm.patchValue({ customer: mockCustomer as Contact });
         
         const items = this.invoiceForm.get('items') as FormArray;
-        items.clear(); // Clear default item
-        // FIX: Changed 'quotation.items' to 'quotation.lineItems' to match the Quotation type.
+        items.clear();
         quotation.lineItems?.forEach(item => {
           const lineItemGroup = this.createLineItem();
           lineItemGroup.patchValue(item);
@@ -79,8 +96,30 @@ export class UniversalAddDrawerComponent {
     this.products.set(await this.api.products.list());
   }
 
+  resetAllForms() {
+    this.invoiceForm.reset({ issueDate: new Date().toISOString().split('T')[0] });
+    (this.invoiceForm.get('items') as FormArray).clear();
+    (this.invoiceForm.get('items') as FormArray).push(this.createLineItem());
+
+    this.expenseForm.reset({ date: new Date().toISOString().split('T')[0], isRecurring: false, cadence: 'Monthly' });
+    this.productForm.reset();
+    this.contactForm.reset({ type: 'Customer' });
+    
+    this.purchaseOrderForm.reset({ orderDate: new Date().toISOString().split('T')[0] });
+    (this.purchaseOrderForm.get('items') as FormArray).clear();
+    (this.purchaseOrderForm.get('items') as FormArray).push(this.createLineItem());
+
+    this.quotationForm.reset({ issueDate: new Date().toISOString().split('T')[0] });
+    (this.quotationForm.get('items') as FormArray).clear();
+    (this.quotationForm.get('items') as FormArray).push(this.createLineItem());
+    
+    this.chequeForm.reset({ chequeDate: new Date().toISOString().split('T')[0] });
+    this.recordSaleForm.reset({ paymentMethod: 'Cash' });
+    this.recordPaymentForm.reset({ paymentDate: new Date().toISOString().split('T')[0], paymentMethod: 'Cash' });
+  }
+
   // --- Line Item Management ---
-  createLineItem(): FormGroup {
+  createLineItem(data: any = null): FormGroup {
     const group = this.fb.group({
       productId: [null, Validators.required],
       productName: [''],
@@ -88,6 +127,10 @@ export class UniversalAddDrawerComponent {
       unitPrice: [0, Validators.required],
       total: [0]
     });
+
+    if (data) {
+      group.patchValue(data);
+    }
 
     group.get('productId')?.valueChanges.subscribe(id => {
       const product = this.products().find(p => p.id === +id);
@@ -143,6 +186,7 @@ export class UniversalAddDrawerComponent {
     category: ['', Validators.required],
     price: [null, [Validators.required, Validators.min(0)]],
     cost: [null, [Validators.required, Validators.min(0)]],
+    description: [''],
     imageUrl: [''],
     stock: this.fb.group({
       mainWarehouse: [0],
@@ -199,23 +243,45 @@ export class UniversalAddDrawerComponent {
   });
 
   title = computed(() => {
+    const edit = this.isEditMode();
     switch(this.context()) {
-      case 'new-invoice': return 'Create New Invoice';
-      case 'new-expense': return 'Add New Expense';
-      case 'new-quotation': return 'Create New Quotation';
-      case 'new-receipt': return 'Record New Receipt';
-      case 'new-po': return 'Create New Purchase Order';
-      case 'new-contact': return 'Add New Contact';
-      case 'new-product': return 'Add New Product';
-      case 'new-cheque': return 'Record New Cheque';
+      case 'new-invoice': return edit ? 'Edit Invoice' : 'Create New Invoice';
+      case 'new-expense': return edit ? 'Edit Expense' : 'Add New Expense';
+      case 'new-quotation': return edit ? 'Edit Quotation' : 'Create New Quotation';
+      case 'new-po': return edit ? 'Edit Purchase Order' : 'Create New Purchase Order';
+      case 'new-contact': return edit ? 'Edit Contact' : 'Add New Contact';
+      case 'new-product': return edit ? 'Edit Product' : 'Add New Product';
+      case 'new-cheque': return edit ? 'Edit Cheque' : 'Record New Cheque';
       case 'record-sale': return 'Record a Quick Sale';
       case 'record-payment': return 'Record Customer Payment';
       default: return 'Add New';
     }
   });
+  
+  saveButtonText = computed(() => this.isEditMode() ? 'Update' : 'Save');
 
   onClose() {
     this.close.emit();
+  }
+
+  async onGenerateDescription() {
+    const name = this.productForm.get('name')?.value;
+    const category = this.productForm.get('category')?.value;
+
+    if (!name) {
+      console.error('Product name is required to generate a description.');
+      return;
+    }
+
+    this.isGeneratingDescription.set(true);
+    try {
+      const description = await this.geminiService.generateProductDescription(name, category || 'general');
+      this.productForm.patchValue({ description });
+    } catch (error) {
+      console.error('Failed to generate description', error);
+    } finally {
+      this.isGeneratingDescription.set(false);
+    }
   }
 
   async onSave() {
@@ -229,59 +295,60 @@ export class UniversalAddDrawerComponent {
     
     try {
       const getPayload = () => {
-        const formValue = form.value;
-        const payload: any = { 
-          ...formValue,
-        };
-        // Add totals only for forms that have them
+        const formValue = form.getRawValue(); // Use getRawValue to include disabled fields if any
+        const payload: any = { ...formValue };
         if ('items' in formValue) {
            payload.subtotal = this.subtotal();
            payload.tax = this.tax();
            payload.amount = this.total();
+           payload.lineItems = payload.items; // Normalize to lineItems
+           delete payload.items;
+        }
+        if ('customer' in payload && payload.customer) {
+            payload.customerName = payload.customer.name;
+            payload.customerAvatarUrl = payload.customer.avatarUrl;
+            delete payload.customer;
         }
         return payload;
       };
 
       const payload = getPayload();
+      const currentItem = this.currentItem();
 
-      switch(this.context()) {
-        case 'new-invoice':
-          payload.lineItems = payload.items;
-          payload.customerName = payload.customer.name;
-          payload.customerAvatarUrl = payload.customer.avatarUrl;
-          delete payload.items;
-          delete payload.customer;
-          await this.api.createInvoice(payload);
-          break;
-        case 'new-po':
-          payload.lineItems = payload.items;
-          delete payload.items;
-          await this.api.createPurchaseOrder(payload);
-          break;
-        case 'new-quotation':
-          await this.api.createQuotation(payload);
-          break;
-        case 'new-expense':
-          if (payload.isRecurring) {
-            await this.api.createRecurringExpense({
-              description: payload.notes || 'Recurring Expense',
-              category: payload.category,
-              amount: payload.amount,
-              cadence: payload.cadence,
-              nextDueDate: payload.nextDueDate,
-              vendor: payload.vendor,
-            });
-          } else {
-            await this.api.createExpense(payload);
-          }
-          break;
-        case 'new-product': await this.api.createProduct(this.productForm.value); break;
-        case 'new-contact': await this.api.createContact(this.contactForm.value); break;
-        case 'new-cheque': await this.api.createCheque(this.chequeForm.value); break;
-        case 'record-sale': await this.api.createSale(payload); break;
-        case 'record-payment': await this.api.createCustomerPayment(payload); break;
-        default: console.warn(`No save handler for context: ${this.context()}`);
+      if (this.isEditMode() && currentItem) {
+        switch(this.context()) {
+          case 'new-invoice': await this.api.invoices.update(currentItem.id, payload); break;
+          case 'new-expense': await this.api.expenses.update(currentItem.id, payload); break;
+          case 'new-product': await this.api.products.update(currentItem.id, payload); break;
+          case 'new-contact': await this.api.contacts.update(currentItem.id, payload); break;
+          case 'new-po': await this.api.purchaseOrders.update(currentItem.id, payload); break;
+          case 'new-quotation': await this.api.quotations.update(currentItem.id, payload); break;
+          case 'new-cheque': await this.api.cheques.update(currentItem.id, payload); break;
+          case 'new-recurring-expense': await this.api.recurringExpenses.update(currentItem.id, payload); break;
+        }
+      } else {
+         switch(this.context()) {
+          case 'new-invoice': await this.api.createInvoice(payload); break;
+          case 'new-po': await this.api.createPurchaseOrder(payload); break;
+          case 'new-quotation': await this.api.createQuotation(payload); break;
+          case 'new-expense':
+            if (payload.isRecurring) {
+              await this.api.createRecurringExpense({
+                description: payload.notes || 'Recurring Expense',
+                category: payload.category, amount: payload.amount, cadence: payload.cadence,
+                nextDueDate: payload.nextDueDate, vendor: payload.vendor,
+              });
+            } else { await this.api.createExpense(payload); }
+            break;
+          case 'new-product': await this.api.createProduct(payload); break;
+          case 'new-contact': await this.api.createContact(payload); break;
+          case 'new-cheque': await this.api.createCheque(payload); break;
+          case 'record-sale': await this.api.createSale(payload); break;
+          case 'record-payment': await this.api.createCustomerPayment(payload); break;
+          default: console.warn(`No save handler for context: ${this.context()}`);
+        }
       }
+
       this.uiState.closeDrawer();
     } catch (error) {
       console.error('Failed to save:', error);
@@ -290,7 +357,7 @@ export class UniversalAddDrawerComponent {
     }
   }
 
-  getCurrentForm() {
+  getCurrentForm(): FormGroup | null {
     switch(this.context()) {
       case 'new-invoice': return this.invoiceForm;
       case 'new-expense': return this.expenseForm;

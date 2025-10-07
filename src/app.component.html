@@ -21,4 +21,13 @@
       (close)="closeDrawer()">
     </app-universal-add-drawer>
   }
+
+  @if (confirmationState(); as state) {
+    <app-confirmation-modal
+      [title]="state.title"
+      [message]="state.message"
+      (confirm)="onConfirm()"
+      (cancel)="onCancel()">
+    </app-confirmation-modal>
+  }
 </div>

@@ -1,54 +1,54 @@
 <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
   <!-- Backdrop -->
-  <div class="absolute inset-0 bg-charcoal-950/50 backdrop-blur-sm animate-[fade-in_180ms_ease-in-out]" (click)="onClose()"></div>
+  <div class="aurora-backdrop absolute inset-0 animate-[fade-in_180ms_ease-in-out]" (click)="onClose()"></div>
 
   <!-- Modal -->
-  <div class="relative w-full max-w-2xl bg-white dark:bg-charcoal-800 rounded-2xl shadow-2xl animate-[slide-down_180ms_cubic-bezier(0.2,0.8,0.2,1)]" role="dialog" aria-modal="true">
+  <div class="relative w-full max-w-2xl bg-surface/90 backdrop-blur-xl rounded-2xl shadow-2xl animate-[slide-down_180ms_cubic-bezier(0.2,0.8,0.2,1)]" role="dialog" aria-modal="true">
     <!-- Header -->
-    <div class="p-4 border-b border-gray-200 dark:border-charcoal-700 flex justify-between items-center">
+    <div class="p-4 flex justify-between items-center">
       <h3 class="text-xl font-bold">Convert Purchase Order to Stock</h3>
-      <button (click)="onClose()" class="text-gray-400 hover:text-gray-800 dark:hover:text-charcoal-100 transition-colors p-2 rounded-full">
+      <button (click)="onClose()" class="text-charcoal-400 hover:text-charcoal-100 transition-colors p-2 rounded-full">
         <i class="fa-solid fa-times text-xl"></i>
       </button>
     </div>
 
     <!-- Body -->
     <div class="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
-      <p class="text-sm text-gray-600 dark:text-charcoal-300">
+      <p class="text-sm text-charcoal-300">
         You are about to receive items from Purchase Order 
-        <span class="font-bold text-indigo-600 dark:text-indigo-400">{{ purchaseOrder().poNumber }}</span> 
+        <span class="font-bold text-primary-400">{{ purchaseOrder().poNumber }}</span> 
         from supplier <span class="font-bold">{{ purchaseOrder().supplierName }}</span>.
       </p>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div class="bg-gray-100 dark:bg-charcoal-700/50 p-3 rounded-lg">
-          <p class="text-xs text-gray-500">Total Items</p>
+        <div class="bg-surface-inset p-3 rounded-lg shadow-inner">
+          <p class="text-xs text-charcoal-400">Total Items</p>
           <p class="font-bold text-lg tabular-nums">{{ totalItems() }}</p>
         </div>
-        <div class="bg-gray-100 dark:bg-charcoal-700/50 p-3 rounded-lg">
-          <p class="text-xs text-gray-500">Total Value</p>
+        <div class="bg-surface-inset p-3 rounded-lg shadow-inner">
+          <p class="text-xs text-charcoal-400">Total Value</p>
           <p class="font-bold text-lg tabular-nums">{{ purchaseOrder().amount | currency:'LKR ' }}</p>
         </div>
-        <div class="bg-indigo-100 dark:bg-indigo-900/50 p-3 rounded-lg">
-          <p class="text-xs text-indigo-600 dark:text-indigo-300">New Stock Lot #</p>
+        <div class="bg-primary-900/50 p-3 rounded-lg">
+          <p class="text-xs text-primary-300">New Stock Lot #</p>
           <p class="font-bold text-lg font-mono">{{ stockLotNumber() }}</p>
         </div>
       </div>
       
       <!-- Item List -->
-      <div class="border border-gray-200 dark:border-charcoal-700 rounded-lg overflow-hidden">
+      <div class="rounded-lg overflow-hidden">
         <table class="w-full text-sm text-left">
-          <thead class="bg-gray-50 dark:bg-charcoal-700 text-xs uppercase">
+          <thead class="bg-surface-raised text-xs uppercase">
             <tr>
               <th class="px-4 py-2">Product</th>
               <th class="px-4 py-2 text-right">Quantity</th>
               <th class="px-4 py-2 text-right">Cost per Item</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-200 dark:divide-charcoal-700">
+          <tbody>
             @for (item of purchaseOrder().items; track item.productId) {
-              <tr class="hover:bg-gray-50 dark:hover:bg-charcoal-700/50">
-                <td class="px-4 py-2 font-medium text-gray-800 dark:text-charcoal-100">{{ item.productName }}</td>
+              <tr class="hover:bg-surface-raised">
+                <td class="px-4 py-2 font-medium text-charcoal-100">{{ item.productName }}</td>
                 <td class="px-4 py-2 text-right font-semibold tabular-nums">{{ item.quantity }}</td>
                 <td class="px-4 py-2 text-right tabular-nums">{{ item.unitPrice | currency:'LKR ' }}</td>
               </tr>
@@ -57,18 +57,18 @@
         </table>
       </div>
 
-       <p class="text-xs text-gray-500 dark:text-charcoal-400 pt-2">
+       <p class="text-xs text-charcoal-400 pt-2">
         Confirming will mark this PO as 'Received' and update the 'On-Hand' stock levels in your main warehouse. This action cannot be undone.
       </p>
     </div>
 
     <!-- Footer -->
-    <div class="p-4 border-t border-gray-200 dark:border-charcoal-700 flex justify-end gap-3">
-        <button (click)="onClose()" type="button" class="bg-white dark:bg-charcoal-700 py-2 px-4 border border-gray-300 dark:border-charcoal-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-charcoal-200 hover:bg-gray-50 dark:hover:bg-charcoal-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+    <div class="p-4 flex justify-end gap-3">
+        <button (click)="onClose()" type="button" class="aurora-button-secondary inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-4 py-2 rounded-xl transition-all duration-150 ease-in-out">
             Cancel
         </button>
-        <button (click)="onConfirm()" type="button" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-            <i class="fa-solid fa-check-double mr-2"></i>
+        <button (click)="onConfirm()" type="button" class="aurora-button-success inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl transition-all duration-150 ease-in-out">
+            <i class="fa-solid fa-check-double"></i>
             Confirm & Receive Stock
         </button>
     </div>

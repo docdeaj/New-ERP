@@ -23,6 +23,12 @@ export interface RowAction {
   icon: string;
 }
 
+export interface EmptyStateConfig {
+  title: string;
+  message: string;
+  actionText: string;
+}
+
 
 @Component({
   selector: 'app-data-table',
@@ -36,14 +42,17 @@ export class DataTableComponent<T extends { id: any, amount?: number }> {
   data = input.required<T[]>();
   context = input<string>('default'); // For context-aware actions/math
   initialSearchQuery = input<string | null>(null);
+  emptyStateConfig = input<EmptyStateConfig | null>(null);
   rowAction = output<{ action: string, item: T }>();
   bulkAction = output<{ action: string, selectedIds: (string | number)[] }>();
+  emptyStateAction = output<void>();
 
   // Search and Sort State
   searchQuery = signal('');
   sortColumn = signal<keyof T | null>(null);
   sortDirection = signal<'asc' | 'desc'>('asc');
   isSearchVisible = signal(false);
+  isSearchAnimatingOut = signal(false);
   searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
 
   // Selection State
@@ -229,14 +238,24 @@ export class DataTableComponent<T extends { id: any, amount?: number }> {
   }
 
   onToggleSearch() {
-    this.isSearchVisible.update(v => !v);
     if (this.isSearchVisible()) {
+      this.isSearchAnimatingOut.set(true);
+      setTimeout(() => {
+        this.isSearchVisible.set(false);
+        this.isSearchAnimatingOut.set(false);
+      }, 300); // Animation duration
+    } else {
+      this.isSearchVisible.set(true);
       setTimeout(() => this.searchInput()?.nativeElement.focus());
     }
   }
 
   onBulkAction(action: string) {
     this.bulkAction.emit({ action, selectedIds: Array.from(this.selectedIds()) });
+  }
+
+  onEmptyStateAction() {
+    this.emptyStateAction.emit();
   }
 
   // --- State Changers ---

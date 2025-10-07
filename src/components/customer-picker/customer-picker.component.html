@@ -1,13 +1,13 @@
 <div #pickerContainer class="relative" (click)="!value() && !isDropdownOpen() && openDropdown()">
   <!-- Input / Selected State Display -->
   @if (value(); as selectedCustomer) {
-    <div class="flex items-center gap-3 p-2 border border-gray-300 dark:border-charcoal-600 bg-white dark:bg-charcoal-700 rounded-md shadow-sm min-h-[44px]">
+    <div class="flex items-center gap-3 p-2 bg-surface-raised rounded-lg shadow-md min-h-[44px]">
       <img [src]="selectedCustomer.avatarUrl" alt="Avatar" class="w-7 h-7 rounded-full object-cover">
       <div class="flex-1">
         <p class="font-semibold text-sm leading-tight">{{ selectedCustomer.name }}</p>
-        <p class="text-xs text-gray-500 dark:text-charcoal-400 leading-tight">{{ selectedCustomer.email || selectedCustomer.phone }}</p>
+        <p class="text-xs text-charcoal-400 leading-tight">{{ selectedCustomer.email || selectedCustomer.phone }}</p>
       </div>
-      <button (click)="clearSelection($event)" type="button" class="text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline px-2" aria-label="Change customer">
+      <button (click)="clearSelection($event)" type="button" class="text-sm font-semibold text-primary hover:underline px-2" aria-label="Change customer">
         Change
       </button>
     </div>
@@ -17,11 +17,11 @@
          [attr.aria-expanded]="isDropdownOpen()"
          aria-haspopup="listbox"
          aria-controls="customer-listbox">
-      <i class="fa-solid fa-user absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+      <i class="fa-solid fa-user absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400"></i>
       <input #searchInput 
         type="text"
         [placeholder]="placeholder()" 
-        class="w-full bg-white dark:bg-charcoal-700 border border-gray-300 dark:border-charcoal-600 rounded-md shadow-sm py-2.5 pl-9 pr-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-h-[44px]"
+        class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none w-full pl-9 pr-3 min-h-[44px]"
         [ngModel]="query()"
         (ngModelChange)="query.set($event)"
         (focus)="openDropdown()"
@@ -31,34 +31,34 @@
 
   <!-- Dropdown -->
   @if (isDropdownOpen()) {
-    <div class="absolute top-full left-0 right-0 mt-1.5 z-20 bg-white/80 dark:bg-charcoal-800/80 backdrop-blur-xl border border-gray-200/50 dark:border-charcoal-700/50 rounded-lg shadow-2xl overflow-hidden animate-[slide-down-fade_180ms_cubic-bezier(0.2,0.8,0.2,1)]">
+    <div class="absolute top-full left-0 right-0 mt-1.5 z-20 bg-surface/90 backdrop-blur-xl rounded-lg shadow-2xl overflow-hidden animate-[slide-down-fade_180ms_cubic-bezier(0.2,0.8,0.2,1)]">
       @if (isQuickCreateVisible()) {
         <!-- Quick Create Form -->
         <div class="relative">
-          <div class="p-4" [formGroup]="quickCreateForm">
+          <div class="p-4 bg-surface" [formGroup]="quickCreateForm">
             <p class="text-sm font-semibold mb-3">Create New Customer</p>
             <div class="flex items-center gap-4">
                <div class="relative">
-                <div class="w-16 h-16 bg-gray-100 dark:bg-charcoal-700 rounded-full flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-charcoal-600">
+                <div class="w-16 h-16 bg-surface-inset rounded-full flex items-center justify-center border-2 border-dashed border-charcoal-700 shadow-inner">
                     @if (quickCreateForm.get('avatarUrl')?.value; as imageUrl) {
                         <img [src]="imageUrl" alt="Avatar Preview" class="w-full h-full object-cover rounded-full">
                     } @else {
-                        <i class="fa-solid fa-user text-2xl text-gray-400"></i>
+                        <i class="fa-solid fa-user text-2xl text-charcoal-400"></i>
                     }
                 </div>
-                <button (click)="openMediaBrowser()" type="button" class="absolute bottom-0 right-0 w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center border-2 border-white dark:border-charcoal-800 hover:bg-indigo-700" title="Choose Avatar">
+                <button (click)="openMediaBrowser()" type="button" class="absolute bottom-0 right-0 w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center border-2 border-surface hover:bg-primary-700" title="Choose Avatar">
                   <i class="fa-solid fa-pen-to-square text-xs"></i>
                 </button>
                </div>
               <div class="flex-1 space-y-2">
-                <input type="text" formControlName="name" placeholder="Full Name (required)" class="w-full text-sm rounded-md bg-white dark:bg-charcoal-700 border-gray-300 dark:border-charcoal-600 focus:ring-indigo-500 focus:border-indigo-500">
-                <input type="tel" formControlName="phone" placeholder="Phone" class="w-full text-sm rounded-md bg-white dark:bg-charcoal-700 border-gray-300 dark:border-charcoal-600 focus:ring-indigo-500 focus:border-indigo-500">
-                <input type="email" formControlName="email" placeholder="Email" class="w-full text-sm rounded-md bg-white dark:bg-charcoal-700 border-gray-300 dark:border-charcoal-600 focus:ring-indigo-500 focus:border-indigo-500">
+                <input type="text" formControlName="name" placeholder="Full Name (required)" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
+                <input type="tel" formControlName="phone" placeholder="Phone" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
+                <input type="email" formControlName="email" placeholder="Email" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
               </div>
             </div>
             <div class="flex items-center justify-end gap-2 mt-3">
-              <button (click)="isQuickCreateVisible.set(false)" type="button" class="text-sm px-3 py-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-charcoal-700">Cancel</button>
-              <button (click)="saveNewCustomer()" [disabled]="quickCreateForm.invalid || isSaving()" type="button" class="text-sm px-3 py-1.5 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:bg-indigo-400">
+              <button (click)="isQuickCreateVisible.set(false)" type="button" class="aurora-button-secondary inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-3 py-1.5 text-sm rounded-xl transition-all duration-150 ease-in-out">Cancel</button>
+              <button (click)="saveNewCustomer()" [disabled]="quickCreateForm.invalid || isSaving()" type="button" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-3 py-1.5 text-sm rounded-xl transition-all duration-150 ease-in-out">
                 @if (isSaving()) {
                   <i class="fa-solid fa-spinner fa-spin"></i>
                 } @else {
@@ -76,14 +76,14 @@
         </div>
       } @else {
         <!-- Dropdown Header -->
-        <div class="p-2 border-b border-gray-200/50 dark:border-charcoal-700/50 flex items-center justify-between">
+        <div class="p-2 flex items-center justify-between">
             <div class="flex items-center gap-1">
-                <button (click)="setFilter('all')" [class]="'px-2 py-1 text-xs font-semibold rounded-md transition-colors ' + (activeFilter() === 'all' ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-charcoal-700 hover:bg-gray-300 dark:hover:bg-charcoal-600')">All</button>
-                <button (click)="setFilter('balance')" [class]="'px-2 py-1 text-xs font-semibold rounded-md transition-colors ' + (activeFilter() === 'balance' ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-charcoal-700 hover:bg-gray-300 dark:hover:bg-charcoal-600')">With Balance</button>
-                <button (click)="setFilter('frequent')" [class]="'px-2 py-1 text-xs font-semibold rounded-md transition-colors ' + (activeFilter() === 'frequent' ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-charcoal-700 hover:bg-gray-300 dark:hover:bg-charcoal-600')">Frequent</button>
+                <button (click)="setFilter('all')" [class]="'px-2 py-1 text-xs font-semibold rounded-lg transition-colors ' + (activeFilter() === 'all' ? 'bg-surface-inset text-primary shadow-inner' : 'bg-surface-raised hover:bg-surface-inset')">All</button>
+                <button (click)="setFilter('balance')" [class]="'px-2 py-1 text-xs font-semibold rounded-lg transition-colors ' + (activeFilter() === 'balance' ? 'bg-surface-inset text-primary shadow-inner' : 'bg-surface-raised hover:bg-surface-inset')">With Balance</button>
+                <button (click)="setFilter('frequent')" [class]="'px-2 py-1 text-xs font-semibold rounded-lg transition-colors ' + (activeFilter() === 'frequent' ? 'bg-surface-inset text-primary shadow-inner' : 'bg-surface-raised hover:bg-surface-inset')">Frequent</button>
             </div>
             @if(query()){
-                <button (click)="showQuickCreate()" type="button" class="px-2 py-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded-md">
+                <button (click)="showQuickCreate()" type="button" class="px-2 py-1 text-xs font-semibold text-primary hover:bg-primary-900/50 rounded-md">
                     <i class="fa-solid fa-plus mr-1"></i> New
                 </button>
             }
@@ -96,24 +96,22 @@
                   (click)="selectItem(customer)" 
                   (mouseenter)="activeIndex.set(i); onMouseOver($event, customer)"
                   (mouseleave)="onMouseOut()"
-                  class="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-indigo-500/10 h-[58px]"
-                  [class.bg-indigo-500/20]="activeIndex() === i"
-                  role="option"
-                  [id]="'customer-option-' + customer.id"
-                  [attr.aria-selected]="activeIndex() === i">
+                  class="flex items-center gap-3 px-3 py-2.5 cursor-pointer h-[58px] transition-colors"
+                  [class.bg-surface-inset]="activeIndex() === i"
+                  [class.shadow-inner]="activeIndex() === i">
                 <img [src]="customer.avatarUrl" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
                 <div class="flex-1 overflow-hidden">
                   <p class="font-semibold truncate">{{ customer.name }}</p>
-                  <p class="text-sm text-gray-500 dark:text-charcoal-400 truncate">{{ customer.email || customer.phone }}</p>
+                  <p class="text-sm text-charcoal-400 truncate">{{ customer.email || customer.phone }}</p>
                 </div>
                 <div class="flex items-center gap-1.5">
                     @if(customer.stats?.open_invoices && customer.stats.open_invoices > 0) {
-                        <span class="text-xs font-semibold tabular-nums px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
+                        <span class="text-xs font-semibold tabular-nums px-2 py-1 rounded-full bg-blue-900/50 text-blue-300">
                             {{ customer.stats.open_invoices }} open
                         </span>
                     }
                     @if(customer.stats?.balance_lkr && customer.stats.balance_lkr > 0) {
-                      <span class="text-xs font-semibold tabular-nums px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300">
+                      <span class="text-xs font-semibold tabular-nums px-2 py-1 rounded-full bg-red-900/50 text-red-300">
                         {{ customer.stats.balance_lkr | currency:'LKR ' }}
                       </span>
                     }
@@ -122,11 +120,11 @@
             </ul>
           </cdk-virtual-scroll-viewport>
         } @else {
-           <div class="p-6 text-center text-sm text-gray-500">
+           <div class="p-6 text-center text-sm text-charcoal-500">
               <i class="fa-solid fa-ghost block mx-auto text-2xl mb-2"></i>
               No customers found.
               @if(query()) {
-                <p class="text-xs mt-1">Press <span class="font-semibold bg-gray-200 dark:bg-charcoal-700/50 px-1.5 py-0.5 rounded">Enter</span> to create "{{query()}}".</p>
+                <p class="text-xs mt-1">Press <span class="font-semibold bg-charcoal-700/50 px-1.5 py-0.5 rounded">Enter</span> to create "{{query()}}".</p>
               }
             </div>
         }
@@ -137,7 +135,7 @@
 
 <!-- Hover Preview Tooltip -->
 @if (hoveredCustomer(); as customer) {
-  <div class="fixed z-30 p-3 bg-charcoal-900/80 backdrop-blur-md text-white rounded-lg shadow-xl text-sm w-64 animate-[fade-in_100ms_ease-in-out]"
+  <div class="fixed z-30 p-3 bg-surface/90 backdrop-blur-lg text-white rounded-lg shadow-2xl w-64 animate-[fade-in_100ms_ease-in-out]"
        [style.top]="tooltipPosition().top"
        [style.left]="tooltipPosition().left">
     <div class="flex items-start gap-3">
@@ -151,14 +149,14 @@
     @if(customer.tags && customer.tags.length > 0) {
       <div class="flex flex-wrap gap-1 mt-2">
         @for(tag of customer.tags; track tag) {
-          <span class="px-2 py-0.5 text-xs rounded-full bg-indigo-500">{{ tag }}</span>
+          <span class="px-2 py-0.5 text-xs rounded-full bg-primary">{{ tag }}</span>
         }
       </div>
     }
     @if(customer.stats?.balance_lkr && customer.stats.balance_lkr > 0) {
-      <div class="mt-2 p-2 rounded-md bg-red-500/30">
-        <p class="text-xs font-semibold">Outstanding Balance</p>
-        <p class="font-bold tabular-nums">{{ customer.stats.balance_lkr | currency:'LKR ' }}</p>
+      <div class="mt-2 p-2 rounded-md bg-red-900/50">
+        <p class="text-xs font-semibold text-red-300">Outstanding Balance</p>
+        <p class="font-bold tabular-nums text-red-200">{{ customer.stats.balance_lkr | currency:'LKR ' }}</p>
       </div>
     }
   </div>

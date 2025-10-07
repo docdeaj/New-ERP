@@ -3,6 +3,7 @@ import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { Invoice, Product } from '../../models/types';
 import { InvoicePdfComponent } from '../invoice-pdf/invoice-pdf.component';
 import { PdfGenerationService } from '../../services/pdf.service';
+import { UiStateService, DrawerContext } from '../../services/ui-state.service';
 
 @Component({
   selector: 'app-quick-peek',
@@ -17,12 +18,21 @@ export class QuickPeekComponent {
   close = output<void>();
 
   private pdfService = inject(PdfGenerationService);
+  private uiStateService = inject(UiStateService);
 
   // This computed signal simplifies the template and fixes a recurring JIT compiler error
   // with the @switch fall-through syntax.
   normalizedItemType = computed(() => {
     const type = this.itemType();
-    return type === 'inventory' ? 'product' : type;
+    // Consolidate 'inventory' and 'product' types for display purposes
+    if (type === 'inventory' || type === 'product') return 'product';
+    if (type === 'recurring-expense') return 'expense';
+    return type;
+  });
+
+  isEditable = computed(() => {
+    const type = this.normalizedItemType();
+    return ['invoice', 'product', 'expense', 'contact', 'purchase-order', 'quotation', 'cheque'].includes(type);
   });
 
   product = computed<Product | null>(() => {
@@ -51,9 +61,31 @@ export class QuickPeekComponent {
     this.close.emit();
   }
 
+  onEdit() {
+    const type = this.normalizedItemType();
+    const data = this.item();
+    let context: DrawerContext | null = null;
+
+    switch(type) {
+      case 'invoice': context = 'new-invoice'; break;
+      case 'product': context = 'new-product'; break;
+      case 'expense': context = 'new-expense'; break;
+      case 'contact': context = 'new-contact'; break;
+      case 'purchase-order': context = 'new-po'; break;
+      case 'quotation': context = 'new-quotation'; break;
+      case 'cheque': context = 'new-cheque'; break;
+    }
+
+    if (context) {
+      this.uiStateService.openDrawer(context, data);
+      this.onClose(); // Close the peek view after opening the drawer
+    }
+  }
+
   downloadPdf() {
-    if (this.normalizedItemType() === 'invoice') {
-      this.pdfService.generatePdf(this.asInvoice(this.item()));
+    const type = this.normalizedItemType();
+    if (type === 'invoice' || type === 'quotation') {
+      this.pdfService.generatePdf(this.item());
     }
   }
 

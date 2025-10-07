@@ -1,22 +1,22 @@
 <div class="space-y-6">
   <!-- Sticky Filter Bar -->
-  <div class="sticky top-0 z-20 bg-gray-100/80 dark:bg-charcoal-900/80 backdrop-blur-md -mx-4 -mt-2 px-4 py-2">
+  <div class="sticky top-0 z-20 bg-surface/80 backdrop-blur-md -mx-4 -mt-2 px-4 py-2">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-1.5">
         @for (range of ['Today', 'This Week', 'This Month', 'This Year']; track range) {
           <button 
             (click)="onDateRangeChange(range)"
-            [class]="'px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors ' + (activeDateRange() === range ? 'bg-indigo-600 text-white shadow-sm' : 'hover:bg-gray-200/80 dark:hover:bg-charcoal-700/80')">
+            [class]="'px-3 py-1.5 text-sm font-semibold rounded-xl transition-colors ' + (activeDateRange() === range ? 'bg-primary text-white shadow-sm' : 'hover:bg-surface-inset')">
             {{ range }}
           </button>
         }
       </div>
       <div class="flex items-center gap-2">
-        <button class="px-3 py-1.5 text-sm font-semibold bg-white dark:bg-charcoal-800 border border-gray-200 dark:border-charcoal-700 rounded-lg hover:bg-gray-200 dark:hover:bg-charcoal-700 transition-colors shadow-sm disabled:opacity-50" disabled>
-          <i class="fa-solid fa-file-pdf mr-2"></i>Export PDF
+        <button class="aurora-button-secondary inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-3 py-1.5 text-sm rounded-xl transition-all duration-150 ease-in-out" disabled>
+          <i class="fa-solid fa-file-pdf"></i>Export PDF
         </button>
-         <button class="px-3 py-1.5 text-sm font-semibold bg-white dark:bg-charcoal-800 border border-gray-200 dark:border-charcoal-700 rounded-lg hover:bg-gray-200 dark:hover:bg-charcoal-700 transition-colors shadow-sm disabled:opacity-50" disabled>
-          <i class="fa-solid fa-file-csv mr-2"></i>Export CSV
+         <button class="aurora-button-secondary inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-3 py-1.5 text-sm rounded-xl transition-all duration-150 ease-in-out" disabled>
+          <i class="fa-solid fa-file-csv"></i>Export CSV
         </button>
       </div>
     </div>
@@ -25,7 +25,7 @@
   @if (isLoading()) {
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-pulse">
       @for (_ of [1,2,3,4,5,6,7,8]; track $index) {
-        <div class="h-28 bg-gray-200 dark:bg-charcoal-700 rounded-2xl"></div>
+        <div class="h-28 bg-surface-raised rounded-2xl"></div>
       }
     </div>
   } @else if (summary(); as summaryData) {
@@ -35,8 +35,8 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
         
         <!-- Net Sales -->
-        <div class="bg-white dark:bg-charcoal-800 rounded-2xl shadow-md p-5 cursor-pointer hover:shadow-lg transition-shadow" (click)="navigateTo('/invoices')">
-            <p class="text-sm font-semibold text-gray-500 dark:text-charcoal-400">Net Sales</p>
+        <div class="bg-surface rounded-2xl shadow-md p-5 cursor-pointer hover:shadow-lg transition-shadow" (click)="navigateTo('/invoices')">
+            <p class="text-sm font-semibold text-charcoal-400">Net Sales</p>
             <p class="text-3xl font-bold mt-1 tabular-nums">{{ summaryData.netSales.value | currency:'LKR ':'symbol':'1.0-0' }}</p>
             <div class="flex items-center mt-1 text-sm text-green-600">
                 <i class="fa-solid fa-arrow-up mr-1"></i>
@@ -45,8 +45,8 @@
         </div>
 
         <!-- Gross Margin -->
-        <div class="bg-white dark:bg-charcoal-800 rounded-2xl shadow-md p-5">
-            <p class="text-sm font-semibold text-gray-500 dark:text-charcoal-400">Gross Margin</p>
+        <div class="bg-surface rounded-2xl shadow-md p-5">
+            <p class="text-sm font-semibold text-charcoal-400">Gross Margin</p>
             <p class="text-3xl font-bold mt-1 tabular-nums">{{ summaryData.grossMargin.value | currency:'LKR ':'symbol':'1.0-0' }}</p>
             <div class="flex items-center mt-1 text-sm text-green-600">
                 <i class="fa-solid fa-arrow-up mr-1"></i>
@@ -55,8 +55,8 @@
         </div>
 
         <!-- Net Profit -->
-        <div class="bg-white dark:bg-charcoal-800 rounded-2xl shadow-md p-5">
-            <p class="text-sm font-semibold text-gray-500 dark:text-charcoal-400">Net Profit</p>
+        <div class="bg-surface rounded-2xl shadow-md p-5">
+            <p class="text-sm font-semibold text-charcoal-400">Net Profit</p>
             <p class="text-3xl font-bold mt-1 tabular-nums">{{ summaryData.netProfit.value | currency:'LKR ':'symbol':'1.0-0' }}</p>
             <div class="flex items-center mt-1 text-sm text-green-600">
                 <i class="fa-solid fa-arrow-up mr-1"></i>
@@ -65,8 +65,8 @@
         </div>
 
         <!-- Expenses -->
-        <div class="bg-white dark:bg-charcoal-800 rounded-2xl shadow-md p-5 cursor-pointer hover:shadow-lg transition-shadow" (click)="navigateTo('/expenses')">
-            <p class="text-sm font-semibold text-gray-500 dark:text-charcoal-400">Expenses</p>
+        <div class="bg-surface rounded-2xl shadow-md p-5 cursor-pointer hover:shadow-lg transition-shadow" (click)="navigateTo('/expenses')">
+            <p class="text-sm font-semibold text-charcoal-400">Expenses</p>
             <p class="text-3xl font-bold mt-1 tabular-nums">{{ summaryData.expenses.value | currency:'LKR ':'symbol':'1.0-0' }}</p>
             <div class="flex items-center mt-1 text-sm text-red-600">
                 <i class="fa-solid fa-arrow-down mr-1"></i>
@@ -75,10 +75,10 @@
         </div>
 
         <!-- A/R Today -->
-        <div class="bg-white dark:bg-charcoal-800 rounded-2xl shadow-md p-5 cursor-pointer hover:shadow-lg transition-shadow" (click)="navigateTo('/invoices')">
-            <p class="text-sm font-semibold text-gray-500 dark:text-charcoal-400">A/R Due</p>
+        <div class="bg-surface rounded-2xl shadow-md p-5 cursor-pointer hover:shadow-lg transition-shadow" (click)="navigateTo('/invoices')">
+            <p class="text-sm font-semibold text-charcoal-400">A/R Due</p>
             <p class="text-3xl font-bold mt-1 tabular-nums">{{ summaryData.arToday.amount | currency:'LKR ':'symbol':'1.0-0' }}</p>
-            <div class="flex items-center mt-1 text-sm text-gray-500">
+            <div class="flex items-center mt-1 text-sm text-charcoal-400">
                 <span class="font-semibold">{{ summaryData.arToday.count }} Invoices</span>
                 <span class="mx-1.5">•</span>
                 <span class="font-semibold text-red-500">{{ summaryData.arToday.overdueCount }} Overdue</span>
@@ -89,7 +89,7 @@
 
     <!-- Section: Period Trends -->
     <div id="trends-section" class="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-6">
-      <div class="2xl:col-span-2 bg-white dark:bg-charcoal-800 rounded-2xl shadow-md p-6">
+      <div class="2xl:col-span-2 bg-surface rounded-2xl shadow-md p-6">
         <h3 class="text-lg font-semibold mb-4">Sales Over Time</h3>
         <div class="h-72">
           @if(salesTrend(); as trend) {
@@ -97,17 +97,17 @@
           }
         </div>
       </div>
-      <div class="bg-white dark:bg-charcoal-800 rounded-2xl shadow-md p-6">
+      <div class="bg-surface rounded-2xl shadow-md p-6">
         <h3 class="text-lg font-semibold mb-4">Payment Mix</h3>
         <div class="h-72">
           <app-donut-chart [data]="summaryData.paymentMix"></app-donut-chart>
         </div>
       </div>
-      <div class="2xl:col-span-3 bg-white dark:bg-charcoal-800 rounded-2xl shadow-md p-6">
+      <div class="2xl:col-span-3 bg-surface rounded-2xl shadow-md p-6">
         <h3 class="text-lg font-semibold mb-4">Top Products</h3>
          <div class="overflow-x-auto">
           <table class="w-full text-left text-sm">
-            <thead class="text-xs text-gray-500 dark:text-charcoal-400 uppercase">
+            <thead class="text-xs text-charcoal-400 uppercase">
               <tr>
                 <th class="p-2">Product</th>
                 <th class="p-2 text-right">Qty Sold</th>
@@ -116,7 +116,7 @@
             </thead>
             <tbody>
               @for(product of topProducts(); track product.id) {
-                <tr class="border-t border-gray-200 dark:border-charcoal-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-charcoal-700/50" (click)="navigateToProduct(product)">
+                <tr class="cursor-pointer hover:bg-surface-raised" (click)="navigateToProduct(product)">
                   <td class="p-2 font-semibold flex items-center gap-3">
                     <img [src]="product.imageUrl" [alt]="product.name" class="w-10 h-10 rounded-md object-cover">
                     <span>{{product.name}}</span>
@@ -137,8 +137,8 @@
         <h2 class="text-xl font-bold mb-4">Inventory Snapshot</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <!-- Stock Valuation Card -->
-          <div class="bg-white dark:bg-charcoal-800 rounded-2xl shadow-md p-5">
-            <p class="text-sm font-semibold text-gray-500 dark:text-charcoal-400">Stock Valuation</p>
+          <div class="bg-surface rounded-2xl shadow-md p-5">
+            <p class="text-sm font-semibold text-charcoal-400">Stock Valuation</p>
             <p class="text-3xl font-bold mt-1 tabular-nums">{{ snapshot.valuationLkr.value | currency:'LKR ':'symbol':'1.0-0' }}</p>
             <div class="flex items-center mt-1 text-sm" [class.text-green-600]="snapshot.valuationLkr.delta >= 0" [class.text-red-600]="snapshot.valuationLkr.delta < 0">
                 <i class="fa-solid mr-1" [class.fa-arrow-up]="snapshot.valuationLkr.delta >= 0" [class.fa-arrow-down]="snapshot.valuationLkr.delta < 0"></i>
@@ -147,8 +147,8 @@
           </div>
 
           <!-- Inventory Turn Card -->
-          <div class="bg-white dark:bg-charcoal-800 rounded-2xl shadow-md p-5">
-            <p class="text-sm font-semibold text-gray-500 dark:text-charcoal-400">Inventory Turn (Proxy)</p>
+          <div class="bg-surface rounded-2xl shadow-md p-5">
+            <p class="text-sm font-semibold text-charcoal-400">Inventory Turn (Proxy)</p>
             <p class="text-3xl font-bold mt-1 tabular-nums">{{ snapshot.turnProxy.value.toFixed(1) }}x</p>
              <div class="flex items-center mt-1 text-sm" [class.text-red-600]="snapshot.turnProxy.delta < 0" [class.text-green-600]="snapshot.turnProxy.delta >= 0">
                 <i class="fa-solid mr-1" [class.fa-arrow-down]="snapshot.turnProxy.delta < 0" [class.fa-arrow-up]="snapshot.turnProxy.delta >= 0"></i>
@@ -158,11 +158,11 @@
         </div>
         
         <!-- Slow Movers Table -->
-        <div class="bg-white dark:bg-charcoal-800 rounded-2xl shadow-md p-6">
+        <div class="bg-surface rounded-2xl shadow-md p-6">
             <h3 class="text-lg font-semibold mb-4">Slow-Moving Items</h3>
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm">
-                    <thead class="text-xs text-gray-500 dark:text-charcoal-400 uppercase">
+                    <thead class="text-xs text-charcoal-400 uppercase">
                         <tr>
                             <th class="p-2">Product</th>
                             <th class="p-2 text-right">Days Idle</th>
@@ -171,19 +171,19 @@
                     </thead>
                     <tbody>
                         @for(item of snapshot.slowMovers; track item.id) {
-                            <tr class="border-t border-gray-200 dark:border-charcoal-700">
+                            <tr>
                                 <td class="p-2 font-semibold flex items-center gap-3">
                                     <img [src]="item.imageUrl" [alt]="item.productName" class="w-10 h-10 rounded-md object-cover">
                                     <div>
                                         <p>{{ item.productName }}</p>
-                                        <p class="text-xs text-gray-400 font-mono">{{ item.sku }}</p>
+                                        <p class="text-xs text-charcoal-400 font-mono">{{ item.sku }}</p>
                                     </div>
                                 </td>
                                 <td class="p-2 text-right tabular-nums font-medium text-red-500">{{ item.daysSinceLastSale }}</td>
                                 <td class="p-2 text-right tabular-nums font-medium">{{ item.onHand }}</td>
                             </tr>
                         } @empty {
-                             <tr><td colspan="3" class="text-center p-4 text-gray-500">No slow-moving items found.</td></tr>
+                             <tr><td colspan="3" class="text-center p-4 text-charcoal-500">No slow-moving items found.</td></tr>
                         }
                     </tbody>
                 </table>
@@ -242,10 +242,10 @@
      </div>
 
   } @else {
-    <div class="text-center py-16 bg-white dark:bg-charcoal-800 rounded-2xl shadow-md">
-       <i class="fa-solid fa-chart-simple text-5xl text-gray-400 mb-4"></i>
+    <div class="text-center py-16 bg-surface rounded-2xl shadow-md">
+       <i class="fa-solid fa-chart-simple text-5xl text-charcoal-400 mb-4"></i>
        <h3 class="text-xl font-bold">Could not load report data</h3>
-       <p class="text-gray-500">Please try again later.</p>
+       <p class="text-charcoal-500">Please try again later.</p>
     </div>
   }
 </div>

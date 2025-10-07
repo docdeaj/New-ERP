@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, output, signal, ElementRef, viewChild, afterNextRender, effect, HostListener, computed, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, output, signal, ElementRef, viewChild, afterNextRender, effect, computed, inject } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 import { HighlightPipe } from '../../pipes/highlight.pipe';
@@ -30,6 +30,7 @@ interface SearchResultGroup {
     'class': 'fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-20',
     'role': 'dialog',
     'aria-modal': 'true',
+    '(keydown)': 'handleKeyboardNav($event)',
   }
 })
 export class UniversalSearchComponent {
@@ -191,7 +192,6 @@ export class UniversalSearchComponent {
     }
   }
 
-  @HostListener('keydown', ['$event'])
   handleKeyboardNav(event: KeyboardEvent) {
     const key = event.key;
     if (key === 'ArrowDown') { event.preventDefault(); this.navigateDown(); }

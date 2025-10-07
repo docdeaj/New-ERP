@@ -1,39 +1,39 @@
 <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
   <!-- Backdrop -->
-  <div class="absolute inset-0 bg-charcoal-950/50 backdrop-blur-sm animate-[fade-in_180ms_ease-in-out]" (click)="onClose()"></div>
+  <div class="aurora-backdrop absolute inset-0 animate-[fade-in_180ms_ease-in-out]" (click)="onClose()"></div>
 
   <!-- Modal -->
-  <form [formGroup]="transferForm" (ngSubmit)="onTransfer()" class="relative w-full max-w-lg bg-white dark:bg-charcoal-800 rounded-2xl shadow-2xl animate-[slide-down_180ms_cubic-bezier(0.2,0.8,0.2,1)]" role="dialog" aria-modal="true">
+  <form [formGroup]="transferForm" (ngSubmit)="onTransfer()" class="relative w-full max-w-lg bg-surface/90 backdrop-blur-xl rounded-2xl shadow-2xl animate-[slide-down_180ms_cubic-bezier(0.2,0.8,0.2,1)]" role="dialog" aria-modal="true">
     <!-- Header -->
-    <div class="p-4 border-b border-gray-200 dark:border-charcoal-700 flex justify-between items-center">
+    <div class="p-4 flex justify-between items-center">
       <h3 class="text-xl font-bold">Transfer Stock</h3>
-      <button type="button" (click)="onClose()" class="text-gray-400 hover:text-gray-800 dark:hover:text-charcoal-100 transition-colors p-2 rounded-full">
+      <button type="button" (click)="onClose()" class="text-charcoal-400 hover:text-charcoal-100 transition-colors p-2 rounded-full">
         <i class="fa-solid fa-times text-xl"></i>
       </button>
     </div>
 
     <!-- Body -->
     <div class="p-6 space-y-4">
-      <p class="text-sm text-gray-600 dark:text-charcoal-300">
+      <p class="text-sm text-charcoal-300">
         You are about to transfer <span class="font-bold">{{ selectedItemIds().length }}</span> selected item(s).
       </p>
       <div class="flex items-center gap-4">
         <!-- From Location -->
         <div class="flex-1">
-          <label for="fromLocation" class="block text-sm font-medium text-gray-700 dark:text-charcoal-300">From</label>
-          <select id="fromLocation" formControlName="from" class="mt-1 block w-full bg-white dark:bg-charcoal-700 border border-gray-300 dark:border-charcoal-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+          <label for="fromLocation" class="block text-sm font-medium text-charcoal-300">From</label>
+          <select id="fromLocation" formControlName="from" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
             @for(loc of locations; track loc.key) {
               <option [value]="loc.key">{{ loc.name }}</option>
             }
           </select>
         </div>
 
-        <i class="fa-solid fa-arrow-right-long text-gray-400 mt-6"></i>
+        <i class="fa-solid fa-arrow-right-long text-charcoal-400 mt-6"></i>
 
         <!-- To Location -->
         <div class="flex-1">
-          <label for="toLocation" class="block text-sm font-medium text-gray-700 dark:text-charcoal-300">To</label>
-          <select id="toLocation" formControlName="to" class="mt-1 block w-full bg-white dark:bg-charcoal-700 border border-gray-300 dark:border-charcoal-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+          <label for="toLocation" class="block text-sm font-medium text-charcoal-300">To</label>
+          <select id="toLocation" formControlName="to" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
             @for(loc of locations; track loc.key) {
               <option [value]="loc.key">{{ loc.name }}</option>
             }
@@ -41,9 +41,9 @@
         </div>
       </div>
        <div>
-        <label for="quantity" class="block text-sm font-medium text-gray-700 dark:text-charcoal-300">Quantity</label>
+        <label for="quantity" class="block text-sm font-medium text-charcoal-300">Quantity</label>
         <input type="text" id="quantity" formControlName="quantity" placeholder="Enter quantity or 'All'"
-               class="mt-1 block w-full bg-white dark:bg-charcoal-700 border border-gray-300 dark:border-charcoal-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+               class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
       </div>
       @if (transferForm.hasError('sameLocation')) {
         <p class="text-sm text-red-500">Source and destination locations cannot be the same.</p>
@@ -51,11 +51,11 @@
     </div>
 
     <!-- Footer -->
-    <div class="p-4 border-t border-gray-200 dark:border-charcoal-700 flex justify-end gap-3">
-        <button (click)="onClose()" type="button" class="bg-white dark:bg-charcoal-700 py-2 px-4 border border-gray-300 dark:border-charcoal-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-charcoal-200 hover:bg-gray-50 dark:hover:bg-charcoal-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+    <div class="p-4 flex justify-end gap-3">
+        <button (click)="onClose()" type="button" class="aurora-button-secondary inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-4 py-2 rounded-xl transition-all duration-150 ease-in-out">
             Cancel
         </button>
-        <button type="submit" [disabled]="transferForm.invalid" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400 disabled:cursor-not-allowed">
+        <button type="submit" [disabled]="transferForm.invalid" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl transition-all duration-150 ease-in-out">
             Confirm Transfer
         </button>
     </div>

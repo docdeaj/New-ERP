@@ -10,7 +10,8 @@ export type DrawerContext =
   | 'new-quotation'
   | 'new-receipt'
   | 'new-product'
-  | 'new-cheque';
+  | 'new-cheque'
+  | 'new-recurring-expense';
 
 @Injectable({
   providedIn: 'root'
@@ -27,6 +28,13 @@ export class UiStateService {
   // Signal to trigger data table search from anywhere
   dataTableSearchTrigger = signal<string | null>(null);
 
+  // Confirmation Modal State
+  confirmationState = signal<{
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  } | null>(null);
+
   openDrawer(context: DrawerContext, data: any = null) {
     this.drawerContext.set(context);
     this.drawerData.set(data);
@@ -40,5 +48,13 @@ export class UiStateService {
       this.drawerContext.set(null);
       this.drawerData.set(null);
     }, 300);
+  }
+
+  showConfirmation(title: string, message: string, onConfirm: () => void) {
+    this.confirmationState.set({ title, message, onConfirm });
+  }
+
+  hideConfirmation() {
+    this.confirmationState.set(null);
   }
 }

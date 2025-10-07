@@ -1,68 +1,83 @@
 <!-- Total Display -->
-<div class="p-6 text-center bg-gray-50 dark:bg-gray-700/50">
-  <p class="text-sm text-gray-500 dark:text-gray-400">Amount Due</p>
-  <p class="text-5xl font-extrabold tabular-nums tracking-tight text-indigo-600 dark:text-indigo-400">
+<div class="p-6 text-center bg-surface-inset shadow-inner-sm rounded-t-2xl">
+  <p class="text-sm text-charcoal-400">Amount Due</p>
+  <p class="text-5xl font-extrabold tabular-nums tracking-tight text-primary">
     LKR {{ totalAmount().toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
   </p>
 </div>
 
 <!-- Tabs -->
-<div class="border-b border-gray-200 dark:border-gray-700">
-  <nav class="-mb-px flex justify-around" aria-label="Tabs">
+<div>
+  <nav class="flex justify-around border-b-2 border-surface-raised" aria-label="Tabs">
     <button (click)="selectTab('Cash')"
-            [class]="'w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm transition-colors ' + (activeTab() === 'Cash' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:hover:text-gray-200 dark:hover:border-gray-600')">
+            [class]="'w-1/3 py-3 px-1 text-center font-medium text-sm transition-colors relative ' + (activeTab() === 'Cash' ? 'text-primary' : 'text-charcoal-400 hover:bg-surface-raised')">
       <i class="fa-solid fa-money-bill-wave mr-2"></i>Cash
+      @if(activeTab() === 'Cash') { <div class="absolute bottom-[-2px] left-0 right-0 h-0.5 bg-primary"></div> }
     </button>
     <button (click)="selectTab('Card')"
-            [class]="'w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm transition-colors ' + (activeTab() === 'Card' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:hover:text-gray-200 dark:hover:border-gray-600')">
+            [class]="'w-1/3 py-3 px-1 text-center font-medium text-sm transition-colors relative ' + (activeTab() === 'Card' ? 'text-primary' : 'text-charcoal-400 hover:bg-surface-raised')">
       <i class="fa-solid fa-credit-card mr-2"></i>Card
+      @if(activeTab() === 'Card') { <div class="absolute bottom-[-2px] left-0 right-0 h-0.5 bg-primary"></div> }
     </button>
     <button (click)="selectTab('Cheque')"
-            [class]="'w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm transition-colors ' + (activeTab() === 'Cheque' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:hover:text-gray-200 dark:hover:border-gray-600')">
+            [class]="'w-1/3 py-3 px-1 text-center font-medium text-sm transition-colors relative ' + (activeTab() === 'Cheque' ? 'text-primary' : 'text-charcoal-400 hover:bg-surface-raised')">
       <i class="fa-solid fa-money-check-dollar mr-2"></i>Cheque
+       @if(activeTab() === 'Cheque') { <div class="absolute bottom-[-2px] left-0 right-0 h-0.5 bg-primary"></div> }
     </button>
   </nav>
 </div>
 
+
 <!-- Tab Content -->
-<div class="p-6">
+<div class="p-6 bg-surface-inset">
   @switch (activeTab()) {
     @case ('Cash') {
       <div class="space-y-4">
         <div>
-          <label for="amountTendered" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Amount Tendered</label>
-          <div class="mt-1 relative rounded-md shadow-sm">
+          <label for="amountTendered" class="block text-sm font-medium text-charcoal-300">Amount Tendered</label>
+          <div class="mt-1 relative rounded-lg shadow-inner-sm">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span class="text-gray-500 sm:text-sm">LKR</span>
+              <span class="text-charcoal-400 sm:text-sm">LKR</span>
             </div>
             <input type="number" name="amountTendered" id="amountTendered"
-                   class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-12 pr-12 sm:text-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md py-3 text-right"
+                   class="aurora-input block w-full pl-12 pr-16 sm:text-lg border-transparent bg-surface rounded-lg py-3 text-right"
                    placeholder="0.00" [(ngModel)]="amountTendered">
             <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
-               <button (click)="setTenderedToTotal()" class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">EXACT</button>
+               <button (click)="setTenderedToTotal()" class="text-xs font-semibold text-primary hover:underline">EXACT</button>
             </div>
           </div>
         </div>
         <div class="grid grid-cols-4 gap-2">
            @for(denom of denominations; track denom) {
-             <button (click)="addDenomination(denom)" class="bg-gray-100 dark:bg-gray-700/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded-lg p-2 text-sm font-semibold tabular-nums transition-colors">{{ denom }}</button>
+             <button (click)="addDenomination(denom)" class="bg-surface-raised hover:bg-surface rounded-xl p-2 text-sm font-semibold tabular-nums transition-colors shadow-md">{{ denom }}</button>
            }
         </div>
         @if (changeDue() > 0) {
-          <div class="p-3 bg-green-100 dark:bg-green-900/50 rounded-lg text-center">
-            <p class="text-sm font-medium text-green-800 dark:text-green-300">Change Due</p>
-            <p class="text-2xl font-bold tabular-nums text-green-700 dark:text-green-200">LKR {{ changeDue().toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</p>
+          <div class="p-3 bg-green-900/50 rounded-lg shadow-md space-y-2">
+            <div class="text-center">
+              <p class="text-sm font-medium text-green-300">Change Due</p>
+              <p class="text-2xl font-bold tabular-nums text-green-200">LKR {{ changeDue().toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</p>
+            </div>
+            <div class="flex flex-wrap items-center justify-center gap-2 pt-2 border-t border-green-500/20">
+              @for(item of changeDueBreakdown(); track item.value) {
+                <div class="px-2 py-1 bg-surface-raised rounded-md text-xs shadow-sm">
+                  <span class="font-bold tabular-nums">{{ item.value }}</span>
+                  <span class="text-charcoal-400"> × </span>
+                  <span class="font-semibold">{{ item.count }}</span>
+                </div>
+              }
+            </div>
           </div>
         }
       </div>
     }
     @case ('Card') {
       <div class="space-y-4 text-sm">
-         <p class="text-gray-600 dark:text-gray-300">Please process <span class="font-bold">LKR {{ totalAmount().toLocaleString() }}</span> on the card machine.</p>
-         <div class="flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-md">
+         <p class="text-charcoal-300">Please process <span class="font-bold">LKR {{ totalAmount().toLocaleString() }}</span> on the card machine.</p>
+         <div class="flex justify-center px-6 pt-5 pb-6 border-2 border-charcoal-700 border-dashed rounded-md">
             <div class="space-y-1 text-center">
-              <i class="fa-solid fa-receipt mx-auto h-12 w-12 text-gray-400"></i>
-              <p class="text-xs text-gray-500">Drop receipt photo here or click to upload</p>
+              <i class="fa-solid fa-receipt mx-auto h-12 w-12 text-charcoal-400"></i>
+              <p class="text-xs text-charcoal-400">Drop receipt photo here or click to upload</p>
             </div>
           </div>
       </div>
@@ -70,16 +85,16 @@
     @case ('Cheque') {
        <div class="space-y-4">
         <div>
-          <label class="block text-sm font-medium">Cheque Number</label>
-          <input type="text" class="mt-1 block w-full rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+          <label class="block text-sm font-medium text-charcoal-300">Cheque Number</label>
+          <input type="text" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
         </div>
         <div>
-          <label class="block text-sm font-medium">Bank</label>
-          <input type="text" class="mt-1 block w-full rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+          <label class="block text-sm font-medium text-charcoal-300">Bank</label>
+          <input type="text" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
         </div>
         <div>
-          <label class="block text-sm font-medium">Cheque Date</label>
-          <input type="date" [value]="today" class="mt-1 block w-full rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+          <label class="block text-sm font-medium text-charcoal-300">Cheque Date</label>
+          <input type="date" [value]="today" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
         </div>
       </div>
     }
@@ -87,14 +102,14 @@
 </div>
 
 <!-- Footer with Action Button -->
-<div class="p-4 border-t border-gray-200 dark:border-gray-700">
+<div class="p-4 rounded-b-2xl">
   <button (click)="onCompletePayment()" [disabled]="isSaving()"
-          class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors disabled:bg-indigo-400 disabled:cursor-not-allowed flex items-center justify-center">
+          class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 h-11 rounded-xl transition-all duration-150 ease-in-out w-full">
     @if(isSaving()) {
-      <i class="fa-solid fa-spinner fa-spin mr-2"></i>
+      <i class="fa-solid fa-spinner fa-spin"></i>
       <span>Processing...</span>
     } @else {
-       <i class="fa-solid fa-check mr-2"></i>
+       <i class="fa-solid fa-check"></i>
        <span>Complete Payment</span>
     }
   </button>

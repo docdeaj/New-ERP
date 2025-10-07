@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, input, output, signal, computed, inject, effect, ElementRef, viewChild, HostListener } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, signal, computed, inject, effect, ElementRef, viewChild } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
@@ -14,6 +14,10 @@ type FilterType = 'all' | 'balance' | 'frequent';
   imports: [CommonModule, FormsModule, CurrencyPipe, ReactiveFormsModule, ScrollingModule, MiniMediaBrowserComponent],
   templateUrl: './customer-picker.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '(document:click)': 'onDocumentClick($event)',
+    '(keydown)': 'onKeyDown($event)',
+  }
 })
 export class CustomerPickerComponent {
   // --- Inputs / Outputs ---
@@ -115,14 +119,12 @@ export class CustomerPickerComponent {
     });
   }
   
-  @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
     if (!this.pickerContainer()?.nativeElement.contains(event.target as Node)) {
       this.isDropdownOpen.set(false);
     }
   }
 
-  @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
     if (!this.isDropdownOpen()) return;
 
