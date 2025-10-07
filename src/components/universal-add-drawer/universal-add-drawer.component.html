@@ -45,15 +45,13 @@
                 <div class="space-y-4">
                   @for(item of itemsFormArray?.controls; track item; let i = $index) {
                     <div [formGroupName]="i" class="grid grid-cols-12 gap-x-4 gap-y-2 items-end p-3 bg-surface-raised rounded-xl shadow-md">
-                      <!-- Product -->
+                      <!-- Product Picker -->
                       <div class="col-span-12 sm:col-span-6">
                         <label class="block text-xs font-medium text-charcoal-300">Product</label>
-                        <select formControlName="productId" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
-                          <option [ngValue]="null" disabled>Select a product</option>
-                          @for(product of products(); track product.id) {
-                            <option [value]="product.id">{{ product.name }}</option>
-                          }
-                        </select>
+                         <app-product-picker 
+                           [value]="item.value.productId"
+                           (onSelect)="onProductSelect($event, i)">
+                         </app-product-picker>
                       </div>
                       <!-- Qty -->
                       <div class="col-span-4 sm:col-span-2">
@@ -86,11 +84,28 @@
                   <span class="text-charcoal-400">Subtotal</span>
                   <span class="font-medium tabular-nums">{{ subtotal() | currency:'LKR ' }}</span>
                 </div>
+                <!-- Discount -->
+                <div class="flex justify-between items-center">
+                  <span class="text-charcoal-400">Discount</span>
+                  <div class="flex items-center gap-1">
+                    <input type="number" formControlName="discountValue" class="aurora-input bg-surface w-20 h-7 text-right text-sm">
+                    <select formControlName="discountType" class="aurora-input bg-surface h-7 text-sm">
+                      <option value="percent">%</option>
+                      <option value="fixed">LKR</option>
+                    </select>
+                  </div>
+                </div>
+                 @if(discountAmount() > 0) {
+                    <div class="flex justify-between text-green-400">
+                        <span class="pl-4">Discount Applied</span>
+                        <span class="font-medium tabular-nums">-{{ discountAmount() | currency:'LKR ' }}</span>
+                    </div>
+                 }
                 <div class="flex justify-between">
-                  <span class="text-charcoal-400">Tax (10%)</span>
+                  <span class="text-charcoal-400">Tax ({{ taxRate() }}%)</span>
                   <span class="font-medium tabular-nums">{{ tax() | currency:'LKR ' }}</span>
                 </div>
-                <div class="flex justify-between font-bold text-base pt-2">
+                <div class="flex justify-between font-bold text-base pt-2 border-t border-charcoal-700 mt-2">
                   <span class="text-brand-text">Grand Total</span>
                   <span class="text-primary tabular-nums">{{ total() | currency:'LKR ' }}</span>
                 </div>
@@ -422,8 +437,12 @@
         @case ('new-po') {
            <form [formGroup]="purchaseOrderForm" class="space-y-6">
             <div>
-              <label for="supplierName" class="block text-sm font-medium text-charcoal-300">Supplier</label>
-              <input type="text" id="supplierName" formControlName="supplierName" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
+              <label for="supplierName" class="block text-sm font-medium text-charcoal-300 mb-1">Supplier</label>
+              <app-supplier-picker
+                [value]="purchaseOrderForm.controls.supplier.value"
+                (onSelect)="purchaseOrderForm.controls.supplier.setValue($event)"
+                (onClear)="purchaseOrderForm.controls.supplier.setValue(null)">
+              </app-supplier-picker>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <app-date-picker label="Order Date" formControlName="orderDate"></app-date-picker>
@@ -434,7 +453,7 @@
                  <div class="space-y-4">
                   @for(item of itemsFormArray?.controls; track item; let i = $index) {
                     <div [formGroupName]="i" class="grid grid-cols-12 gap-x-4 gap-y-2 items-end p-3 bg-surface-raised rounded-xl shadow-md">
-                      <div class="col-span-12 sm:col-span-6"><label class="block text-xs font-medium text-charcoal-300">Product</label><select formControlName="productId" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none"> @for(product of products(); track product.id) { <option [value]="product.id">{{ product.name }}</option> } </select></div>
+                      <div class="col-span-12 sm:col-span-6"><label class="block text-xs font-medium text-charcoal-300">Product</label><app-product-picker [value]="item.value.productId" (onSelect)="onProductSelect($event, i)"></app-product-picker></div>
                       <div class="col-span-4 sm:col-span-2"><label class="block text-xs font-medium text-charcoal-300">Qty</label><input type="number" formControlName="quantity" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none"></div>
                       <div class="col-span-5 sm:col-span-3"><label class="block text-xs font-medium text-charcoal-300">Unit Price</label><input type="number" formControlName="unitPrice" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none"></div>
                       <div class="col-span-3 sm:col-span-1"><button (click)="removeLineItem(i)" type="button" class="w-full h-10 flex items-center justify-center text-charcoal-500 hover:text-red-400"><i class="fa-solid fa-trash-can"></i></button></div>
@@ -461,7 +480,7 @@
                  <div class="space-y-4">
                   @for(item of itemsFormArray?.controls; track item; let i = $index) {
                     <div [formGroupName]="i" class="grid grid-cols-12 gap-x-4 gap-y-2 items-end p-3 bg-surface-raised rounded-xl shadow-md">
-                      <div class="col-span-12 sm:col-span-6"><label class="block text-xs font-medium text-charcoal-300">Product</label><select formControlName="productId" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none"> @for(p of products(); track p.id){ <option [value]="p.id">{{p.name}}</option> } </select></div>
+                      <div class="col-span-12 sm:col-span-6"><label class="block text-xs font-medium text-charcoal-300">Product</label><app-product-picker [value]="item.value.productId" (onSelect)="onProductSelect($event, i)"></app-product-picker></div>
                       <div class="col-span-4 sm:col-span-2"><label class="block text-xs font-medium text-charcoal-300">Qty</label><input type="number" formControlName="quantity" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none"></div>
                       <div class="col-span-5 sm:col-span-3"><label class="block text-xs font-medium text-charcoal-300">Unit Price</label><input type="number" formControlName="unitPrice" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none"></div>
                       <div class="col-span-3 sm:col-span-1"><button (click)="removeLineItem(i)" type="button" class="w-full h-10 flex items-center justify-center text-charcoal-500 hover:text-red-400"><i class="fa-solid fa-trash-can"></i></button></div>

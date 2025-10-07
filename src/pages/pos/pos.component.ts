@@ -36,6 +36,8 @@ export class PosComponent {
   sortOptions: SortOption[] = ['Popular', 'Name A-Z', 'Price High-Low', 'Price Low-High'];
   selectedCustomer = signal<Contact | null>(null);
   shakingProductId = signal<number | null>(null);
+  discountType = signal<'percent' | 'fixed'>('percent');
+  discountValue = signal<number | null>(null);
 
   // Elements
   searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
@@ -62,8 +64,23 @@ export class PosComponent {
   });
 
   cartSubtotal = computed(() => this.cart().reduce((acc, item) => acc + item.price * item.quantity, 0));
-  cartTax = computed(() => this.cartSubtotal() * 0.10);
-  cartTotal = computed(() => this.cartSubtotal() + this.cartTax());
+  cartDiscount = computed(() => {
+    const type = this.discountType();
+    const value = this.discountValue() || 0;
+    const subtotal = this.cartSubtotal();
+    if (subtotal === 0) return 0;
+    
+    let discount = 0;
+    if (type === 'percent') {
+        discount = subtotal * (value / 100);
+    } else { // fixed
+        discount = value;
+    }
+    return Math.min(discount, subtotal); // Cannot discount more than the total
+  });
+  cartSubtotalAfterDiscount = computed(() => this.cartSubtotal() - this.cartDiscount());
+  cartTax = computed(() => this.cartSubtotalAfterDiscount() * 0.10); // Tax on discounted price
+  cartTotal = computed(() => this.cartSubtotalAfterDiscount() + this.cartTax());
   cartHasWarning = computed(() => this.cart().some(item => item.flags?.price_below_cost));
 
   // --- Core Methods ---
@@ -111,7 +128,10 @@ export class PosComponent {
   }
 
   removeFromCart(productId: number) { this.cart.update(current => current.filter(item => item.id !== productId)); }
-  clearCart() { this.cart.set([]); }
+  clearCart() { 
+    this.cart.set([]); 
+    this.discountValue.set(null);
+  }
   
   holdOrder() {
     if (this.cart().length > 0) {

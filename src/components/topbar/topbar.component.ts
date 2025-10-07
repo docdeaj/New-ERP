@@ -1,8 +1,6 @@
 import { Component, ChangeDetectionStrategy, output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { filter, map, startWith } from 'rxjs/operators';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Router } from '@angular/router';
 import { NotificationService } from '../../services/notification.service';
 import { UiStateService } from '../../services/ui-state.service';
 
@@ -16,24 +14,9 @@ import { UiStateService } from '../../services/ui-state.service';
 export class TopbarComponent {
   openSearch = output<void>();
   private router: Router = inject(Router);
-  private activatedRoute: ActivatedRoute = inject(ActivatedRoute);
   private notificationService = inject(NotificationService);
   private uiStateService = inject(UiStateService);
 
-  pageTitle = toSignal(
-    this.router.events.pipe(
-      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
-      map(() => {
-        let route: ActivatedRoute = this.activatedRoute;
-        while (route.firstChild) {
-          route = route.firstChild;
-        }
-        return route.snapshot.title || 'Aurora ERP';
-      }),
-      startWith('Dashboard')
-    )
-  );
-  
   unreadCount = this.notificationService.unreadCount;
 
   onOpenSearch() {
@@ -42,5 +25,20 @@ export class TopbarComponent {
   
   toggleNotifications() {
     this.uiStateService.isNotificationsOpen.update(v => !v);
+  }
+
+  onSettings() {
+    this.router.navigate(['/settings']);
+  }
+
+  onLogout() {
+    this.uiStateService.showConfirmation(
+      'Logout',
+      'Are you sure you want to log out?',
+      () => {
+        console.log('User logged out.');
+        // In a real app, you would call an authentication service here.
+      }
+    );
   }
 }

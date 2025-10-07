@@ -1,0 +1,63 @@
+<div #pickerContainer class="relative" (click)="!selectedProduct() && !isDropdownOpen() && openDropdown()">
+  @if (selectedProduct(); as product) {
+    <div class="flex items-center gap-2 p-1 bg-surface-raised rounded-lg shadow-sm min-h-[40px]">
+      <img [src]="product.imageUrl" alt="Product image" class="w-8 h-8 rounded-md object-cover">
+      <div class="flex-1 overflow-hidden">
+        <p class="font-semibold text-sm leading-tight truncate">{{ product.name }}</p>
+        <p class="text-xs text-charcoal-400 leading-tight">SKU: {{ product.sku }}</p>
+      </div>
+      <button (click)="clearSelection($event)" type="button" class="text-charcoal-400 hover:text-white px-2 h-full rounded-md hover:bg-surface-inset" aria-label="Change product">
+        <i class="fa-solid fa-times text-sm"></i>
+      </button>
+    </div>
+  } @else {
+    <div class="relative" (keydown)="onKeyDown($event)">
+      <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400"></i>
+      <input #searchInput 
+        type="text"
+        placeholder="Search products..." 
+        class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none w-full pl-9 pr-3 min-h-[40px]"
+        [ngModel]="query()"
+        (ngModelChange)="query.set($event)"
+        (focus)="openDropdown()">
+    </div>
+  }
+
+  @if (isDropdownOpen()) {
+    <div class="absolute top-full mt-2 w-full z-20 bg-surface-raised/95 backdrop-blur-xl rounded-lg shadow-2xl overflow-hidden animate-[slide-down-fade_180ms_cubic-bezier(0.2,0.8,0.2,1)] border border-charcoal-700/30">
+      <cdk-virtual-scroll-viewport itemSize="56" class="max-h-60">
+        <ul>
+          @for (product of results(); track product.id; let i = $index) {
+            <li (click)="selectItem(product)" 
+                (mouseenter)="activeIndex.set(i)"
+                class="flex items-center gap-3 p-2 cursor-pointer h-[56px] transition-colors"
+                [class]="activeIndex() === i ? 'bg-primary/10' : 'hover:bg-primary/5'">
+              <img [src]="product.imageUrl" alt="Product image" class="w-10 h-10 rounded-md object-cover flex-shrink-0">
+              <div class="flex-1 overflow-hidden">
+                <p class="font-semibold text-sm truncate" [innerHTML]="product.name | highlight : query()"></p>
+                <p class="text-xs text-charcoal-400 truncate" [innerHTML]="product.sku | highlight : query()"></p>
+              </div>
+              <div class="text-right flex-shrink-0">
+                <p class="font-semibold tabular-nums text-sm">{{ product.price | currency:'LKR ' }}</p>
+                <p class="text-xs text-charcoal-400">Stock: {{ getAvailableStock(product) }}</p>
+              </div>
+            </li>
+          }
+        </ul>
+      </cdk-virtual-scroll-viewport>
+      @if (results().length === 0 && !isLoading()) {
+        <p class="p-4 text-center text-sm text-charcoal-500">No products found.</p>
+      }
+    </div>
+  }
+</div>
+
+<style>
+@keyframes slide-down-fade {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-\[slide-down-fade_180ms_cubic-bezier\(0\.2\,0\.8\,0\.2\,1\)\] {
+  animation: slide-down-fade 180ms cubic-bezier(0.2,0.8,0.2,1);
+}
+</style>

@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { Invoice, Product, Contact, Kpi, InventoryItem, Quotation, Receipt, Cheque, PurchaseOrder, MediaItem, DailyReport, Expense, ReceiptPaymentMethod, LineItem, RecurringExpense, LocationKey, ReportSummary, SalesTrend, TopProductReport, ArAgingRow, ApAgingRow, InventorySnapshot, SlowMover, RecurringForecastRow, TaxSummaryRow, ReportView, ReportQuery, ReportResult, ReportSchema, LogEntry, LogSeverity } from '../models/types';
+import { Invoice, Product, Contact, Kpi, InventoryItem, Quotation, Receipt, Cheque, PurchaseOrder, MediaItem, DailyReport, Expense, ReceiptPaymentMethod, LineItem, RecurringExpense, LocationKey, ReportSummary, SalesTrend, TopProductReport, ArAgingRow, ApAgingRow, InventorySnapshot, SlowMover, RecurringForecastRow, TaxSummaryRow, ReportView, ReportQuery, ReportResult, ReportSchema, LogEntry, LogSeverity, CashflowSnapshot, QuotationStatus } from '../models/types';
 
 let MOCK_INVOICES: Invoice[] = [
   { id: 1, invoiceNumber: 'INV-2024-001', customerName: 'Tech Innovators Inc.', customerAvatarUrl: 'https://picsum.photos/seed/1/40/40', amount: 15000.00, issueDate: '2024-07-20', dueDate: '2024-08-19', status: 'Paid', totalPaid: 15000, balance: 0, lineItems: [{productId: 1, productName: 'Wireless Mouse', quantity: 5, unitPrice: 3000, total: 15000}] },
@@ -157,7 +157,6 @@ let MOCK_MEDIA: MediaItem[] = [
   { id: 'media-6', name: 'company_logo_final.svg', url: 'https://picsum.photos/seed/m6/400/400', size: 15234, type: 'image', mimeType: 'image/svg+xml', createdAt: '2024-07-24T18:00:00Z', width: 400, height: 400 },
 ];
 
-// FIX: Add mock logs to be used by the new logs API property.
 let MOCK_LOGS: LogEntry[] = [
   { id: 'log-1', timestamp: new Date(Date.now() - 1000 * 5).toISOString(), severity: 'INFO', message: 'User admin logged in successfully.', source: 'frontend', service: 'auth-service', attributes: { ip: '192.168.1.1' }, traceId: 'trace-abc' },
   { id: 'log-2', timestamp: new Date(Date.now() - 1000 * 15).toISOString(), severity: 'DEBUG', message: 'Fetching invoices for dashboard.', source: 'frontend', service: 'api-gateway', attributes: { endpoint: '/api/invoices' } },
@@ -240,8 +239,34 @@ export class ApiService {
         ap: { total: 85000, overdue: 15000 }
       };
     },
-    getTopSellingProducts: async(): Promise<Product[]> => { await new Promise(res => setTimeout(res, 300)); return MOCK_PRODUCTS.slice(0, 3); },
-    getSalesComparisonData: async(): Promise<{ labels: string[], datasets: { label: string, data: number[] }[] }> => { await new Promise(res => setTimeout(res, 300)); return { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'], datasets: [ { label: 'Last Month', data: [65, 59, 80, 81, 56, 55, 40] }, { label: 'This Month', data: [28, 48, 40, 19, 86, 27, 90] } ] } }
+    getTopSellingProducts: async(): Promise<TopProductReport[]> => { 
+        await new Promise(res => setTimeout(res, 300)); 
+        return [
+            { id: 2, name: 'Mechanical Keyboard', sku: 'MK-202', imageUrl: 'https://picsum.photos/seed/p2/200/200', quantity: 25, revenue: 250000, price: 10000 },
+            { id: 1, name: 'Wireless Mouse', sku: 'WM-101', imageUrl: 'https://picsum.photos/seed/p1/200/200', quantity: 80, revenue: 160000, price: 2000 },
+            { id: 3, name: 'USB-C Hub', sku: 'UH-303', imageUrl: 'https://picsum.photos/seed/p3/200/200', quantity: 30, revenue: 120000, price: 4000 },
+        ];
+    },
+    getSalesComparisonData: async(): Promise<{ labels: string[], datasets: { label: string, data: number[] }[] }> => { await new Promise(res => setTimeout(res, 300)); return { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'], datasets: [ { label: 'Last Month', data: [65, 59, 80, 81, 56, 55, 40] }, { label: 'This Month', data: [28, 48, 40, 19, 86, 27, 90] } ] } },
+    getCashflowSnapshot: async(): Promise<CashflowSnapshot> => {
+        await new Promise(res => setTimeout(res, 450));
+        const invoicesSeries = [50, 70, 90, 80, 110, 125.4, 150, 180, 210, 250, 280, 318.5].map(v => v * 1000);
+        const expensesSeries = [20, 30, 40, 35, 38, 34.1, 45, 50, 55, 60, 62, 34.1].map(v => v * 1000);
+        return {
+            invoices: {
+                issued: { value: 318500.50, delta: 15.2 },
+                paid: { value: 165000, delta: 5.5 },
+                outstanding: { value: 153500.50, delta: 25.1 }
+            },
+            expenses: { value: 34100, delta: -5.2 },
+            net: { value: 130900, delta: 8.9 },
+            series: {
+                invoices: invoicesSeries,
+                expenses: expensesSeries,
+                net: invoicesSeries.map((inv, i) => inv - expensesSeries[i]),
+            }
+        };
+    },
   }
 
   reports = {
@@ -279,9 +304,9 @@ export class ApiService {
     getTopProducts: async(): Promise<TopProductReport[]> => {
       await new Promise(res => setTimeout(res, 250));
       return [
-        { id: 2, name: 'Mechanical Keyboard', sku: 'MK-202', imageUrl: 'https://picsum.photos/seed/p2/200/200', quantity: 25, revenue: 250000 },
-        { id: 1, name: 'Wireless Mouse', sku: 'WM-101', imageUrl: 'https://picsum.photos/seed/p1/200/200', quantity: 80, revenue: 160000 },
-        { id: 3, name: 'USB-C Hub', sku: 'UH-303', imageUrl: 'https://picsum.photos/seed/p3/200/200', quantity: 30, revenue: 120000 },
+        { id: 2, name: 'Mechanical Keyboard', sku: 'MK-202', imageUrl: 'https://picsum.photos/seed/p2/200/200', quantity: 25, revenue: 250000, price: 10000 },
+        { id: 1, name: 'Wireless Mouse', sku: 'WM-101', imageUrl: 'https://picsum.photos/seed/p1/200/200', quantity: 80, revenue: 160000, price: 2000 },
+        { id: 3, name: 'USB-C Hub', sku: 'UH-303', imageUrl: 'https://picsum.photos/seed/p3/200/200', quantity: 30, revenue: 120000, price: 4000 },
       ];
     },
     getArAging: async(): Promise<ArAgingRow[]> => {
@@ -344,7 +369,9 @@ export class ApiService {
       const startTime = Date.now();
       await new Promise(res => setTimeout(res, 600));
 
-      const schema = await MOCK_API.reports.getSchema();
+// FIX: Replaced invalid 'MOCK_API' reference with 'this' to correctly call the getSchema method within the service.
+      const schema = await this.reports.getSchema();
+      
       const allFields = [...schema.dimensions, ...schema.metrics];
       
       const columns = [...query.dimensions, ...query.metrics].map(key => {
@@ -521,7 +548,6 @@ export class ApiService {
     deleteMany: async (ids: (string|number)[]): Promise<void> => { MOCK_CONTACTS = this.deleteManyFrom(MOCK_CONTACTS, ids); }
   };
   
-  // FIX: Add 'logs' property to implement the API for the logs page.
   logs = {
     search: async(params: { query: string; severities: LogSeverity[] }): Promise<{ rows: LogEntry[] }> => {
         await new Promise(res => setTimeout(res, 200));
@@ -554,6 +580,73 @@ export class ApiService {
       return newLog;
     }
   };
+
+  // FIX: Add missing updateQuotationStatus method.
+  async updateQuotationStatus(id: number, status: QuotationStatus): Promise<Quotation> {
+    const quotation = MOCK_QUOTATIONS.find(q => q.id === id);
+    if (!quotation) throw new Error('Quotation not found');
+    quotation.status = status;
+    this.notifyDataChange();
+    return quotation;
+  }
+
+  // FIX: Add missing convertPoToStock method.
+  async convertPoToStock(poId: number): Promise<void> {
+    console.log(`Converting PO #${poId} to stock.`);
+    const po = MOCK_PURCHASE_ORDERS.find(p => p.id === poId);
+    if (!po) {
+      console.error(`PO with id ${poId} not found.`);
+      return;
+    }
+    if (po.status !== 'Ordered' && po.status !== 'Shipped') {
+        console.warn(`PO #${poId} is already ${po.status}. Cannot convert to stock again.`);
+        return;
+    }
+
+    po.lineItems?.forEach(item => {
+      const product = MOCK_PRODUCTS.find(p => p.id === item.productId);
+      if (product) {
+        // Assuming stock goes to main warehouse
+        product.stock.mainWarehouse += item.quantity;
+      } else {
+          console.warn(`Product with id ${item.productId} not found for PO #${poId}`);
+      }
+    });
+
+    po.status = 'Received';
+
+    // Re-sync MOCK_INVENTORY from MOCK_PRODUCTS
+    MOCK_INVENTORY = MOCK_PRODUCTS.map((p) => ({
+        id: p.id, productId: p.id, productName: p.name, sku: p.sku, imageUrl: p.imageUrl, onHand: p.stock, committed: p.committed, description: p.description
+    }));
+
+    this.notifyDataChange();
+    await new Promise(res => setTimeout(res, 500));
+  }
+  
+  // FIX: Add missing transferStock method.
+  async transferStock(params: { productIds: (string | number)[], from: LocationKey, to: LocationKey, quantity: number | 'All' }): Promise<void> {
+    console.log('Transferring stock:', params);
+    // Mock logic
+    params.productIds.forEach(id => {
+        const product = MOCK_PRODUCTS.find(p => p.id === id);
+        if (product) {
+            const availableFrom = product.stock[params.from] - product.committed[params.from];
+            const quantityToMove = params.quantity === 'All' ? availableFrom : Math.min(params.quantity, availableFrom);
+
+            if (quantityToMove > 0) {
+                product.stock[params.from] -= quantityToMove;
+                product.stock[params.to] += quantityToMove;
+            }
+        }
+    });
+    // Re-sync MOCK_INVENTORY from MOCK_PRODUCTS
+    MOCK_INVENTORY = MOCK_PRODUCTS.map((p) => ({
+        id: p.id, productId: p.id, productName: p.name, sku: p.sku, imageUrl: p.imageUrl, onHand: p.stock, committed: p.committed, description: p.description
+    }));
+    this.notifyDataChange();
+    await new Promise(res => setTimeout(res, 500));
+  }
 
   // --- CREATE Methods ---
   createInvoice = async (data: Partial<Invoice>): Promise<Invoice> => { const newInvoice: Invoice = { id: this.getNextId(MOCK_INVOICES), invoiceNumber: `INV-2024-${String(this.getNextId(MOCK_INVOICES)).padStart(3, '0')}`, status: 'Draft', amount: data.amount || 0, totalPaid: 0, balance: data.amount || 0, ...data, } as Invoice; MOCK_INVOICES.push(newInvoice); this.notifyDataChange(); return newInvoice; }
@@ -607,39 +700,3 @@ export class ApiService {
     const outstandingInvoice = MOCK_INVOICES
       .filter(inv => inv.customerName === data.customer.name && (inv.status === 'Pending' || inv.status === 'Overdue'))
       .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())[0];
-    
-    if (outstandingInvoice) {
-      await this.createReceipt({
-        invoiceId: outstandingInvoice.id,
-        amount: Math.min(data.amount, outstandingInvoice.balance), // Pay up to the balance
-        method: data.paymentMethod,
-        paymentDate: data.paymentDate,
-      });
-    } else {
-      // In a real app, this might create an unapplied credit.
-      console.warn(`No outstanding invoice found for ${data.customer.name} to apply payment.`);
-      // For now, let's just create a receipt without an invoice link
-      const newReceipt: Receipt = {
-        id: this.getNextId(MOCK_RECEIPTS),
-        receiptNumber: `REC-2024-${String(this.getNextId(MOCK_RECEIPTS)).padStart(3, '0')}`,
-        invoiceId: 0, // No associated invoice
-        invoiceNumber: 'N/A',
-        customerName: data.customer.name,
-        // FIX: Add missing 'amount' property to the new receipt object.
-        amount: data.amount,
-        // FIX: The property on `data` is `paymentMethod`, not `method`.
-        method: data.paymentMethod,
-        paymentDate: data.paymentDate,
-      };
-      MOCK_RECEIPTS.push(newReceipt);
-    }
-    this.notifyDataChange();
-  }
-  
-  // --- UPDATE/WORKFLOW Methods ---
-  updateQuotationStatus = async (quotationId: number, status: 'Accepted'): Promise<void> => { const quotation = MOCK_QUOTATIONS.find(q => q.id === quotationId); if (quotation) { quotation.status = status; } await new Promise(res => setTimeout(res, 100)); this.notifyDataChange(); }
-  convertPoToStock = async (poId: number): Promise<void> => { const po = MOCK_PURCHASE_ORDERS.find(p => p.id === poId); if (!po || !po.lineItems) throw new Error(`PO not found or has no items.`); po.status = 'Received'; for (const item of po.lineItems) { const inventoryItem = MOCK_INVENTORY.find(inv => inv.productId === item.productId); if (inventoryItem) { inventoryItem.onHand.mainWarehouse += item.quantity; } } await new Promise(res => setTimeout(res, 400)); this.notifyDataChange(); }
-  transferStock = async (data: { productIds: (number|string)[], from: LocationKey, to: LocationKey, quantity: number | 'All' }): Promise<void> => { for(const productId of data.productIds) { const invItem = MOCK_INVENTORY.find(i => i.id === productId); if (invItem) { const available = invItem.onHand[data.from] - invItem.committed[data.from]; const qtyToMove = data.quantity === 'All' ? available : Math.min(data.quantity, available); if (qtyToMove > 0) { invItem.onHand[data.from] -= qtyToMove; invItem.onHand[data.to] += qtyToMove; } } } await new Promise(res => setTimeout(res, 400)); this.notifyDataChange(); }
-}
-
-const MOCK_API = new ApiService();

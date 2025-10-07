@@ -10,13 +10,15 @@ import { CustomerPickerComponent } from '../customer-picker/customer-picker.comp
 import { GeminiService } from '../../services/gemini.service';
 import { SettingsService } from '../../services/settings.service';
 import { DatePickerComponent } from '../date-picker/date-picker.component';
+import { ProductPickerComponent } from '../product-picker/product-picker.component';
+import { SupplierPickerComponent } from '../supplier-picker/supplier-picker.component';
 
 @Component({
   selector: 'app-universal-add-drawer',
   templateUrl: './universal-add-drawer.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MiniMediaBrowserComponent, CustomerPickerComponent, DatePickerComponent],
+  imports: [CommonModule, ReactiveFormsModule, MiniMediaBrowserComponent, CustomerPickerComponent, DatePickerComponent, ProductPickerComponent, SupplierPickerComponent],
 })
 export class UniversalAddDrawerComponent {
   context = input.required<DrawerContext | null>();
@@ -41,9 +43,25 @@ export class UniversalAddDrawerComponent {
   // --- Form Totals Calculation ---
   private currentItems = signal<any[]>([]);
   subtotal = computed(() => this.currentItems().reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0));
+  
+  discountAmount = computed(() => {
+    const form = this.getCurrentForm();
+    if (!form || !('discountType' in form.controls)) return 0;
+    
+    const type = (form as FormGroup).get('discountType')?.value;
+    const value = (form as FormGroup).get('discountValue')?.value || 0;
+    const sub = this.subtotal();
+    
+    if (type === 'percent') {
+        return sub * (value / 100);
+    }
+    return Math.min(value, sub);
+  });
+  subtotalAfterDiscount = computed(() => this.subtotal() - this.discountAmount());
+
   taxRate = this.settingsService.get<number>('regional.tax.vat_rate');
-  tax = computed(() => this.subtotal() * (this.taxRate() / 100));
-  total = computed(() => this.subtotal() + this.tax());
+  tax = computed(() => this.subtotalAfterDiscount() * (this.taxRate() / 100));
+  total = computed(() => this.subtotalAfterDiscount() + this.tax());
 
   constructor() {
     this.loadProducts();
@@ -52,8 +70,6 @@ export class UniversalAddDrawerComponent {
     effect((onCleanup) => {
       const form = this.getCurrentForm();
       if (form && 'items' in form.controls) {
-        // FIX: Cast `form` to a non-generic `FormGroup` to resolve TypeScript's inability to unify
-        // the `get` method signatures from the union of different `FormGroup` types.
         const items = (form as FormGroup).get('items') as FormArray;
         const sub = items.valueChanges.pipe(startWith(items.value)).subscribe(val => {
           this.currentItems.set(val);
@@ -76,26 +92,36 @@ export class UniversalAddDrawerComponent {
       if (this.isEditMode() && data && form) {
         form.patchValue(data);
         if ('items' in form.controls && data.lineItems) {
-          // FIX: Cast `form` to a non-generic `FormGroup` to resolve TypeScript's inability to unify
-          // the `get` method signatures from the union of different `FormGroup` types.
           const items = (form as FormGroup).get('items') as FormArray;
           items.clear();
           data.lineItems.forEach((item: any) => items.push(this.createLineItem(item)));
         }
         
       } else if (ctx === 'new-invoice' && data) {
-         // Special case: Converting a Quotation to an Invoice
-        const quotation = data as Quotation;
-        const mockCustomer: Partial<Contact> = { name: quotation.customerName, avatarUrl: quotation.customerAvatarUrl };
-        this.invoiceForm.patchValue({ customer: mockCustomer as Contact });
-        
-        const items = this.invoiceForm.get('items') as FormArray;
-        items.clear();
-        quotation.lineItems?.forEach(item => {
-          const lineItemGroup = this.createLineItem();
-          lineItemGroup.patchValue(item);
-          items.push(lineItemGroup);
-        });
+         // Special case: Converting a Quotation to an Invoice or starting with a customer
+        if ('quotationNumber' in data) { // from Quotation
+            const quotation = data as Quotation;
+            const mockCustomer: Partial<Contact> = { name: quotation.customerName, avatarUrl: quotation.customerAvatarUrl };
+            this.invoiceForm.patchValue({ customer: mockCustomer as Contact });
+            
+            const items = this.invoiceForm.get('items') as FormArray;
+            items.clear();
+            quotation.lineItems?.forEach(item => {
+              const lineItemGroup = this.createLineItem();
+              lineItemGroup.patchValue(item);
+              items.push(lineItemGroup);
+            });
+        } else if ('name' in data) { // From Contact
+             this.invoiceForm.patchValue({ customer: data as Contact });
+        }
+      } else if (ctx === 'new-po' && data) {
+         if ('lineItems' in data) { // from Product quick action
+           const items = this.purchaseOrderForm.get('items') as FormArray;
+           items.clear();
+           data.lineItems.forEach((item: any) => items.push(this.createLineItem(item)));
+         } else if ('name' in data) { // from Contact
+            this.purchaseOrderForm.patchValue({ supplier: data as Contact });
+         }
       }
     });
   }
@@ -105,7 +131,7 @@ export class UniversalAddDrawerComponent {
   }
 
   resetAllForms() {
-    this.invoiceForm.reset({ issueDate: new Date().toISOString().split('T')[0] });
+    this.invoiceForm.reset({ issueDate: new Date().toISOString().split('T')[0], discountType: 'percent', discountValue: 0 });
     (this.invoiceForm.get('items') as FormArray).clear();
     (this.invoiceForm.get('items') as FormArray).push(this.createLineItem());
 
@@ -126,6 +152,18 @@ export class UniversalAddDrawerComponent {
     this.recordPaymentForm.reset({ paymentDate: new Date().toISOString().split('T')[0], paymentMethod: 'Cash' });
   }
 
+  onProductSelect(product: Product, index: number) {
+    const items = this.itemsFormArray;
+    if (items && product) {
+      const lineItem = items.at(index);
+      lineItem.patchValue({
+        productId: product.id,
+        productName: product.name,
+        unitPrice: product.price,
+      });
+    }
+  }
+  
   // --- Line Item Management ---
   createLineItem(data: any = null): FormGroup {
     const group = this.fb.group({
@@ -139,27 +177,12 @@ export class UniversalAddDrawerComponent {
     if (data) {
       group.patchValue(data);
     }
-
-    group.get('productId')?.valueChanges.subscribe(id => {
-      if (id) {
-        const product = this.products().find(p => p.id === +id);
-        if (product) {
-          group.patchValue({ 
-            unitPrice: product.price,
-            productName: product.name,
-          }, { emitEvent: false });
-        }
-      }
-    });
-
     return group;
   }
 
   get itemsFormArray(): FormArray | null {
     const form = this.getCurrentForm();
     if (form && 'items' in form.controls) {
-      // FIX: Cast `form` to a non-generic `FormGroup` to resolve TypeScript's inability to unify
-      // the `get` method signatures from the union of different `FormGroup` types.
       return (form as FormGroup).get('items') as FormArray;
     }
     return null;
@@ -181,6 +204,8 @@ export class UniversalAddDrawerComponent {
     dueDate: ['', Validators.required],
     items: this.fb.array([this.createLineItem()]),
     notes: [''],
+    discountType: ['percent'],
+    discountValue: [0],
   });
 
   expenseForm = this.fb.group({
@@ -219,7 +244,7 @@ export class UniversalAddDrawerComponent {
   });
   
   purchaseOrderForm = this.fb.group({
-    supplierName: ['', Validators.required],
+    supplier: [null as Contact | null, Validators.required],
     orderDate: [new Date().toISOString().split('T')[0], Validators.required],
     expectedDate: [''],
     items: this.fb.array([this.createLineItem()]),
@@ -323,6 +348,10 @@ export class UniversalAddDrawerComponent {
             payload.customerName = payload.customer.name;
             payload.customerAvatarUrl = payload.customer.avatarUrl;
             delete payload.customer;
+        }
+        if ('supplier' in payload && payload.supplier) {
+            payload.supplierName = payload.supplier.name;
+            delete payload.supplier;
         }
         return payload;
       };

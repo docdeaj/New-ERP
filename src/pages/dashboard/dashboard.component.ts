@@ -3,7 +3,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { UiStateService, DrawerContext } from '../../services/ui-state.service';
 import { ApiService } from '../../services/api.service';
-import { Kpi, Product } from '../../models/types';
+import { Kpi, Product, CashflowSnapshot, TopProductReport } from '../../models/types';
 import { SimpleBarChartComponent } from '../../components/simple-bar-chart/simple-bar-chart.component';
 import { CalendarWidgetComponent } from '../../components/calendar-widget/calendar-widget.component';
 import { SparklineChartComponent } from '../../components/sparkline-chart/sparkline-chart.component';
@@ -20,7 +20,6 @@ interface WeatherDetails {
   icon: string;
   high: number;
   low: number;
-  feelsLike: number;
   humidity: number;
   rainChance: number;
   windSpeed: number;
@@ -40,7 +39,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   salesKpi = signal<Kpi | null>(null);
   expensesKpi = signal<Kpi | null>(null);
-  topSellingProducts = signal<Product[]>([]);
+  topSellingProducts = signal<TopProductReport[]>([]);
   salesChartData = signal<{ labels: string[], datasets: { label: string, data: number[] }[] } | null>(null);
   
   // Dynamic Dashboard Data
@@ -49,6 +48,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   expensesTrend = signal<number[]>([]);
   arApSummary = signal<{ar: { total: number, overdue: number }, ap: { total: number, overdue: number }} | null>(null);
   weatherDetails = signal<WeatherDetails | null>(null);
+  cashflowSnapshot = signal<CashflowSnapshot | null>(null);
 
   salesTrendMax = computed(() => this.salesTrend().length > 0 ? Math.max(...this.salesTrend()) / 1000 : 0);
   expensesTrendMax = computed(() => this.expensesTrend().length > 0 ? Math.max(...this.expensesTrend()) / 1000 : 0);
@@ -77,13 +77,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   async loadDashboardData() {
-    const [kpis, products, chartData, salesTrendData, expensesTrendData, arApData] = await Promise.all([
+    const [kpis, products, chartData, salesTrendData, expensesTrendData, arApData, cashflow] = await Promise.all([
       this.api.dashboard.getKpis(),
       this.api.dashboard.getTopSellingProducts(),
       this.api.dashboard.getSalesComparisonData(),
       this.api.dashboard.getKpiTrend('sales'),
       this.api.dashboard.getKpiTrend('expenses'),
-      this.api.dashboard.getArApSummary()
+      this.api.dashboard.getArApSummary(),
+      this.api.dashboard.getCashflowSnapshot()
     ]);
     this.salesKpi.set(kpis.sales);
     this.expensesKpi.set(kpis.expenses);
@@ -92,13 +93,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.salesTrend.set(salesTrendData);
     this.expensesTrend.set(expensesTrendData);
     this.arApSummary.set(arApData);
+    this.cashflowSnapshot.set(cashflow);
     this.weatherDetails.set({
       temperature: 28,
       condition: 'Partly Cloudy',
       icon: 'fa-solid fa-cloud-sun',
       high: 30,
       low: 25,
-      feelsLike: 31,
       humidity: 75,
       rainChance: 20,
       windSpeed: 10,

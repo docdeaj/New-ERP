@@ -169,6 +169,17 @@ export interface Kpi {
   delta: number; // percentage change
 }
 
+export interface CashflowSnapshot {
+  invoices: { issued: Kpi; paid: Kpi; outstanding: Kpi };
+  expenses: Kpi;
+  net: Kpi;
+  series: {
+    invoices: number[];
+    expenses: number[];
+    net: number[];
+  };
+}
+
 export interface MediaItem {
   id: string;
   name: string;
@@ -190,6 +201,21 @@ export interface DailyReport {
   cashSales: number;
   nonCashSales: number;
   chequesPending: number;
+}
+
+// --- Notifications ---
+export type NotificationType = 'invoice' | 'stock' | 'system' | 'purchase_order' | 'mention' | 'cheque' | 'quotation';
+export type NotificationPriority = 'high' | 'medium' | 'low';
+
+export interface Notification {
+  id: number;
+  type: NotificationType;
+  title: string;
+  body: string;
+  createdAt: string; // ISO string
+  read: boolean;
+  link?: string;
+  priority: NotificationPriority;
 }
 
 // --- Calendar Widget Types ---
@@ -235,6 +261,7 @@ export interface TopProductReport {
   imageUrl: string;
   quantity: number;
   revenue: number;
+  price: number;
 }
 
 export interface ArAgingRow {
@@ -287,21 +314,6 @@ export interface TaxSummaryRow {
   rate: string;
   taxableSales: number;
   taxCollected: number;
-}
-
-// --- Notifications ---
-export type NotificationType = 'invoice' | 'stock' | 'system' | 'purchase_order' | 'mention' | 'cheque' | 'quotation' | 'generic';
-export type NotificationPriority = 'high' | 'medium' | 'low';
-
-export interface Notification {
-  id: number;
-  type: NotificationType;
-  title: string;
-  body: string;
-  createdAt: string; // ISO string
-  read: boolean;
-  link?: string;
-  priority: NotificationPriority;
 }
 
 // --- NEW DYNAMIC REPORTING TYPES ---
