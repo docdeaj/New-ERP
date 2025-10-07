@@ -13,15 +13,8 @@
           <h3 class="text-xl font-semibold text-charcoal-100">
             {{ normData.type }} {{ normData.number }}
           </h3>
-          <p class="text-sm text-charcoal-400">
-            {{ normData.customerName }}
-            @if(normData.balance && normData.balance > 0) {
-              <span class="text-red-400 font-semibold ml-2">• Balance Due: {{ normData.balance | currency:'LKR ' }}</span>
-            }
-          </p>
         </div>
         <div class="flex items-center gap-4">
-            <span [class]="'px-3 py-1 text-sm font-semibold rounded-full ' + getStatusColor(normData.status)">{{ normData.status }}</span>
             <button type="button" (click)="onClose()" class="text-charcoal-400 bg-transparent hover:bg-surface-raised rounded-xl text-sm p-1.5 ml-auto inline-flex items-center">
               <i class="fa-solid fa-times w-5 h-5"></i>
               <span class="sr-only">Close modal</span>
@@ -29,10 +22,49 @@
         </div>
       </header>
 
-      <!-- Body: Document Viewport -->
-      <main class="flex-1 flex items-center justify-center p-4 overflow-hidden">
-        <div #pdfContainer class="w-full h-full">
-            <div #pdfWrapper [style.transform]="'scale(' + scale() + ')'" class="origin-top-left bg-white shadow-lg">
+      <!-- Body: Split View -->
+      <main class="flex-1 grid grid-cols-[minmax(320px,380px)_1fr] gap-6 p-4 overflow-hidden">
+        <!-- Left Panel: Details -->
+        <div class="flex flex-col gap-4 overflow-y-auto">
+          <div class="bg-surface-inset rounded-lg p-4 shadow-inner-sm space-y-4">
+            <div>
+              <p class="text-sm text-charcoal-400">Status</p>
+              <p><span [class]="'px-3 py-1 text-sm font-semibold rounded-full ' + getStatusColor(normData.status)">{{ normData.status }}</span></p>
+            </div>
+            <div>
+              <p class="text-sm text-charcoal-400">Customer</p>
+              <p class="font-semibold text-charcoal-100">{{ normData.customerName }}</p>
+            </div>
+            
+            @if(normData.type === 'Invoice') {
+              @let invoice = asInvoice(data());
+              <div class="grid grid-cols-2 gap-4">
+                <div><p class="text-sm text-charcoal-400">Issue Date</p><p class="font-semibold">{{ invoice.issueDate | date:'mediumDate' }}</p></div>
+                <div><p class="text-sm text-charcoal-400">Due Date</p><p class="font-semibold">{{ invoice.dueDate | date:'mediumDate' }}</p></div>
+              </div>
+              <div class="space-y-2 pt-2 border-t border-charcoal-700/50">
+                  <div class="flex justify-between text-sm"><span class="text-charcoal-300">Total</span> <span class="font-semibold tabular-nums">{{ invoice.amount | currency:'LKR ' }}</span></div>
+                  <div class="flex justify-between text-sm"><span class="text-charcoal-300">Paid</span> <span class="font-semibold tabular-nums text-green-400">-{{ invoice.totalPaid | currency:'LKR ' }}</span></div>
+                  <div class="flex justify-between text-base font-bold"><span class="text-charcoal-100">Balance</span> <span class="tabular-nums text-red-400">{{ invoice.balance | currency:'LKR ' }}</span></div>
+              </div>
+            }
+          </div>
+          <div class="flex items-center gap-3">
+              <button (click)="onDownloadPdf()" type="button" class="aurora-button-secondary flex-1 inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-4 py-2 rounded-xl">
+                <i class="fa-solid fa-file-arrow-down"></i>Download
+              </button>
+              @if (isEditable()) {
+                <button (click)="onEdit()" type="button" class="aurora-button-primary flex-1 inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl">
+                    <i class="fa-solid fa-pen"></i>
+                    <span>Edit</span>
+                </button>
+              }
+          </div>
+        </div>
+
+        <!-- Right Panel: Document Viewport -->
+        <div #pdfContainer class="w-full h-full flex items-center justify-center overflow-hidden bg-surface-inset rounded-lg shadow-inner-sm">
+            <div #pdfWrapper [style.transform]="'scale(' + scale() + ')'" class="origin-center bg-white shadow-lg">
               @switch (normData.type) {
                 @case ('Invoice') {
                   <app-invoice-pdf [data]="asInvoice(data())"></app-invoice-pdf>
@@ -50,19 +82,6 @@
             </div>
         </div>
       </main>
-
-      <!-- Footer Actions -->
-      <footer class="flex-shrink-0 flex items-center justify-end p-4 space-x-2 border-t border-charcoal-800/50">
-        <button (click)="onDownloadPdf()" type="button" class="aurora-button-secondary inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-4 py-2 rounded-xl">
-          <i class="fa-solid fa-file-arrow-down"></i>Download PDF
-        </button>
-        @if (isEditable()) {
-          <button (click)="onEdit()" type="button" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl">
-              <i class="fa-solid fa-pen"></i>
-              <span>Edit</span>
-          </button>
-        }
-      </footer>
     }
   </div>
 </div>

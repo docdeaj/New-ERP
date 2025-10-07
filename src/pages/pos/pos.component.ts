@@ -185,10 +185,10 @@ export class PosComponent {
   
   getStockRingDashOffset(p: Product): number {
     const total = this.getTotalStock(p);
-    if (total === 0) return 57; // Empty circle
+    if (total === 0) return 94.2; // Empty circle for circumference 94.2
     const available = this.getAvailableStock(p);
     const percentage = Math.max(0, available / total);
-    return 57 * (1 - percentage);
+    return 94.2 * (1 - percentage);
   }
 
   getStockRingColor(p: Product): string {
@@ -197,8 +197,8 @@ export class PosComponent {
     const available = this.getAvailableStock(p);
     const percentage = (available / total) * 100;
     
-    if (percentage <= 10) return 'text-red-500'; // danger
-    if (percentage <= 30) return 'text-yellow-500'; // warn
+    if (percentage <= 20) return 'text-red-500'; // danger
+    if (percentage <= 50) return 'text-amber-500'; // warn
     return 'text-green-500'; // success
   }
 

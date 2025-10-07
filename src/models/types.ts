@@ -280,3 +280,47 @@ export interface TaxSummaryRow {
   taxableSales: number;
   taxCollected: number;
 }
+
+// --- NEW DYNAMIC REPORTING TYPES ---
+
+export interface SchemaField {
+  key: string;
+  label: string;
+  group: string;
+  type: 'string' | 'currency' | 'date' | 'number';
+}
+
+export interface ReportSchema {
+  dimensions: SchemaField[];
+  metrics: SchemaField[];
+}
+
+// Represents a user-defined query
+export interface ReportQuery {
+  dimensions: string[]; // e.g., ['customer.name', 'date.month']
+  metrics: string[];    // e.g., ['net_sales', 'cogs']
+  filters: { field: string; operator: string; value: any; }[];
+  sortBy: { field: string; direction: 'asc' | 'desc'; }[];
+}
+
+// Represents a saved report configuration
+export interface ReportView {
+  id: string;
+  name: string;
+  description: string;
+  query: ReportQuery;
+  visualizationType: 'table' | 'bar' | 'pivot';
+  owner: {
+    name: string;
+    avatarUrl: string;
+  };
+  lastRun: string; // ISO string
+  isFavorite: boolean;
+}
+
+// Represents the API response for a report run
+export interface ReportResult {
+  meta: { columns: { key: string; label: string; type: 'string' | 'currency' | 'date' | 'number' }[] };
+  data: Record<string, any>[];
+  queryExecutionTime: number;
+}

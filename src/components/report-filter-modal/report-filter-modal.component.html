@@ -1,0 +1,78 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4" [class.hidden]="!isOpen()">
+  <!-- Backdrop -->
+  <div class="aurora-backdrop absolute inset-0 animate-[fade-in_180ms_ease-in-out]" (click)="onClose()"></div>
+
+  <!-- Modal -->
+  <form [formGroup]="filterForm" (ngSubmit)="onApply()" class="relative w-full max-w-lg bg-surface/90 backdrop-blur-xl rounded-2xl shadow-2xl animate-[slide-down_180ms_cubic-bezier(0.2,0.8,0.2,1)]" role="dialog" aria-modal="true">
+    <!-- Header -->
+    <div class="p-4 flex justify-between items-center border-b border-charcoal-800/50">
+      <h3 class="text-xl font-bold">Customize Report</h3>
+      <button type="button" (click)="onClose()" class="text-charcoal-400 hover:text-charcoal-100 transition-colors p-2 rounded-full">
+        <i class="fa-solid fa-times text-xl"></i>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+      <!-- Date Range -->
+      <fieldset>
+        <legend class="text-sm font-medium text-charcoal-300 mb-2">Custom Date Range</legend>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="startDate" class="block text-xs text-charcoal-400 mb-1">Start Date</label>
+            <input type="date" id="startDate" formControlName="startDate" class="aurora-input block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm">
+          </div>
+          <div>
+            <label for="endDate" class="block text-xs text-charcoal-400 mb-1">End Date</label>
+            <input type="date" id="endDate" formControlName="endDate" class="aurora-input block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm">
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- Conditional Filters -->
+      @if (activeCategory() === 'financials' || activeCategory() === 'sales') {
+        <div>
+          <label for="customer" class="block text-sm font-medium text-charcoal-300 mb-2">Customer</label>
+          <app-customer-picker
+            [value]="filterForm.controls.customer.value"
+            (onSelect)="filterForm.controls.customer.setValue($event)"
+            (onClear)="filterForm.controls.customer.setValue(null)">
+          </app-customer-picker>
+        </div>
+      }
+      
+      @if (activeCategory() === 'financials' || activeCategory() === 'operational') {
+        <div>
+          <label for="supplier" class="block text-sm font-medium text-charcoal-300 mb-2">Supplier</label>
+          <app-supplier-picker
+            [value]="filterForm.controls.supplier.value"
+            (onSelect)="filterForm.controls.supplier.setValue($event)"
+            (onClear)="filterForm.controls.supplier.setValue(null)">
+          </app-supplier-picker>
+        </div>
+      }
+
+      @if (activeCategory() === 'sales' || activeCategory() === 'inventory') {
+        <div>
+          <label for="category" class="block text-sm font-medium text-charcoal-300 mb-2">Product Category</label>
+          <input type="text" id="category" formControlName="category" placeholder="e.g., Electronics" class="aurora-input block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm">
+        </div>
+      }
+    </div>
+
+    <!-- Footer -->
+    <div class="p-4 flex justify-between items-center gap-3 border-t border-charcoal-800/50">
+        <button (click)="onReset()" type="button" class="text-sm font-semibold text-charcoal-400 hover:text-primary-400 transition-colors p-2 rounded-lg">
+          Reset Filters
+        </button>
+        <div class="flex items-center gap-3">
+            <button (click)="onClose()" type="button" class="aurora-button-secondary inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-4 py-2 rounded-xl">
+                Cancel
+            </button>
+            <button type="submit" [disabled]="!filterForm.valid" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl">
+                Apply Filters
+            </button>
+        </div>
+    </div>
+  </form>
+</div>

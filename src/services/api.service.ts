@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { Invoice, Product, Contact, Kpi, InventoryItem, Quotation, Receipt, Cheque, PurchaseOrder, MediaItem, DailyReport, Expense, ReceiptPaymentMethod, LineItem, RecurringExpense, LocationKey, ReportSummary, SalesTrend, TopProductReport, ArAgingRow, ApAgingRow, InventorySnapshot, SlowMover, RecurringForecastRow, TaxSummaryRow } from '../models/types';
+import { Invoice, Product, Contact, Kpi, InventoryItem, Quotation, Receipt, Cheque, PurchaseOrder, MediaItem, DailyReport, Expense, ReceiptPaymentMethod, LineItem, RecurringExpense, LocationKey, ReportSummary, SalesTrend, TopProductReport, ArAgingRow, ApAgingRow, InventorySnapshot, SlowMover, RecurringForecastRow, TaxSummaryRow, ReportView, ReportQuery, ReportResult, ReportSchema } from '../models/types';
 
 let MOCK_INVOICES: Invoice[] = [
   { id: 1, invoiceNumber: 'INV-2024-001', customerName: 'Tech Innovators Inc.', customerAvatarUrl: 'https://picsum.photos/seed/1/40/40', amount: 15000.00, issueDate: '2024-07-20', dueDate: '2024-08-19', status: 'Paid', totalPaid: 15000, balance: 0, lineItems: [{productId: 1, productName: 'Wireless Mouse', quantity: 5, unitPrice: 3000, total: 15000}] },
@@ -86,6 +86,39 @@ const MOCK_RECURRING_FORECAST: RecurringForecastRow[] = [
 const MOCK_TAX_SUMMARY: TaxSummaryRow[] = [
     { id: 1, rate: 'VAT (10%)', taxableSales: 185600, taxCollected: 18560 },
     { id: 2, rate: 'NBT (2%)', taxableSales: 50000, taxCollected: 1000 },
+];
+
+let MOCK_REPORT_VIEWS: ReportView[] = [
+  {
+    id: 'report-1',
+    name: 'Monthly Sales by Customer',
+    description: 'Tracks net sales for each customer on a monthly basis, highlighting top performers and trends.',
+    query: { dimensions: ['customer.name', 'date.month'], metrics: ['net_sales'], filters: [], sortBy: [{ field: 'net_sales', direction: 'desc' }] },
+    visualizationType: 'table',
+    owner: { name: 'Admin User', avatarUrl: 'https://picsum.photos/seed/aurora-user/40/40' },
+    lastRun: '2024-07-28T10:30:00Z',
+    isFavorite: true,
+  },
+  {
+    id: 'report-2',
+    name: 'Q3 Product Performance',
+    description: 'A bar chart view of revenue and cost of goods sold for top-selling products this quarter.',
+    query: { dimensions: ['product.name'], metrics: ['revenue', 'cogs'], filters: [{field: 'date.quarter', operator: 'eq', value: 'Q3'}], sortBy: [{ field: 'revenue', direction: 'desc' }] },
+    visualizationType: 'bar',
+    owner: { name: 'Admin User', avatarUrl: 'https://picsum.photos/seed/aurora-user/40/40' },
+    lastRun: '2024-07-27T14:00:00Z',
+    isFavorite: false,
+  },
+  {
+    id: 'report-3',
+    name: 'A/R Aging Summary (Shared)',
+    description: 'Standard Accounts Receivable aging buckets for all customers. Shared by the finance team.',
+    query: { dimensions: ['customer.name', 'aging_bucket'], metrics: ['balance'], filters: [], sortBy: [{ field: 'balance', direction: 'desc' }] },
+    visualizationType: 'pivot',
+    owner: { name: 'Jane Doe', avatarUrl: 'https://picsum.photos/seed/jane/40/40' },
+    lastRun: '2024-07-29T09:00:00Z',
+    isFavorite: false,
+  },
 ];
 
 const MOCK_MEDIA: MediaItem[] = Array.from({ length: 15 }, (_, i) => ({
@@ -236,7 +269,81 @@ export class ApiService {
     getTaxSummary: async(): Promise<TaxSummaryRow[]> => {
         await new Promise(res => setTimeout(res, 320));
         return MOCK_TAX_SUMMARY;
-    }
+    },
+    getViews: async(): Promise<ReportView[]> => {
+      await new Promise(res => setTimeout(res, 400));
+      return MOCK_REPORT_VIEWS;
+    },
+    getView: async(id: string): Promise<ReportView | null> => {
+      await new Promise(res => setTimeout(res, 150));
+      return MOCK_REPORT_VIEWS.find(v => v.id === id) || null;
+    },
+    getSchema: async(): Promise<ReportSchema> => {
+      await new Promise(res => setTimeout(res, 200));
+      return {
+        dimensions: [
+          { key: 'customer.name', label: 'Customer Name', group: 'Customer', type: 'string' },
+          { key: 'customer.type', label: 'Customer Type', group: 'Customer', type: 'string' },
+          { key: 'product.name', label: 'Product Name', group: 'Product', type: 'string' },
+          { key: 'product.category', label: 'Product Category', group: 'Product', type: 'string' },
+          { key: 'date.month', label: 'Month', group: 'Date', type: 'string' },
+          { key: 'date.quarter', label: 'Quarter', group: 'Date', type: 'string' },
+          { key: 'aging_bucket', label: 'A/R Aging Bucket', group: 'Financial', type: 'string' },
+        ],
+        metrics: [
+          { key: 'net_sales', label: 'Net Sales', group: 'Sales', type: 'currency' },
+          { key: 'cogs', label: 'Cost of Goods Sold', group: 'Sales', type: 'currency' },
+          { key: 'revenue', label: 'Revenue', group: 'Sales', type: 'currency' },
+          { key: 'balance', label: 'Balance', group: 'Financial', type: 'currency' },
+          { key: 'quantity_sold', label: 'Quantity Sold', group: 'Sales', type: 'number' },
+        ]
+      }
+    },
+    run: async(query: ReportQuery): Promise<ReportResult> => {
+      const startTime = Date.now();
+      await new Promise(res => setTimeout(res, 600));
+
+      const schema = await MOCK_API.reports.getSchema();
+      const allFields = [...schema.dimensions, ...schema.metrics];
+      
+      const columns = [...query.dimensions, ...query.metrics].map(key => {
+        const field = allFields.find(f => f.key === key);
+        return { key, label: field?.label || key, type: field?.type || 'string' };
+      });
+      
+      const data: Record<string, any>[] = [];
+      const numRows = Math.floor(Math.random() * 20) + 5;
+
+      const MOCK_DIM_VALUES: Record<string, string[]> = {
+        'customer.name': MOCK_CONTACTS.filter(c => c.type === 'Customer').map(c => c.name),
+        'product.name': MOCK_PRODUCTS.map(p => p.name),
+        'date.month': ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+      };
+      
+      for (let i = 0; i < numRows; i++) {
+        const row: Record<string, any> = {};
+        for (const dim of query.dimensions) {
+          const possibleValues = MOCK_DIM_VALUES[dim] || ['-'];
+          row[dim] = possibleValues[Math.floor(Math.random() * possibleValues.length)];
+        }
+        for (const met of query.metrics) {
+          const field = allFields.find(f => f.key === met);
+          if (field?.type === 'currency') {
+            row[met] = Math.random() * 50000;
+          } else {
+            row[met] = Math.floor(Math.random() * 100);
+          }
+        }
+        data.push(row);
+      }
+      
+      const endTime = Date.now();
+      return {
+        meta: { columns },
+        data,
+        queryExecutionTime: endTime - startTime,
+      };
+    },
   }
   
   // --- GET/LIST Methods ---
@@ -384,3 +491,5 @@ export class ApiService {
   convertPoToStock = async (poId: number): Promise<void> => { const po = MOCK_PURCHASE_ORDERS.find(p => p.id === poId); if (!po || !po.lineItems) throw new Error(`PO not found or has no items.`); po.status = 'Received'; for (const item of po.lineItems) { const inventoryItem = MOCK_INVENTORY.find(inv => inv.productId === item.productId); if (inventoryItem) { inventoryItem.onHand.mainWarehouse += item.quantity; } } await new Promise(res => setTimeout(res, 400)); this.notifyDataChange(); }
   transferStock = async (data: { productIds: (number|string)[], from: LocationKey, to: LocationKey, quantity: number | 'All' }): Promise<void> => { for(const productId of data.productIds) { const invItem = MOCK_INVENTORY.find(i => i.id === productId); if (invItem) { const available = invItem.onHand[data.from] - invItem.committed[data.from]; const qtyToMove = data.quantity === 'All' ? available : Math.min(data.quantity, available); if (qtyToMove > 0) { invItem.onHand[data.from] -= qtyToMove; invItem.onHand[data.to] += qtyToMove; } } } await new Promise(res => setTimeout(res, 400)); this.notifyDataChange(); }
 }
+
+const MOCK_API = new ApiService();

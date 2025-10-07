@@ -3,9 +3,9 @@
   <div class="aurora-backdrop absolute inset-0 animate-[fade-in_180ms_ease-in-out]" (click)="onClose()"></div>
 
   <!-- Drawer Panel -->
-  <div class="relative float-right h-full w-full max-w-2xl bg-surface/90 backdrop-blur-xl shadow-2xl flex flex-col animate-[slide-in-right_220ms_cubic-bezier(0.2,0.8,0.2,1)]">
+  <div class="absolute top-3 right-3 bottom-3 w-full max-w-2xl bg-charcoal-900/90 backdrop-blur-xl shadow-2xl flex flex-col rounded-2xl animate-slide-in-spring">
     <!-- Sticky Header -->
-    <header class="flex items-center justify-between p-4 bg-surface-raised/80 backdrop-blur-md sticky top-0 z-10">
+    <header class="flex items-center justify-between p-4 bg-surface-raised/80 backdrop-blur-md sticky top-0 z-10 rounded-t-2xl">
       <h2 class="text-xl font-semibold text-brand-text">{{ title() }}</h2>
       <button (click)="onClose()" class="text-charcoal-400 hover:text-charcoal-100 transition-colors p-2 rounded-full">
         <i class="fa-solid fa-times text-xl"></i>
@@ -19,7 +19,10 @@
           <form [formGroup]="invoiceForm" class="space-y-6">
             <!-- Customer -->
             <div>
-              <label for="customerName" class="block text-sm font-medium text-charcoal-300 mb-1">Customer</label>
+              <label for="customerName" class="flex items-center gap-2 text-sm font-medium text-charcoal-300 mb-1">
+                <i class="fa-solid fa-user w-4 text-center text-charcoal-400"></i>
+                <span>Customer</span>
+              </label>
               <app-customer-picker 
                 [value]="invoiceForm.controls.customer.value"
                 (onSelect)="invoiceForm.controls.customer.setValue($event)"
@@ -30,18 +33,27 @@
             <!-- Dates -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
-                <label for="issueDate" class="block text-sm font-medium text-charcoal-300">Issue Date</label>
+                <label for="issueDate" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                  <i class="fa-solid fa-calendar-day w-4 text-center text-charcoal-400"></i>
+                  <span>Issue Date</span>
+                </label>
                 <input type="date" id="issueDate" formControlName="issueDate" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
               </div>
               <div>
-                <label for="dueDate" class="block text-sm font-medium text-charcoal-300">Due Date</label>
+                <label for="dueDate" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                  <i class="fa-solid fa-calendar-check w-4 text-center text-charcoal-400"></i>
+                  <span>Due Date</span>
+                </label>
                 <input type="date" id="dueDate" formControlName="dueDate" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
               </div>
             </div>
 
             <!-- Line Items -->
             <div class="py-6" formArrayName="items">
-                <h3 class="text-lg font-medium text-brand-text mb-4">Items</h3>
+                <h3 class="flex items-center gap-2 text-lg font-medium text-brand-text mb-4">
+                  <i class="fa-solid fa-list-ol w-4 text-center text-charcoal-400"></i>
+                  <span>Items</span>
+                </h3>
                 <div class="space-y-4">
                   @for(item of itemsFormArray?.controls; track item; let i = $index) {
                     <div [formGroupName]="i" class="grid grid-cols-12 gap-x-4 gap-y-2 items-end p-3 bg-surface-raised rounded-xl shadow-md">
@@ -99,7 +111,10 @@
             
             <!-- Notes -->
             <div>
-              <label for="notes" class="block text-sm font-medium text-charcoal-300">Notes</label>
+              <label for="notes" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                <i class="fa-solid fa-pencil w-4 text-center text-charcoal-400"></i>
+                <span>Notes</span>
+              </label>
               <textarea id="notes" formControlName="notes" rows="3" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none" placeholder="Optional notes about the invoice..."></textarea>
             </div>
           </form>
@@ -108,16 +123,25 @@
           <form [formGroup]="expenseForm" class="space-y-6">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <label for="amount" class="block text-sm font-medium text-charcoal-300">Amount (LKR)</label>
+                  <label for="amount" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                    <i class="fa-solid fa-dollar-sign w-4 text-center text-charcoal-400"></i>
+                    <span>Amount (LKR)</span>
+                  </label>
                   <input type="number" id="amount" formControlName="amount" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
                 </div>
                  <div>
-                  <label for="date" class="block text-sm font-medium text-charcoal-300">Date</label>
+                  <label for="date" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                    <i class="fa-solid fa-calendar-day w-4 text-center text-charcoal-400"></i>
+                    <span>Date</span>
+                  </label>
                   <input type="date" id="date" formControlName="date" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
                 </div>
             </div>
              <div>
-              <label for="category" class="block text-sm font-medium text-charcoal-300">Category</label>
+              <label for="category" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                <i class="fa-solid fa-tags w-4 text-center text-charcoal-400"></i>
+                <span>Category</span>
+              </label>
               <select id="category" formControlName="category" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
                 <option>Utilities</option>
                 <option>Rent</option>
@@ -127,11 +151,17 @@
               </select>
             </div>
              <div>
-              <label for="notes" class="block text-sm font-medium text-charcoal-300">Notes / Description</label>
+              <label for="notes" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                <i class="fa-solid fa-pencil w-4 text-center text-charcoal-400"></i>
+                <span>Notes / Description</span>
+              </label>
               <textarea id="notes" formControlName="notes" rows="3" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none" placeholder="e.g., Monthly SaaS Subscription"></textarea>
             </div>
             <div>
-              <label class="block text-sm font-medium text-charcoal-300">Attachment</label>
+              <label class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                <i class="fa-solid fa-paperclip w-4 text-center text-charcoal-400"></i>
+                <span>Attachment</span>
+              </label>
                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-charcoal-700 border-dashed rounded-md">
                 @if (expenseForm.get('attachmentUrl')?.value; as imageUrl) {
                   <div class="relative">
@@ -148,10 +178,13 @@
             </div>
             <div class="relative flex items-start">
                 <div class="flex items-center h-5">
-                  <input id="isRecurring" formControlName="isRecurring" type="checkbox" class="focus:ring-primary h-4 w-4 text-primary bg-surface-inset border-charcoal-600 rounded">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="isRecurring" formControlName="isRecurring" class="sr-only peer">
+                    <div class="w-11 h-6 bg-charcoal-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-primary-500/50 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-charcoal-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                  </label>
                 </div>
                 <div class="ml-3 text-sm">
-                  <label for="isRecurring" class="font-medium text-charcoal-300">Recurring Expense</label>
+                  <label for="isRecurring" class="font-medium text-charcoal-300 cursor-pointer">Recurring Expense</label>
                   <p class="text-charcoal-500">If checked, this expense will be scheduled automatically.</p>
                 </div>
             </div>
@@ -160,7 +193,10 @@
             @if(expenseForm.get('isRecurring')?.value) {
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 p-4 bg-primary-900/10 rounded-lg animate-[fade-in_200ms_ease-in-out]">
                 <div>
-                  <label for="cadence" class="block text-sm font-medium text-charcoal-300">Cadence</label>
+                  <label for="cadence" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                    <i class="fa-solid fa-repeat w-4 text-center text-charcoal-400"></i>
+                    <span>Cadence</span>
+                  </label>
                   <select id="cadence" formControlName="cadence" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
                     <option>Daily</option>
                     <option>Weekly</option>
@@ -169,7 +205,10 @@
                   </select>
                 </div>
                 <div>
-                  <label for="nextDueDate" class="block text-sm font-medium text-charcoal-300">Next Due Date</label>
+                  <label for="nextDueDate" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                    <i class="fa-solid fa-calendar-check w-4 text-center text-charcoal-400"></i>
+                    <span>Next Due Date</span>
+                  </label>
                   <input type="date" id="nextDueDate" formControlName="nextDueDate" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
                 </div>
               </div>
@@ -179,7 +218,10 @@
         @case ('record-sale') {
           <form [formGroup]="recordSaleForm" class="space-y-6">
             <div>
-              <label class="block text-sm font-medium text-charcoal-300 mb-1">Customer (Optional)</label>
+              <label class="flex items-center gap-2 text-sm font-medium text-charcoal-300 mb-1">
+                <i class="fa-solid fa-user w-4 text-center text-charcoal-400"></i>
+                <span>Customer (Optional)</span>
+              </label>
               <app-customer-picker
                 [value]="recordSaleForm.controls.customer.value"
                 (onSelect)="recordSaleForm.controls.customer.setValue($event)"
@@ -188,11 +230,17 @@
               </app-customer-picker>
             </div>
             <div>
-              <label for="sale-amount" class="block text-sm font-medium text-charcoal-300">Total Sale Amount (LKR)</label>
+              <label for="sale-amount" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                <i class="fa-solid fa-dollar-sign w-4 text-center text-charcoal-400"></i>
+                <span>Total Sale Amount (LKR)</span>
+              </label>
               <input type="number" id="sale-amount" formControlName="amount" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
             </div>
              <div>
-              <label class="block text-sm font-medium text-charcoal-300">Payment Method</label>
+              <label class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                <i class="fa-solid fa-credit-card w-4 text-center text-charcoal-400"></i>
+                <span>Payment Method</span>
+              </label>
               <select formControlName="paymentMethod" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
                 <option>Cash</option>
                 <option>Card</option>
@@ -200,7 +248,10 @@
               </select>
             </div>
              <div>
-              <label for="sale-notes" class="block text-sm font-medium text-charcoal-300">Notes</label>
+              <label for="sale-notes" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                <i class="fa-solid fa-pencil w-4 text-center text-charcoal-400"></i>
+                <span>Notes</span>
+              </label>
               <textarea id="sale-notes" formControlName="notes" rows="3" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none" placeholder="e.g., Sale of assorted goods"></textarea>
             </div>
           </form>
@@ -208,7 +259,10 @@
         @case ('record-payment') {
           <form [formGroup]="recordPaymentForm" class="space-y-6">
             <div>
-              <label class="block text-sm font-medium text-charcoal-300 mb-1">Customer</label>
+              <label class="flex items-center gap-2 text-sm font-medium text-charcoal-300 mb-1">
+                <i class="fa-solid fa-user w-4 text-center text-charcoal-400"></i>
+                <span>Customer</span>
+              </label>
               <app-customer-picker
                 [value]="recordPaymentForm.controls.customer.value"
                 (onSelect)="recordPaymentForm.controls.customer.setValue($event)"
@@ -217,16 +271,25 @@
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
-                <label for="payment-amount" class="block text-sm font-medium text-charcoal-300">Payment Amount (LKR)</label>
+                <label for="payment-amount" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                  <i class="fa-solid fa-dollar-sign w-4 text-center text-charcoal-400"></i>
+                  <span>Payment Amount (LKR)</span>
+                </label>
                 <input type="number" id="payment-amount" formControlName="amount" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
               </div>
               <div>
-                <label for="payment-date" class="block text-sm font-medium text-charcoal-300">Payment Date</label>
+                <label for="payment-date" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                  <i class="fa-solid fa-calendar-day w-4 text-center text-charcoal-400"></i>
+                  <span>Payment Date</span>
+                </label>
                 <input type="date" id="payment-date" formControlName="paymentDate" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
               </div>
             </div>
              <div>
-              <label class="block text-sm font-medium text-charcoal-300">Payment Method</label>
+              <label class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                <i class="fa-solid fa-credit-card w-4 text-center text-charcoal-400"></i>
+                <span>Payment Method</span>
+              </label>
               <select formControlName="paymentMethod" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
                 <option>Cash</option>
                 <option>Card</option>
@@ -244,31 +307,49 @@
           <form [formGroup]="productForm" class="space-y-6">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
-                <label for="name" class="block text-sm font-medium text-charcoal-300">Product Name</label>
+                <label for="name" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                  <i class="fa-solid fa-box-open w-4 text-center text-charcoal-400"></i>
+                  <span>Product Name</span>
+                </label>
                 <input type="text" id="name" formControlName="name" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
               </div>
               <div>
-                <label for="sku" class="block text-sm font-medium text-charcoal-300">SKU</label>
+                <label for="sku" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                  <i class="fa-solid fa-barcode w-4 text-center text-charcoal-400"></i>
+                  <span>SKU</span>
+                </label>
                 <input type="text" id="sku" formControlName="sku" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
               </div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
                <div>
-                <label for="category" class="block text-sm font-medium text-charcoal-300">Category</label>
+                <label for="category" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                  <i class="fa-solid fa-tags w-4 text-center text-charcoal-400"></i>
+                  <span>Category</span>
+                </label>
                 <input type="text" id="category" formControlName="category" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
               </div>
               <div>
-                <label for="cost" class="block text-sm font-medium text-charcoal-300">Cost (LKR)</label>
+                <label for="cost" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                  <i class="fa-solid fa-dollar-sign w-4 text-center text-charcoal-400"></i>
+                  <span>Cost (LKR)</span>
+                </label>
                 <input type="number" id="cost" formControlName="cost" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
               </div>
               <div>
-                <label for="price" class="block text-sm font-medium text-charcoal-300">Price (LKR)</label>
+                <label for="price" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                  <i class="fa-solid fa-tag w-4 text-center text-charcoal-400"></i>
+                  <span>Price (LKR)</span>
+                </label>
                 <input type="number" id="price" formControlName="price" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
               </div>
             </div>
             <div>
               <div class="flex items-center justify-between mb-1">
-                <label for="description" class="block text-sm font-medium text-charcoal-300">Description</label>
+                <label for="description" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                  <i class="fa-solid fa-align-left w-4 text-center text-charcoal-400"></i>
+                  <span>Description</span>
+                </label>
                 <button (click)="onGenerateDescription()" [disabled]="isGeneratingDescription() || !productForm.get('name')?.value" type="button" class="group flex items-center gap-1.5 text-xs font-semibold text-primary disabled:opacity-50 disabled:cursor-not-allowed hover:text-primary-400 transition-colors" title="Generate with AI">
                   @if (isGeneratingDescription()) {
                     <i class="fa-solid fa-spinner fa-spin"></i>
@@ -282,7 +363,10 @@
               <textarea id="description" formControlName="description" rows="3" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none" placeholder="A brief, catchy product description..."></textarea>
             </div>
             <div>
-              <label class="block text-sm font-medium text-charcoal-300">Product Image</label>
+              <label class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                <i class="fa-solid fa-image w-4 text-center text-charcoal-400"></i>
+                <span>Product Image</span>
+              </label>
               <div class="mt-1 flex items-center gap-4">
                   <div class="w-24 h-24 bg-surface-inset rounded-lg flex items-center justify-center border-2 border-dashed border-charcoal-700 shadow-inner-sm">
                      @if (productForm.get('imageUrl')?.value; as imageUrl) {
@@ -295,7 +379,10 @@
               </div>
             </div>
              <div formGroupName="stock">
-                <h3 class="text-lg font-medium text-brand-text">Initial Stock Quantity</h3>
+                <h3 class="flex items-center gap-2 text-lg font-medium text-brand-text">
+                  <i class="fa-solid fa-boxes-stacked w-4 text-center text-charcoal-400"></i>
+                  <span>Initial Stock Quantity</span>
+                </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-2">
                     <div>
                         <label for="mainWarehouse" class="block text-sm font-medium text-charcoal-300">Main Warehouse</label>
@@ -327,12 +414,18 @@
                 <button (click)="openMediaBrowser('contact-avatar')" type="button" class="absolute -bottom-1 -right-1 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center border-2 border-surface hover:bg-primary-700 shadow-sm"><i class="fa-solid fa-pen-to-square text-sm"></i></button>
                </div>
                <div class="flex-1 space-y-1">
-                  <label for="contact-name" class="block text-sm font-medium text-charcoal-300">Full Name</label>
+                  <label for="contact-name" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                    <i class="fa-solid fa-id-card w-4 text-center text-charcoal-400"></i>
+                    <span>Full Name</span>
+                  </label>
                   <input type="text" id="contact-name" formControlName="name" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
                </div>
             </div>
             <div>
-              <label for="contact-type" class="block text-sm font-medium text-charcoal-300">Type</label>
+              <label for="contact-type" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                <i class="fa-solid fa-briefcase w-4 text-center text-charcoal-400"></i>
+                <span>Type</span>
+              </label>
               <select id="contact-type" formControlName="type" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
                 <option>Customer</option>
                 <option>Supplier</option>
@@ -340,11 +433,17 @@
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
-                <label for="contact-email" class="block text-sm font-medium text-charcoal-300">Email</label>
+                <label for="contact-email" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                  <i class="fa-solid fa-envelope w-4 text-center text-charcoal-400"></i>
+                  <span>Email</span>
+                </label>
                 <input type="email" id="contact-email" formControlName="email" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
               </div>
               <div>
-                <label for="contact-phone" class="block text-sm font-medium text-charcoal-300">Phone</label>
+                <label for="contact-phone" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                  <i class="fa-solid fa-phone w-4 text-center text-charcoal-400"></i>
+                  <span>Phone</span>
+                </label>
                 <input type="tel" id="contact-phone" formControlName="phone" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
               </div>
             </div>
@@ -460,7 +559,7 @@
     </main>
 
     <!-- Sticky Footer -->
-    <footer class="flex items-center justify-end p-4 bg-surface-raised/80 backdrop-blur-md sticky bottom-0">
+    <footer class="flex items-center justify-end p-4 bg-surface-raised/80 backdrop-blur-md sticky bottom-0 rounded-b-2xl">
       <button (click)="onClose()" type="button" class="aurora-button-secondary inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-4 py-2 rounded-xl transition-all duration-150 ease-in-out">
         Cancel
       </button>

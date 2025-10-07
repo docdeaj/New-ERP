@@ -149,11 +149,11 @@
                     </button>
                     @if (isActionMenuOpen() === item.id) {
                       <div (click)="$event.stopPropagation()"
-                           class="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-charcoal-800 ring-1 ring-black ring-opacity-5 focus:outline-none z-20 animate-[fade-in-scale_100ms_ease-in-out]">
+                           class="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-surface-raised ring-1 ring-black ring-opacity-5 focus:outline-none z-20 animate-[fade-in-scale_100ms_ease-in-out]">
                         <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
                           @for (action of availableRowActions(); track action.key) {
                             <a href="#" (click)="onActionClick($event, action.key, item)"
-                               class="flex items-center gap-3 px-4 py-2 text-sm text-charcoal-200 hover:bg-charcoal-700" role="menuitem">
+                               class="flex items-center gap-3 px-4 py-2 text-sm text-charcoal-200 hover:bg-surface" role="menuitem">
                               <i [class]="action.icon + ' w-4 text-center text-gray-500'"></i>
                               <span>{{ action.label }}</span>
                             </a>

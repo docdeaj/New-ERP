@@ -1,0 +1,47 @@
+<div class="grid grid-cols-[120px_1fr] items-start gap-4">
+    <!-- Dimension Shelf -->
+    <div class="pt-2">
+        <h4 class="text-sm font-semibold text-charcoal-300">Dimensions</h4>
+        <p class="text-xs text-charcoal-500">Group by</p>
+    </div>
+    <div cdkDropList 
+         id="dimensionsList"
+         [cdkDropListData]="dimensions()"
+         (cdkDropListDropped)="drop($event)"
+         class="min-h-[48px] bg-surface-inset rounded-lg p-2 flex flex-wrap gap-2 items-center border-2 border-dashed border-charcoal-700/50">
+        @for(dim of dimensions(); track dim; let i = $index) {
+            <div cdkDrag class="flex items-center gap-2 bg-blue-900/50 text-blue-200 px-3 py-1 rounded-full text-sm font-medium cursor-grab active:cursor-grabbing shadow-sm">
+                <span>{{ formatField(dim) }}</span>
+                <button (click)="removeDimension(i)" class="w-4 h-4 rounded-full bg-blue-500/30 hover:bg-blue-500/60 text-blue-100 flex items-center justify-center">
+                    <i class="fa-solid fa-times text-[10px]"></i>
+                </button>
+            </div>
+        }
+        @if(dimensions().length === 0) {
+            <span class="text-sm text-charcoal-500 px-2">Add dimensions from the left panel</span>
+        }
+    </div>
+
+    <!-- Metric Shelf -->
+    <div class="pt-2">
+        <h4 class="text-sm font-semibold text-charcoal-300">Metrics</h4>
+        <p class="text-xs text-charcoal-500">Measure</p>
+    </div>
+    <div cdkDropList
+         id="metricsList"
+         [cdkDropListData]="metrics()"
+         (cdkDropListDropped)="drop($event)"
+         class="min-h-[48px] bg-surface-inset rounded-lg p-2 flex flex-wrap gap-2 items-center border-2 border-dashed border-charcoal-700/50">
+        @for(met of metrics(); track met; let i = $index) {
+            <div cdkDrag class="flex items-center gap-2 bg-teal-900/50 text-teal-200 px-3 py-1 rounded-full text-sm font-medium cursor-grab active:cursor-grabbing shadow-sm">
+                <span>{{ formatField(met) }}</span>
+                <button (click)="removeMetric(i)" class="w-4 h-4 rounded-full bg-teal-500/30 hover:bg-teal-500/60 text-teal-100 flex items-center justify-center">
+                    <i class="fa-solid fa-times text-[10px]"></i>
+                </button>
+            </div>
+        }
+        @if(metrics().length === 0) {
+            <span class="text-sm text-charcoal-500 px-2">Add metrics to measure</span>
+        }
+    </div>
+</div>

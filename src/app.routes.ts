@@ -16,6 +16,7 @@ import { ExpensesComponent } from './pages/expenses/expenses.component';
 import { PaymentWorkspaceComponent } from './pages/payment-workspace/payment-workspace.component';
 import { RecurringExpensesComponent } from './pages/recurring-expenses/recurring-expenses.component';
 import { SettingsComponent } from './pages/settings/settings.component';
+import { ReportBuilderComponent } from './pages/reports/report-builder.component';
 
 
 export const APP_ROUTES: Routes = [
@@ -33,6 +34,8 @@ export const APP_ROUTES: Routes = [
   { path: 'contacts', component: ContactsComponent, title: 'Contacts' },
   { path: 'media', component: MediaLibraryComponent, title: 'Media Library' },
   { path: 'reports', component: ReportsComponent, title: 'Reports' },
+  { path: 'reports/builder', component: ReportBuilderComponent, title: 'Report Builder' },
+  { path: 'reports/builder/:id', component: ReportBuilderComponent, title: 'Report Builder' },
   { path: 'settings', component: SettingsComponent, title: 'Settings' },
   { path: 'recurring', component: RecurringExpensesComponent, title: 'Recurring Expenses' },
   { path: '**', redirectTo: 'dashboard' } 

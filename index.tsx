@@ -11,13 +11,14 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CalendarDataService } from './src/services/calendar-data.service';
 import { SettingsService } from './src/services/settings.service';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 bootstrapApplication(AppComponent, {
   providers: [
     provideZonelessChangeDetection(),
     provideRouter(APP_ROUTES, withHashLocation()),
     provideHttpClient(),
-    importProvidersFrom(ScrollingModule, FormsModule, ReactiveFormsModule),
+    importProvidersFrom(ScrollingModule, FormsModule, ReactiveFormsModule, DragDropModule),
     CalendarDataService,
     SettingsService
   ],

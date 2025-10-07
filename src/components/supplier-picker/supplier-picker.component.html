@@ -1,0 +1,57 @@
+<div #pickerContainer class="relative" (click)="!value() && !isDropdownOpen() && openDropdown()">
+  <!-- Selected State Display -->
+  @if (value(); as selectedSupplier) {
+    <div class="flex items-center gap-3 p-2 bg-surface-raised rounded-lg shadow-md min-h-[44px]">
+      <img [src]="selectedSupplier.avatarUrl" alt="Avatar" class="w-7 h-7 rounded-full object-cover">
+      <div class="flex-1">
+        <p class="font-semibold text-sm leading-tight">{{ selectedSupplier.name }}</p>
+      </div>
+      <button (click)="clearSelection($event)" type="button" class="text-sm font-semibold text-primary hover:underline px-2" aria-label="Change supplier">
+        Change
+      </button>
+    </div>
+  } @else {
+    <!-- Input State -->
+    <div class="relative" (keydown)="onKeyDown($event)">
+      <i class="fa-solid fa-truck-field absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400"></i>
+      <input #searchInput 
+        type="text"
+        [placeholder]="placeholder()" 
+        class="aurora-input block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none w-full pl-9 pr-3 min-h-[44px]"
+        [ngModel]="query()"
+        (ngModelChange)="query.set($event)"
+        (focus)="openDropdown()">
+    </div>
+  }
+
+  <!-- Dropdown -->
+  @if (isDropdownOpen()) {
+    <div class="absolute top-full mt-2 w-full z-10 bg-surface-raised/95 backdrop-blur-xl rounded-lg shadow-2xl overflow-hidden animate-[slide-down-fade_180ms_cubic-bezier(0.2,0.8,0.2,1)] border border-charcoal-700/30">
+      <cdk-virtual-scroll-viewport itemSize="58" class="max-h-60">
+        <ul>
+          <li *cdkVirtualFor="let supplier of results(); let i = $index;"
+              (click)="selectItem(supplier)" 
+              (mouseenter)="activeIndex.set(i)"
+              class="flex items-center gap-3 p-3 cursor-pointer h-[58px] transition-colors"
+              [class]="activeIndex() === i ? 'bg-primary/10' : 'hover:bg-primary/5'">
+            <img [src]="supplier.avatarUrl" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
+            <p class="font-semibold truncate">{{ supplier.name }}</p>
+          </li>
+        </ul>
+      </cdk-virtual-scroll-viewport>
+      @if (results().length === 0 && !isLoading()) {
+        <p class="p-4 text-center text-sm text-charcoal-500">No suppliers found.</p>
+      }
+    </div>
+  }
+</div>
+
+<style>
+@keyframes slide-down-fade {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-\[slide-down-fade_180ms_cubic-bezier\(0\.2\,0\.8\,0\.2\,1\)\] {
+  animation: slide-down-fade 180ms cubic-bezier(0.2,0.8,0.2,1);
+}
+</style>

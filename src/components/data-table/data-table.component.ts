@@ -129,6 +129,7 @@ export class DataTableComponent<T extends { id: any, amount?: number }> {
          return [
           { key: 'mark-paid', label: 'Mark as Paid', icon: 'fa-solid fa-check-double' },
           { key: 'export-pdf', label: 'Export PDFs', icon: 'fa-solid fa-file-pdf' },
+          { key: 'export-csv', label: 'Export CSV', icon: 'fa-solid fa-file-csv' },
           { key: 'delete', label: 'Delete', icon: 'fa-solid fa-trash' }
         ];
       case 'quotation':
@@ -136,7 +137,19 @@ export class DataTableComponent<T extends { id: any, amount?: number }> {
       case 'receipt':
         return [
           { key: 'export-pdf', label: 'Export PDFs', icon: 'fa-solid fa-file-pdf' },
+          { key: 'export-csv', label: 'Export CSV', icon: 'fa-solid fa-file-csv' },
           { key: 'delete', label: 'Delete', icon: 'fa-solid fa-trash' }
+        ];
+      case 'ar-aging':
+      case 'ap-aging':
+      case 'cheque':
+      case 'recurring-expense':
+      case 'tax-summary':
+      case 'contact':
+      case 'expense':
+        return [
+            { key: 'export-csv', label: 'Export CSV', icon: 'fa-solid fa-file-csv' },
+            { key: 'delete', label: 'Delete', icon: 'fa-solid fa-trash' }
         ];
       default:
         return [
@@ -278,7 +291,12 @@ export class DataTableComponent<T extends { id: any, amount?: number }> {
   }
 
   onBulkAction(action: string) {
-    this.bulkAction.emit({ action, selectedIds: Array.from(this.selectedIds()) });
+    const selectedIds = Array.from(this.selectedIds());
+    if (action === 'export-csv') {
+      this.exportAsCsv(selectedIds);
+    } else {
+      this.bulkAction.emit({ action, selectedIds });
+    }
   }
 
   onEmptyStateAction() {
@@ -322,6 +340,44 @@ export class DataTableComponent<T extends { id: any, amount?: number }> {
   clearSelection() {
     this.selectedIds.set(new Set());
   }
+
+  // --- CSV Export ---
+  private exportAsCsv(selectedIds: (string | number)[]) {
+    const dataToExport = selectedIds.length > 0
+      ? this.data().filter(item => selectedIds.includes(item.id))
+      : this.filteredAndSortedData();
+
+    if (dataToExport.length === 0) return;
+
+    const columns = this.columns();
+    const headers = columns.map(c => c.label).join(',');
+    const rows = dataToExport.map(item => {
+      return columns.map(col => {
+        const cellData = item[col.key];
+        let value = cellData === null || cellData === undefined ? '' : String(cellData);
+        // Escape quotes by doubling them and wrap the whole field in quotes if it contains a comma, quote, or newline
+        if (value.includes('"') || value.includes(',') || value.includes('\n')) {
+          value = `"${value.replace(/"/g, '""')}"`;
+        }
+        return value;
+      }).join(',');
+    }).join('\r\n');
+
+    const csvContent = `${headers}\r\n${rows}`;
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      const filename = `${this.context()}_export_${new Date().toISOString().split('T')[0]}.csv`;
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }
+
 
   // --- UI Helpers ---
 

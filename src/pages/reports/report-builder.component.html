@@ -1,0 +1,83 @@
+<div class="flex flex-col h-[calc(100vh-120px)] gap-4">
+  <!-- Header -->
+  <header class="flex-shrink-0 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+        <a routerLink="/reports" class="flex items-center justify-center w-9 h-9 bg-surface rounded-full shadow-sm hover:bg-surface-raised transition-colors" title="Back to Reports">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <div>
+            <h1 class="text-2xl font-bold text-brand-text">{{ reportView()?.name || 'New Report' }}</h1>
+            <p class="text-sm text-charcoal-400">{{ reportView()?.description || 'Build a custom report by adding dimensions and metrics.' }}</p>
+        </div>
+    </div>
+    <div class="flex items-center gap-2">
+        <button class="aurora-button-secondary font-semibold text-charcoal-200 px-4 py-2 rounded-xl">Save</button>
+        <button (click)="runReport()" [disabled]="isLoading()" class="aurora-button-primary font-bold text-white px-4 py-2 rounded-xl min-w-[100px]">
+            @if (isLoading() && !reportResult()) {
+                <i class="fa-solid fa-spinner fa-spin"></i>
+            } @else {
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-play"></i>
+                    <span>Run Report</span>
+                </div>
+            }
+        </button>
+    </div>
+  </header>
+
+  <!-- Main Content: 3-panel layout -->
+  <main class="flex-1 grid grid-cols-[300px_1fr] gap-4 overflow-hidden">
+    <!-- Left Panel: Schema Explorer -->
+    <div class="bg-surface rounded-2xl shadow-lg flex flex-col overflow-hidden">
+      @if (reportSchema(); as schema) {
+        <app-schema-explorer [schema]="schema" (fieldAdded)="onFieldAdded($event)"></app-schema-explorer>
+      } @else {
+        <div class="p-4 animate-pulse">
+          <div class="h-8 bg-surface-raised rounded-md mb-4"></div>
+          <div class="space-y-2">
+            @for(_ of [1,2,3,4,5,6]; track $index) {
+                <div class="h-6 bg-surface-raised rounded-md"></div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Right Panel: Query Builder & Results -->
+    <div class="flex flex-col gap-4 overflow-hidden">
+        <!-- Query Builder -->
+        <div class="flex-shrink-0 bg-surface rounded-2xl shadow-lg p-4">
+            <app-query-builder [query]="reportQuery()" (queryChange)="onQueryChange($event)"></app-query-builder>
+        </div>
+
+        <!-- Results -->
+        <div class="flex-1 bg-surface rounded-2xl shadow-lg overflow-hidden relative">
+            @if (isLoading() && !reportResult()) {
+                <div class="absolute inset-0 flex items-center justify-center bg-surface/80 z-10">
+                    <div class="text-center">
+                        <i class="fa-solid fa-spinner fa-spin text-4xl text-primary mb-4"></i>
+                        <p class="font-semibold">Running Report...</p>
+                    </div>
+                </div>
+            }
+            @if (reportResult(); as result) {
+                <app-data-table
+                    [columns]="dataTableColumns()"
+                    [data]="result.data"
+                    [disableQuickPeek]="true"
+                    context="report-result">
+                    <div table-tools class="text-xs text-charcoal-400">
+                      <span>{{ result.data.length }} rows in {{ result.queryExecutionTime }}ms</span>
+                    </div>
+                </app-data-table>
+            } @else if (!isLoading()) {
+                <div class="h-full flex flex-col items-center justify-center text-charcoal-500">
+                    <i class="fa-solid fa-rocket text-5xl mb-4"></i>
+                    <h3 class="text-xl font-bold">Ready to Launch</h3>
+                    <p>Configure your query and click "Run Report" to see data.</p>
+                </div>
+            }
+        </div>
+    </div>
+  </main>
+</div>

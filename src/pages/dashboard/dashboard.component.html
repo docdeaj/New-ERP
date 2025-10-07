@@ -56,35 +56,38 @@
       </div>
       
       <!-- Time & Weather -->
-      <div class="bg-surface rounded-2xl shadow-lg p-6 flex items-center gap-4">
+      <div class="bg-surface rounded-2xl shadow-lg p-6 flex flex-col justify-between">
         @if(weatherDetails(); as weather) {
-          <!-- Time Column -->
-          <div class="w-2/5 flex flex-col justify-center items-center text-center">
-            <p class="text-5xl font-bold tabular-nums leading-none">
-              {{ currentTime() | date:'h:mm' }}
+          <!-- Time section -->
+          <div class="text-center">
+            <p class="text-5xl font-bold tabular-nums leading-none flex items-baseline justify-center">
+              <span>{{ currentTime() | date:'h:mm' }}</span>
+              <span class="text-xl font-semibold text-charcoal-400 ml-1">{{ currentTime() | date:'a' }}</span>
             </p>
-            <p class="text-xl font-semibold text-charcoal-400">
-              {{ currentTime() | date:'a' }}
-            </p>
+            <p class="text-xs text-charcoal-400 mt-1">{{ currentTime() | date:'EEEE, MMMM d' }}</p>
           </div>
 
-          <!-- Weather Column -->
-          <div class="w-3/5 flex-1 space-y-2">
-            <div class="flex items-center gap-3">
+          <!-- Weather section -->
+          <div class="mt-4">
+            <div class="flex items-center justify-center gap-3">
               <i [class]="weather.icon + ' text-4xl text-yellow-400'"></i>
               <div>
                 <p class="text-3xl font-bold">{{ weather.temperature }}°C</p>
-                <p class="text-xs text-charcoal-400">{{ weather.condition }}</p>
+                <p class="text-xs text-charcoal-400 -mt-1">{{ weather.condition }}</p>
               </div>
             </div>
-            <div class="text-xs text-charcoal-300 space-y-1">
-              <div class="flex justify-between">
-                <span class="font-semibold">H: {{ weather.high }}° / L: {{ weather.low }}°</span>
-                <span class="text-charcoal-400">Feels like: {{ weather.feelsLike }}°</span>
+            <div class="grid grid-cols-3 gap-2 text-center text-xs mt-3">
+              <div class="bg-surface-inset rounded-md p-1">
+                <p class="text-charcoal-400">Feels</p>
+                <p class="font-semibold">{{ weather.feelsLike }}°</p>
               </div>
-              <div class="flex justify-between">
-                <span><i class="fa-solid fa-droplet w-4 text-center"></i> {{ weather.humidity }}%</span>
-                <span><i class="fa-solid fa-wind w-4 text-center"></i> {{ weather.windSpeed }} km/h</span>
+              <div class="bg-surface-inset rounded-md p-1">
+                <p class="text-charcoal-400">Humidity</p>
+                <p class="font-semibold">{{ weather.humidity }}%</p>
+              </div>
+              <div class="bg-surface-inset rounded-md p-1">
+                <p class="text-charcoal-400">Wind</p>
+                <p class="font-semibold">{{ weather.windSpeed }} <span class="text-charcoal-500">km/h</span></p>
               </div>
             </div>
           </div>

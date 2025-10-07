@@ -31,8 +31,37 @@ export class SparklineChartComponent {
 
   path = computed(() => {
     const pts = this.points();
-    if (pts.length === 0) return '';
-    return `M ${pts.map(p => `${p.x},${p.y}`).join(' L ')}`;
+    if (pts.length < 2) return '';
+
+    const smoothing = 0.2;
+    const line = (pointA: {x: number, y: number}, pointB: {x: number, y: number}) => {
+      const lengthX = pointB.x - pointA.x;
+      const lengthY = pointB.y - pointA.y;
+      return {
+        length: Math.sqrt(Math.pow(lengthX, 2) + Math.pow(lengthY, 2)),
+        angle: Math.atan2(lengthY, lengthX)
+      };
+    };
+
+    const controlPoint = (current: {x: number, y: number}, previous: {x: number, y: number}, next: {x: number, y: number}, reverse?: boolean) => {
+      const p = previous || current;
+      const n = next || current;
+      const l = line(p, n);
+      const angle = l.angle + (reverse ? Math.PI : 0);
+      const length = l.length * smoothing;
+      const x = current.x + Math.cos(angle) * length;
+      const y = current.y + Math.sin(angle) * length;
+      return [x, y];
+    };
+
+    const pathData = pts.reduce((acc, point, i, a) => {
+      if (i === 0) return `M ${point.x},${point.y}`;
+      const [cpsX, cpsY] = controlPoint(a[i - 1], a[i - 2], point);
+      const [cpeX, cpeY] = controlPoint(point, a[i - 1], a[i + 1], true);
+      return `${acc} C ${cpsX},${cpsY} ${cpeX},${cpeY} ${point.x},${point.y}`;
+    }, '');
+
+    return pathData;
   });
   
   lastPoint = computed(() => {

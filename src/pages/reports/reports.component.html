@@ -1,263 +1,98 @@
 <div class="space-y-6">
-  <!-- Sticky Filter Bar -->
-  <div class="sticky top-[-1px] z-20 bg-surface/90 backdrop-blur-md h-16 border-b border-charcoal-800/50">
-    <div class="flex items-center justify-between h-full">
-      <div class="flex items-center gap-1.5">
-        @for (range of ['Today', 'This Week', 'This Month', 'This Year']; track range) {
-          <button 
-            (click)="onDateRangeChange(range)"
-            [class]="'px-4 h-10 text-sm font-semibold rounded-lg transition-colors border-l-2 ' + (activeDateRange() === range ? 'bg-primary/20 text-primary-200 border-primary' : 'text-charcoal-200 bg-surface-raised border-transparent hover:bg-surface-inset')">
-            {{ range }}
-          </button>
-        }
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-bold text-brand-text">Reports</h1>
+      <p class="text-charcoal-400 mt-1">Manage and run your saved business reports.</p>
+    </div>
+    <div class="flex items-center gap-2 w-full sm:w-auto">
+      <div class="relative flex-1 sm:flex-none">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400"></i>
+        <input 
+          type="text" 
+          placeholder="Search reports..." 
+          class="aurora-input w-full bg-surface-inset text-brand-text rounded-lg py-2 pl-10 pr-4 sm:text-sm"
+          [value]="searchQuery()"
+          (input)="onSearch($event)">
       </div>
-      <div class="flex items-center gap-2">
-        <button class="aurora-button-danger inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 text-sm rounded-xl" disabled>
-          <i class="fa-solid fa-file-pdf"></i>Export PDF
-        </button>
-         <button class="aurora-button-success inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 text-sm rounded-xl" disabled>
-          <i class="fa-solid fa-file-csv"></i>Export CSV
-        </button>
-      </div>
+      <button (click)="onNewReport()" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl">
+        <i class="fa-solid fa-plus"></i>
+        <span>New Report</span>
+      </button>
     </div>
   </div>
 
+  <!-- Tabs -->
+  <div class="border-b border-charcoal-800/50">
+    <nav class="-mb-px flex space-x-6" aria-label="Tabs">
+      <button (click)="activeTab.set('my-reports')"
+              class="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors"
+              [class]="activeTab() === 'my-reports' ? 'border-primary text-primary' : 'border-transparent text-charcoal-400 hover:text-charcoal-200 hover:border-charcoal-500'">
+        My Reports
+      </button>
+      <button (click)="activeTab.set('shared')"
+              class="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors"
+              [class]="activeTab() === 'shared' ? 'border-primary text-primary' : 'border-transparent text-charcoal-400 hover:text-charcoal-200 hover:border-charcoal-500'">
+        Shared with Me
+      </button>
+      <button (click)="activeTab.set('favorites')"
+              class="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors"
+              [class]="activeTab() === 'favorites' ? 'border-primary text-primary' : 'border-transparent text-charcoal-400 hover:text-charcoal-200 hover:border-charcoal-500'">
+        Favorites
+      </button>
+    </nav>
+  </div>
+
+  <!-- Reports Grid -->
   @if (isLoading()) {
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-pulse">
-      @for (_ of [1,2,3,4,5,6,7,8]; track $index) {
-        <div class="h-28 bg-surface-raised rounded-2xl"></div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+      @for (_ of [1,2,3]; track $index) {
+        <div class="h-48 bg-surface-raised rounded-2xl"></div>
       }
     </div>
-  } @else if (summary(); as summaryData) {
-    <!-- Section: Daily Close Pack -->
-    <div id="summary-section">
-      <h2 class="text-xl font-bold">Summary</h2>
-      <p class="text-sm text-charcoal-400 mt-1">Key performance indicators for {{ activeDateRange() }}. Currency is LKR.</p>
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 mt-3">
-        
-        <!-- Net Sales -->
-        <div class="bg-surface rounded-2xl shadow-md p-5 cursor-pointer hover:shadow-lg transition-shadow" (click)="navigateTo('/invoices')">
-            <p class="text-sm font-semibold text-charcoal-400">Net Sales</p>
-            <p class="text-3xl font-bold mt-1 tabular-nums">{{ summaryData.netSales.value | currency:'LKR ':'symbol':'1.0-0' }}</p>
-            <div class="flex items-center mt-1 text-sm text-green-600">
-                <i class="fa-solid fa-arrow-up mr-1"></i>
-                <span>{{ summaryData.netSales.delta.toFixed(1) }}% vs prev. period</span>
+  } @else {
+    @if (filteredReports().length > 0) {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (report of filteredReports(); track report.id) {
+          <a [routerLink]="['/reports/builder', report.id]" class="group bg-surface rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-200 flex flex-col">
+            <div class="p-5 flex-1">
+              <div class="flex items-start justify-between">
+                @switch (report.visualizationType) {
+                  @case ('table') { <i class="fa-solid fa-table-cells text-xl text-blue-400"></i> }
+                  @case ('bar') { <i class="fa-solid fa-chart-column text-xl text-teal-400"></i> }
+                  @case ('pivot') { <i class="fa-solid fa-table-cells-large text-xl text-indigo-400"></i> }
+                }
+                <button (click)="toggleFavorite(report, $event)" 
+                        class="text-charcoal-500 hover:text-amber-400 transition-colors z-10"
+                        [class.text-amber-400]="report.isFavorite"
+                        [title]="report.isFavorite ? 'Remove from favorites' : 'Add to favorites'">
+                  <i class="fa-star" [class.fa-solid]="report.isFavorite" [class.fa-regular]="!report.isFavorite"></i>
+                </button>
+              </div>
+              <h3 class="mt-3 text-lg font-semibold text-brand-text">{{ report.name }}</h3>
+              <p class="text-sm text-charcoal-400 mt-1 line-clamp-2">{{ report.description }}</p>
             </div>
-        </div>
-
-        <!-- Gross Margin -->
-        <div class="bg-surface rounded-2xl shadow-md p-5">
-            <p class="text-sm font-semibold text-charcoal-400">Gross Margin</p>
-            <p class="text-3xl font-bold mt-1 tabular-nums">{{ summaryData.grossMargin.value | currency:'LKR ':'symbol':'1.0-0' }}</p>
-            <div class="flex items-center mt-1 text-sm text-green-600">
-                <i class="fa-solid fa-arrow-up mr-1"></i>
-                <span class="font-semibold">{{ summaryData.grossMargin.percentage | number:'1.1-1' }}%</span>
+            <div class="p-5 border-t border-charcoal-800/50 flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2">
+                <img [src]="report.owner.avatarUrl" [alt]="report.owner.name" class="w-6 h-6 rounded-full">
+                <span>{{ report.owner.name }}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                  <span class="text-charcoal-500">Last run: {{ report.lastRun | date:'short' }}</span>
+                  <button (click)="deleteReport(report, $event)" class="text-charcoal-500 hover:text-red-400 p-1 rounded-full hover:bg-charcoal-700 transition-colors z-10" title="Delete Report">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </button>
+              </div>
             </div>
-        </div>
-
-        <!-- Net Profit -->
-        <div class="bg-surface rounded-2xl shadow-md p-5">
-            <p class="text-sm font-semibold text-charcoal-400">Net Profit</p>
-            <p class="text-3xl font-bold mt-1 tabular-nums">{{ summaryData.netProfit.value | currency:'LKR ':'symbol':'1.0-0' }}</p>
-            <div class="flex items-center mt-1 text-sm text-green-600">
-                <i class="fa-solid fa-arrow-up mr-1"></i>
-                <span>{{ summaryData.netProfit.delta.toFixed(1) }}%</span>
-            </div>
-        </div>
-
-        <!-- Expenses -->
-        <div class="bg-surface rounded-2xl shadow-md p-5 cursor-pointer hover:shadow-lg transition-shadow" (click)="navigateTo('/expenses')">
-            <p class="text-sm font-semibold text-charcoal-400">Expenses</p>
-            <p class="text-3xl font-bold mt-1 tabular-nums">{{ summaryData.expenses.value | currency:'LKR ':'symbol':'1.0-0' }}</p>
-            <div class="flex items-center mt-1 text-sm text-red-600">
-                <i class="fa-solid fa-arrow-down mr-1"></i>
-                <span>{{ summaryData.expenses.delta.toFixed(1) }}%</span>
-            </div>
-        </div>
-
-        <!-- A/R Today -->
-        <div class="bg-surface rounded-2xl shadow-md p-5 cursor-pointer hover:shadow-lg transition-shadow" (click)="navigateTo('/invoices')">
-            <p class="text-sm font-semibold text-charcoal-400">A/R Due</p>
-            <p class="text-3xl font-bold mt-1 tabular-nums">{{ summaryData.arToday.amount | currency:'LKR ':'symbol':'1.0-0' }}</p>
-            <div class="flex items-center mt-1 text-sm text-charcoal-400">
-                <span class="font-semibold">{{ summaryData.arToday.count }} Invoices</span>
-                <span class="mx-1.5">•</span>
-                <span class="font-semibold text-red-500">{{ summaryData.arToday.overdueCount }} Overdue</span>
-            </div>
-        </div>
+          </a>
+        }
       </div>
-    </div>
-
-    <!-- Section: Period Trends -->
-    <div id="trends-section" class="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-6">
-      <div class="2xl:col-span-2 bg-surface rounded-2xl shadow-md p-6">
-        <h3 class="text-lg font-semibold">Sales Over Time</h3>
-        <p class="text-sm text-charcoal-400 mt-1">Sales performance for {{ activeDateRange() }}.</p>
-        <div class="h-72 mt-3">
-          @if(salesTrend(); as trend) {
-            <app-simple-bar-chart [labels]="trend.labels" [datasets]="trend.datasets"></app-simple-bar-chart>
-          }
-        </div>
-      </div>
-      <div class="bg-surface rounded-2xl shadow-md p-6">
-        <h3 class="text-lg font-semibold">Payment Mix</h3>
-        <p class="text-sm text-charcoal-400 mt-1">Breakdown of payment methods used for {{ activeDateRange() }}.</p>
-        <div class="h-72 mt-3">
-          <app-donut-chart [data]="summaryData.paymentMix"></app-donut-chart>
-        </div>
-      </div>
-      <div class="2xl:col-span-3 bg-surface rounded-2xl shadow-md p-6">
-        <h3 class="text-lg font-semibold">Top Products</h3>
-        <p class="text-sm text-charcoal-400 mt-1">Best-selling products by revenue for {{ activeDateRange() }}.</p>
-         <div class="overflow-x-auto mt-3">
-          <table class="w-full text-left text-sm">
-            <thead class="text-xs text-charcoal-400 uppercase">
-              <tr>
-                <th class="p-2">Product</th>
-                <th class="p-2 text-right">Qty Sold</th>
-                <th class="p-2 text-right">Revenue</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for(product of topProducts(); track product.id) {
-                <tr class="cursor-pointer hover:bg-surface-raised" (click)="navigateToProduct(product)">
-                  <td class="p-2 font-semibold flex items-center gap-3">
-                    <img [src]="product.imageUrl" [alt]="product.name" class="w-10 h-10 rounded-md object-cover">
-                    <span>{{product.name}}</span>
-                  </td>
-                  <td class="p-2 text-right tabular-nums font-medium">{{product.quantity}}</td>
-                  <td class="p-2 text-right tabular-nums font-bold">{{product.revenue | currency:'LKR '}}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-     <!-- Section: Inventory Snapshot -->
-    @if (inventorySnapshot(); as snapshot) {
-      <div id="inventory-snapshot-section">
-        <h2 class="text-xl font-bold">Inventory Snapshot</h2>
-        <p class="text-sm text-charcoal-400 mt-1">Current stock valuation and performance metrics for {{ activeDateRange() }}.</p>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 mt-3">
-          <!-- Stock Valuation Card -->
-          <div class="bg-surface rounded-2xl shadow-md p-5">
-            <p class="text-sm font-semibold text-charcoal-400">Stock Valuation</p>
-            <p class="text-3xl font-bold mt-1 tabular-nums">{{ snapshot.valuationLkr.value | currency:'LKR ':'symbol':'1.0-0' }}</p>
-            <div class="flex items-center mt-1 text-sm" [class.text-green-600]="snapshot.valuationLkr.delta >= 0" [class.text-red-600]="snapshot.valuationLkr.delta < 0">
-                <i class="fa-solid mr-1" [class.fa-arrow-up]="snapshot.valuationLkr.delta >= 0" [class.fa-arrow-down]="snapshot.valuationLkr.delta < 0"></i>
-                <span>{{ snapshot.valuationLkr.delta.toFixed(1) }}%</span>
-            </div>
-          </div>
-
-          <!-- Inventory Turn Card -->
-          <div class="bg-surface rounded-2xl shadow-md p-5">
-            <p class="text-sm font-semibold text-charcoal-400">Inventory Turn (Proxy)</p>
-            <p class="text-3xl font-bold mt-1 tabular-nums">{{ snapshot.turnProxy.value.toFixed(1) }}x</p>
-             <div class="flex items-center mt-1 text-sm" [class.text-red-600]="snapshot.turnProxy.delta < 0" [class.text-green-600]="snapshot.turnProxy.delta >= 0">
-                <i class="fa-solid mr-1" [class.fa-arrow-down]="snapshot.turnProxy.delta < 0" [class.fa-arrow-up]="snapshot.turnProxy.delta >= 0"></i>
-                <span>{{ snapshot.turnProxy.delta.toFixed(1) }}%</span>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Slow Movers Table -->
-        <div class="bg-surface rounded-2xl shadow-md p-6">
-            <h3 class="text-lg font-semibold">Slow-Moving Items</h3>
-            <p class="text-sm text-charcoal-400 mt-1">Products with the lowest sales activity for {{ activeDateRange() }}.</p>
-            <div class="overflow-x-auto mt-3">
-                <table class="w-full text-left text-sm">
-                    <thead class="text-xs text-charcoal-400 uppercase">
-                        <tr>
-                            <th class="p-2">Product</th>
-                            <th class="p-2 text-right">Days Idle</th>
-                            <th class="p-2 text-right">On Hand</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for(item of snapshot.slowMovers; track item.id) {
-                            <tr>
-                                <td class="p-2 font-semibold flex items-center gap-3">
-                                    <img [src]="item.imageUrl" [alt]="item.productName" class="w-10 h-10 rounded-md object-cover">
-                                    <div>
-                                        <p>{{ item.productName }}</p>
-                                        <p class="text-xs text-charcoal-400 font-mono">{{ item.sku }}</p>
-                                    </div>
-                                </td>
-                                <td class="p-2 text-right tabular-nums font-medium text-red-500">{{ item.daysSinceLastSale }}</td>
-                                <td class="p-2 text-right tabular-nums font-medium">{{ item.onHand }}</td>
-                            </tr>
-                        } @empty {
-                             <tr><td colspan="3" class="text-center p-4 text-charcoal-500">No slow-moving items found.</td></tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    } @else {
+      <div class="text-center py-16 bg-surface rounded-2xl shadow-md">
+        <i class="fa-solid fa-folder-open text-5xl text-charcoal-500 mb-4"></i>
+        <h3 class="text-xl font-bold">No Reports Found</h3>
+        <p class="text-charcoal-400 mt-1">No reports match your current filters.</p>
       </div>
     }
-
-     <!-- Section: Operational Tables -->
-     <div class="space-y-6">
-        <div id="ar-aging-section" class="space-y-3">
-            <app-data-table
-                title="A/R Aging"
-                [description]="arAgingDescription()"
-                context="ar-aging"
-                [columns]="arAgingColumns"
-                [data]="arAgingData()"
-                (rowAction)="handleRowAction($event, 'ar-aging')">
-            </app-data-table>
-        </div>
-        <div id="ap-aging-section" class="space-y-3">
-            <app-data-table
-                title="A/P Aging"
-                [description]="apAgingDescription()"
-                context="ap-aging"
-                [columns]="apAgingColumns"
-                [data]="apAgingData()"
-                (rowAction)="handleRowAction($event, 'ap-aging')">
-            </app-data-table>
-        </div>
-        <div id="cheque-register-section" class="space-y-3">
-            <app-data-table
-                title="Cheque Register"
-                [description]="chequeRegisterDescription()"
-                context="cheque"
-                [columns]="chequeRegisterColumns"
-                [data]="chequeRegisterData()"
-                (rowAction)="handleRowAction($event, 'cheque-register')">
-            </app-data-table>
-        </div>
-        <div id="recurring-forecast-section" class="space-y-3">
-            <app-data-table
-                title="Recurring Forecast"
-                [description]="recurringForecastDescription()"
-                context="recurring-expense"
-                [columns]="recurringForecastColumns"
-                [data]="recurringForecastData()"
-                (rowAction)="handleRowAction($event, 'recurring-forecast')">
-            </app-data-table>
-        </div>
-        <div id="tax-summary-section" class="space-y-3">
-            <app-data-table
-                title="Tax Summary"
-                [description]="taxSummaryDescription()"
-                context="tax-summary"
-                [columns]="taxSummaryColumns"
-                [data]="taxSummaryData()"
-                [disableQuickPeek]="true"
-                (rowAction)="handleRowAction($event, 'tax-summary')">
-            </app-data-table>
-        </div>
-     </div>
-
-  } @else {
-    <div class="text-center py-16 bg-surface rounded-2xl shadow-md">
-       <i class="fa-solid fa-chart-simple text-5xl text-charcoal-400 mb-4"></i>
-       <h3 class="text-xl font-bold">Could not load report data</h3>
-       <p class="text-charcoal-500">Please try again later.</p>
-    </div>
   }
 </div>

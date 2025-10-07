@@ -202,4 +202,35 @@ export class PdfGenerationService {
         setTimeout(() => this.uiState.hideProgress(), 1000);
     }
   }
+
+  async generatePdfFromElement(element: HTMLElement, filename: string) {
+    try {
+      await this.ensureScriptsLoaded();
+      this.uiState.showProgress('Generating PDF...', 1, false);
+      
+      const win = window as any;
+      const { jsPDF } = win.jspdf;
+      const pdf = new jsPDF({ orientation: 'p', unit: 'px', format: 'a4' });
+      
+      const canvas = await win.html2canvas(element, { 
+        useCORS: true,
+        scale: 2,
+        backgroundColor: '#0a0a0c' // Match body bg
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const imgProps= pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(filename);
+
+    } catch (error) {
+      console.error("PDF generation from element failed:", error);
+      alert(`An error occurred while generating the PDF: ${error}`);
+    } finally {
+      this.uiState.hideProgress();
+    }
+  }
 }

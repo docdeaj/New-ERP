@@ -1,0 +1,60 @@
+<!-- Search and Tabs -->
+<div class="p-3 flex-shrink-0">
+  <div class="relative">
+      <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400"></i>
+      <input 
+        type="text" 
+        placeholder="Search fields..." 
+        class="aurora-input w-full bg-surface-inset text-brand-text rounded-lg py-2 pl-9 pr-4 text-sm"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)">
+  </div>
+  <div class="mt-3 grid grid-cols-2 gap-1 p-1 bg-surface-inset rounded-lg">
+    <button 
+        (click)="activeTab.set('dimensions')"
+        class="px-2 py-1 text-sm font-semibold rounded-md transition-colors"
+        [class]="activeTab() === 'dimensions' ? 'bg-surface-raised shadow-sm text-charcoal-100' : 'text-charcoal-400 hover:text-charcoal-200'">
+        Dimensions
+    </button>
+     <button 
+        (click)="activeTab.set('metrics')"
+        class="px-2 py-1 text-sm font-semibold rounded-md transition-colors"
+        [class]="activeTab() === 'metrics' ? 'bg-surface-raised shadow-sm text-charcoal-100' : 'text-charcoal-400 hover:text-charcoal-200'">
+        Metrics
+    </button>
+  </div>
+</div>
+
+<!-- Field List -->
+<div class="flex-1 overflow-y-auto p-3">
+    @if (activeTab() === 'dimensions') {
+        @for(group of groupedDimensions(); track group.group) {
+            <div class="mb-3">
+                <h4 class="text-xs font-bold uppercase text-charcoal-500 mb-1 px-2">{{group.group}}</h4>
+                <ul>
+                    @for(field of group.fields; track field.key) {
+                        <li (click)="onAddField(field)" class="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-surface-raised cursor-pointer text-charcoal-300 hover:text-charcoal-100">
+                            <i class="fa-solid fa-tag w-4 text-center text-blue-400"></i>
+                            <span class="text-sm" [innerHTML]="field.label | highlight : searchQuery()"></span>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+    }
+    @if (activeTab() === 'metrics') {
+         @for(group of groupedMetrics(); track group.group) {
+            <div class="mb-3">
+                <h4 class="text-xs font-bold uppercase text-charcoal-500 mb-1 px-2">{{group.group}}</h4>
+                <ul>
+                    @for(field of group.fields; track field.key) {
+                        <li (click)="onAddField(field)" class="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-surface-raised cursor-pointer text-charcoal-300 hover:text-charcoal-100">
+                            <i class="fa-solid fa-calculator w-4 text-center text-teal-400"></i>
+                            <span class="text-sm" [innerHTML]="field.label | highlight : searchQuery()"></span>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+    }
+</div>
