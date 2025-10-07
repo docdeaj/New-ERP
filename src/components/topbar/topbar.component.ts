@@ -13,8 +13,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 })
 export class TopbarComponent {
   openSearch = output<void>();
-  private router = inject(Router);
-  private activatedRoute = inject(ActivatedRoute);
+  private router: Router = inject(Router);
+  private activatedRoute: ActivatedRoute = inject(ActivatedRoute);
 
   pageTitle = toSignal(
     this.router.events.pipe(

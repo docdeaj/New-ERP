@@ -1,6 +1,8 @@
 
 
 
+
+
 import { Component, ChangeDetectionStrategy, input, output, computed, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormArray, FormGroup } from '@angular/forms';
@@ -24,7 +26,7 @@ export class UniversalAddDrawerComponent {
   context = input.required<DrawerContext | null>();
   close = output<void>();
 
-  private fb = inject(FormBuilder);
+  private fb: FormBuilder = inject(FormBuilder);
   private api = inject(ApiService);
   private uiState = inject(UiStateService);
   private geminiService = inject(GeminiService);
@@ -53,8 +55,10 @@ export class UniversalAddDrawerComponent {
     // Effect for line item totals
     effect((onCleanup) => {
       const form = this.getCurrentForm();
-      const items = form?.get('items') as FormArray | null;
-      if (items) {
+      // FIX: Check if the form has an 'items' control before accessing it.
+      // This resolves a TypeScript error with the union of form types.
+      if (form && 'items' in form.controls) {
+        const items = form.get('items') as FormArray;
         const sub = items.valueChanges.pipe(startWith(items.value)).subscribe(val => {
           this.currentItems.set(val);
         });
@@ -75,8 +79,10 @@ export class UniversalAddDrawerComponent {
 
       if (this.isEditMode() && data && form) {
         form.patchValue(data);
-        const items = form.get('items') as FormArray;
-        if (items && data.lineItems) {
+        // FIX: Check if the form has an 'items' control before accessing it.
+        // This resolves a TypeScript error with the union of form types.
+        if ('items' in form.controls && data.lineItems) {
+          const items = form.get('items') as FormArray;
           items.clear();
           data.lineItems.forEach((item: any) => items.push(this.createLineItem(item)));
         }
@@ -155,7 +161,12 @@ export class UniversalAddDrawerComponent {
 
   get itemsFormArray(): FormArray | null {
     const form = this.getCurrentForm();
-    return form ? form.get('items') as FormArray : null;
+    // FIX: Check if the form has an 'items' control before accessing it.
+    // This resolves a TypeScript error with the union of form types.
+    if (form && 'items' in form.controls) {
+      return form.get('items') as FormArray;
+    }
+    return null;
   }
 
   addLineItem() {
@@ -325,4 +336,71 @@ export class UniversalAddDrawerComponent {
 
       if (this.isEditMode() && currentItem) {
         switch(this.context()) {
-          case 'new-invoice': await this.api.invoices.update
+          case 'new-invoice': await this.api.invoices.update(currentItem.id, payload); break;
+          case 'new-product': await this.api.products.update(currentItem.id, payload); break;
+          // ... other update cases
+        }
+      } else {
+        switch(this.context()) {
+          case 'new-invoice': await this.api.createInvoice(payload); break;
+          case 'new-expense': 
+            if (payload.isRecurring) {
+              await this.api.createRecurringExpense(payload);
+            } else {
+              await this.api.createExpense(payload);
+            }
+            break;
+          case 'new-product': await this.api.createProduct(payload); break;
+          case 'new-contact': await this.api.createContact(payload); break;
+          case 'new-po': await this.api.createPurchaseOrder(payload); break;
+          case 'new-quotation': await this.api.createQuotation(payload); break;
+          case 'new-cheque': await this.api.createCheque(payload); break;
+          case 'record-sale': await this.api.createSale(payload); break;
+          case 'record-payment': await this.api.createCustomerPayment(payload); break;
+        }
+      }
+      this.onClose();
+    } catch (e) {
+      console.error("Save failed", e);
+      // In a real app, show an error toast
+    } finally {
+      this.isSaving.set(false);
+    }
+  }
+
+  getCurrentForm() {
+    switch (this.context()) {
+      case 'new-invoice': return this.invoiceForm;
+      case 'new-expense': case 'new-recurring-expense': return this.expenseForm;
+      case 'new-product': return this.productForm;
+      case 'new-contact': return this.contactForm;
+      case 'new-po': return this.purchaseOrderForm;
+      case 'new-quotation': return this.quotationForm;
+      case 'new-cheque': return this.chequeForm;
+      case 'record-sale': return this.recordSaleForm;
+      case 'record-payment': return this.recordPaymentForm;
+      default: return null;
+    }
+  }
+
+  openMediaBrowser(context: 'expense-attachment' | 'product-image' | 'contact-avatar') {
+    this.mediaFieldContext.set(context);
+    this.isMediaBrowserOpen.set(true);
+  }
+
+  closeMediaBrowser() {
+    this.isMediaBrowserOpen.set(false);
+  }
+
+  onMediaSelect(mediaItem: MediaItem) {
+    const context = this.mediaFieldContext();
+    if (context === 'expense-attachment') {
+      this.expenseForm.patchValue({ attachmentUrl: mediaItem.url });
+    } else if (context === 'product-image') {
+      this.productForm.patchValue({ imageUrl: mediaItem.url });
+    } else if (context === 'contact-avatar') {
+        this.contactForm.patchValue({ avatarUrl: mediaItem.url });
+    }
+    this.closeMediaBrowser();
+  }
+}

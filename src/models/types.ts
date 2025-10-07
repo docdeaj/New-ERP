@@ -295,12 +295,17 @@ export interface ReportSchema {
   metrics: SchemaField[];
 }
 
+export interface SortDefinition {
+  field: string;
+  direction: 'asc' | 'desc';
+}
+
 // Represents a user-defined query
 export interface ReportQuery {
   dimensions: string[]; // e.g., ['customer.name', 'date.month']
   metrics: string[];    // e.g., ['net_sales', 'cogs']
   filters: { field: string; operator: string; value: any; }[];
-  sortBy: { field: string; direction: 'asc' | 'desc'; }[];
+  sortBy: SortDefinition[];
 }
 
 // Represents a saved report configuration

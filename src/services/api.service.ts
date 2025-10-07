@@ -119,6 +119,16 @@ let MOCK_REPORT_VIEWS: ReportView[] = [
     lastRun: '2024-07-29T09:00:00Z',
     isFavorite: false,
   },
+  {
+    id: 'report-4',
+    name: 'Sales by Product Category',
+    description: 'A donut chart showing the distribution of net sales across different product categories.',
+    query: { dimensions: ['product.category'], metrics: ['net_sales'], filters: [], sortBy: [] },
+    visualizationType: 'donut',
+    owner: { name: 'Admin User', avatarUrl: 'https://picsum.photos/seed/aurora-user/40/40' },
+    lastRun: '2024-07-29T11:00:00Z',
+    isFavorite: true,
+  },
 ];
 
 const MOCK_MEDIA: MediaItem[] = Array.from({ length: 15 }, (_, i) => ({
@@ -317,6 +327,7 @@ export class ApiService {
       const MOCK_DIM_VALUES: Record<string, string[]> = {
         'customer.name': MOCK_CONTACTS.filter(c => c.type === 'Customer').map(c => c.name),
         'product.name': MOCK_PRODUCTS.map(p => p.name),
+        'product.category': [...new Set(MOCK_PRODUCTS.map(p => p.category))],
         'date.month': ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
       };
       
@@ -335,6 +346,18 @@ export class ApiService {
           }
         }
         data.push(row);
+      }
+
+      if (query.sortBy && query.sortBy.length > 0) {
+        data.sort((a, b) => {
+            for (const sort of query.sortBy) {
+                const field = sort.field;
+                const direction = sort.direction === 'asc' ? 1 : -1;
+                if (a[field] < b[field]) return -1 * direction;
+                if (a[field] > b[field]) return 1 * direction;
+            }
+            return 0;
+        });
       }
       
       const endTime = Date.now();

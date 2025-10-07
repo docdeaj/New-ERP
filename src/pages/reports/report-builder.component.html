@@ -10,9 +10,27 @@
             <p class="text-sm text-charcoal-400">{{ reportView()?.description || 'Build a custom report by adding dimensions and metrics.' }}</p>
         </div>
     </div>
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-4">
+        <div class="flex items-center gap-1 p-1 bg-surface-inset rounded-lg">
+            <button (click)="setActiveVisualization('table')" 
+                    [class]="'w-9 h-8 flex items-center justify-center rounded-md transition-colors ' + (activeVisualization() === 'table' ? 'bg-surface-raised shadow-sm text-charcoal-100' : 'text-charcoal-400 hover:text-charcoal-200')" 
+                    title="Table View">
+                <i class="fa-solid fa-table-cells"></i>
+            </button>
+            <button (click)="setActiveVisualization('donut')" 
+                    [class]="'w-9 h-8 flex items-center justify-center rounded-md transition-colors ' + (activeVisualization() === 'donut' ? 'bg-surface-raised shadow-sm text-charcoal-100' : 'text-charcoal-400 hover:text-charcoal-200')" 
+                    title="Donut Chart">
+                <i class="fa-solid fa-chart-pie"></i>
+            </button>
+        </div>
         <button class="aurora-button-secondary font-semibold text-charcoal-200 px-4 py-2 rounded-xl">Save</button>
-        <button (click)="runReport()" [disabled]="isLoading()" class="aurora-button-primary font-bold text-white px-4 py-2 rounded-xl min-w-[100px]">
+        <button (click)="runReport()" [disabled]="isLoading()" class="aurora-button-primary font-bold text-white px-4 py-2 rounded-xl min-w-[120px] relative">
+            @if(isDirty()) {
+                <span class="absolute -top-1 -right-1 flex h-3 w-3">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+                </span>
+            }
             @if (isLoading() && !reportResult()) {
                 <i class="fa-solid fa-spinner fa-spin"></i>
             } @else {
@@ -61,15 +79,35 @@
                 </div>
             }
             @if (reportResult(); as result) {
-                <app-data-table
-                    [columns]="dataTableColumns()"
-                    [data]="result.data"
-                    [disableQuickPeek]="true"
-                    context="report-result">
-                    <div table-tools class="text-xs text-charcoal-400">
-                      <span>{{ result.data.length }} rows in {{ result.queryExecutionTime }}ms</span>
-                    </div>
-                </app-data-table>
+                @switch (activeVisualization()) {
+                    @case ('table') {
+                        <app-data-table
+                            [columns]="dataTableColumns()"
+                            [data]="result.data"
+                            [disableQuickPeek]="true"
+                            context="report-result">
+                            <div table-tools class="text-xs text-charcoal-400">
+                                <span>{{ result.data.length }} rows in {{ result.queryExecutionTime }}ms</span>
+                            </div>
+                        </app-data-table>
+                    }
+                    @case ('donut') {
+                        @if (isDonutCompatible()) {
+                            <app-donut-chart [data]="donutChartData()"></app-donut-chart>
+                        } @else {
+                            <div class="h-full flex flex-col items-center justify-center text-charcoal-500 text-center p-4">
+                                <i class="fa-solid fa-circle-exclamation text-4xl text-amber-500 mb-4"></i>
+                                <h3 class="font-semibold text-lg text-charcoal-200">Incompatible Query</h3>
+                                <p>Donut charts require exactly 1 Dimension and 1 Metric.</p>
+                            </div>
+                        }
+                    }
+                    @default {
+                        <div class="h-full flex flex-col items-center justify-center text-charcoal-500">
+                            <p>This visualization is not yet supported.</p>
+                        </div>
+                    }
+                }
             } @else if (!isLoading()) {
                 <div class="h-full flex flex-col items-center justify-center text-charcoal-500">
                     <i class="fa-solid fa-rocket text-5xl mb-4"></i>

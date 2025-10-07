@@ -6,6 +6,7 @@
     </div>
     <div cdkDropList 
          id="dimensionsList"
+         cdkDropListOrientation="horizontal"
          [cdkDropListData]="dimensions()"
          (cdkDropListDropped)="drop($event)"
          class="min-h-[48px] bg-surface-inset rounded-lg p-2 flex flex-wrap gap-2 items-center border-2 border-dashed border-charcoal-700/50">
@@ -29,6 +30,7 @@
     </div>
     <div cdkDropList
          id="metricsList"
+         cdkDropListOrientation="horizontal"
          [cdkDropListData]="metrics()"
          (cdkDropListDropped)="drop($event)"
          class="min-h-[48px] bg-surface-inset rounded-lg p-2 flex flex-wrap gap-2 items-center border-2 border-dashed border-charcoal-700/50">
@@ -43,5 +45,51 @@
         @if(metrics().length === 0) {
             <span class="text-sm text-charcoal-500 px-2">Add metrics to measure</span>
         }
+    </div>
+
+    <!-- Sort By Shelf -->
+    <div class="pt-2">
+        <h4 class="text-sm font-semibold text-charcoal-300">Sort By</h4>
+        <p class="text-xs text-charcoal-500">Order results</p>
+    </div>
+    <div class="min-h-[48px] bg-surface-inset rounded-lg p-2 flex flex-wrap gap-2 items-center border-2 border-dashed border-charcoal-700/50">
+        <div cdkDropList 
+             id="sortList"
+             cdkDropListOrientation="horizontal"
+             [cdkDropListData]="sortBy()"
+             (cdkDropListDropped)="dropSort($event)"
+             class="flex flex-wrap gap-2 items-center">
+            @for(sort of sortBy(); track sort.field; let i = $index) {
+                <div cdkDrag class="flex items-center gap-2 bg-purple-900/50 text-purple-200 pl-3 pr-1 py-1 rounded-full text-sm font-medium cursor-grab active:cursor-grabbing shadow-sm">
+                    <span>{{ formatField(sort.field) }}</span>
+                    <button (click)="toggleSortDirection(i)" class="w-5 h-5 rounded-full hover:bg-purple-500/30 flex items-center justify-center" [title]="'Sort ' + (sort.direction === 'asc' ? 'Descending' : 'Ascending')">
+                        <i class="fa-solid text-xs" [class.fa-arrow-up-long]="sort.direction === 'asc'" [class.fa-arrow-down-long]="sort.direction === 'desc'"></i>
+                    </button>
+                    <button (click)="removeSort(i)" class="w-5 h-5 rounded-full bg-purple-500/30 hover:bg-purple-500/60 text-purple-100 flex items-center justify-center" title="Remove sort">
+                        <i class="fa-solid fa-times text-[10px]"></i>
+                    </button>
+                </div>
+            }
+        </div>
+        <!-- Add Sort Button & Menu -->
+        <div class="relative">
+            <button (click)="isSortMenuOpen.set(!isSortMenuOpen())" class="w-8 h-8 flex items-center justify-center rounded-full bg-surface-raised hover:bg-surface transition-colors" title="Add sort criteria">
+                <i class="fa-solid fa-plus"></i>
+            </button>
+            @if(isSortMenuOpen()) {
+                <div class="absolute top-full left-0 mt-2 w-56 bg-surface-raised rounded-lg shadow-lg z-10 p-2 border border-charcoal-700/30">
+                    @if (availableSortFields().length > 0) {
+                        <p class="text-xs text-charcoal-400 px-2 pb-1">Add field to sort by:</p>
+                        <ul>
+                            @for(field of availableSortFields(); track field) {
+                                <li (click)="addSort(field)" class="text-sm px-2 py-1 rounded-md hover:bg-surface-inset cursor-pointer">{{ formatField(field) }}</li>
+                            }
+                        </ul>
+                    } @else {
+                        <p class="text-sm text-charcoal-500 p-2 text-center">All fields are used.</p>
+                    }
+                </div>
+            }
+        </div>
     </div>
 </div>
