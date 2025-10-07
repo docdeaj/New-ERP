@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { Invoice, Product, Contact, Kpi, InventoryItem, Quotation, Receipt, Cheque, PurchaseOrder, MediaItem, DailyReport, Expense, ReceiptPaymentMethod, LineItem, RecurringExpense, LocationKey, ReportSummary, SalesTrend, TopProductReport, ArAgingRow, ApAgingRow, InventorySnapshot, SlowMover, RecurringForecastRow, TaxSummaryRow, ReportView, ReportQuery, ReportResult, ReportSchema } from '../models/types';
+import { Invoice, Product, Contact, Kpi, InventoryItem, Quotation, Receipt, Cheque, PurchaseOrder, MediaItem, DailyReport, Expense, ReceiptPaymentMethod, LineItem, RecurringExpense, LocationKey, ReportSummary, SalesTrend, TopProductReport, ArAgingRow, ApAgingRow, InventorySnapshot, SlowMover, RecurringForecastRow, TaxSummaryRow, ReportView, ReportQuery, ReportResult, ReportSchema, LogEntry, LogSeverity } from '../models/types';
 
 let MOCK_INVOICES: Invoice[] = [
   { id: 1, invoiceNumber: 'INV-2024-001', customerName: 'Tech Innovators Inc.', customerAvatarUrl: 'https://picsum.photos/seed/1/40/40', amount: 15000.00, issueDate: '2024-07-20', dueDate: '2024-08-19', status: 'Paid', totalPaid: 15000, balance: 0, lineItems: [{productId: 1, productName: 'Wireless Mouse', quantity: 5, unitPrice: 3000, total: 15000}] },
@@ -31,7 +31,6 @@ let MOCK_INVENTORY: InventoryItem[] = MOCK_PRODUCTS.map((p) => ({
 }));
 
 let MOCK_QUOTATIONS: Quotation[] = [
-  // FIX: Changed 'items' to 'lineItems' to match the Quotation type definition.
   { id: 1, quotationNumber: 'QUO-2024-001', customerName: 'Pixel Perfect Designs', customerAvatarUrl: 'https://picsum.photos/seed/q1/40/40', amount: 44000, issueDate: '2024-07-28', expiryDate: '2024-08-12', status: 'Sent', lineItems: [{ productId: 3, productName: 'USB-C Hub', quantity: 10, unitPrice: 4000, total: 40000 }], subtotal: 40000, tax: 4000 },
 ];
 
@@ -129,11 +128,30 @@ let MOCK_REPORT_VIEWS: ReportView[] = [
     lastRun: '2024-07-29T11:00:00Z',
     isFavorite: true,
   },
+  {
+    id: 'report-5',
+    name: 'Monthly Sales Trend',
+    description: 'Line chart showing the trend of net sales over the last several months.',
+    query: { dimensions: ['date.month'], metrics: ['net_sales'], filters: [], sortBy: [{ field: 'date.month', direction: 'asc' }] },
+    visualizationType: 'line',
+    owner: { name: 'Admin User', avatarUrl: 'https://picsum.photos/seed/aurora-user/40/40' },
+    lastRun: '2024-07-30T09:00:00Z',
+    isFavorite: true,
+  }
 ];
 
 const MOCK_MEDIA: MediaItem[] = Array.from({ length: 15 }, (_, i) => ({
   id: `media-${i + 1}`, name: `product_image_${i + 1}.jpg`, url: `https://picsum.photos/seed/img${i}/400/400`, size: 1024 * (150 + i*10), type: 'image/jpeg', createdAt: new Date(Date.now() - i * 1000 * 60 * 60 * 24).toISOString(),
 }));
+
+// FIX: Add mock logs to be used by the new logs API property.
+let MOCK_LOGS: LogEntry[] = [
+  { id: 'log-1', timestamp: new Date(Date.now() - 1000 * 5).toISOString(), severity: 'INFO', message: 'User admin logged in successfully.', source: 'frontend', service: 'auth-service', attributes: { ip: '192.168.1.1' }, traceId: 'trace-abc' },
+  { id: 'log-2', timestamp: new Date(Date.now() - 1000 * 15).toISOString(), severity: 'DEBUG', message: 'Fetching invoices for dashboard.', source: 'frontend', service: 'api-gateway', attributes: { endpoint: '/api/invoices' } },
+  { id: 'log-3', timestamp: new Date(Date.now() - 1000 * 30).toISOString(), severity: 'WARN', message: 'API response time is high for /products.', source: 'api-gateway', service: 'product-service', attributes: { duration_ms: 850 }, traceId: 'trace-def' },
+  { id: 'log-4', timestamp: new Date(Date.now() - 1000 * 60).toISOString(), severity: 'ERROR', message: 'Failed to process payment for invoice INV-2024-002.', source: 'backend', service: 'payment-processor', attributes: { error: 'Insufficient funds', invoiceId: 2 }, traceId: 'trace-ghi' },
+  { id: 'log-5', timestamp: new Date(Date.now() - 1000 * 120).toISOString(), severity: 'FATAL', message: 'Database connection lost.', source: 'database', service: 'main-db', attributes: { db_host: 'db.prod.internal' }, traceId: 'trace-jkl' },
+];
 
 interface ApiParams { tenant_id: string; user_id: string; }
 const filterData = <T,>(data: T[], query: string): T[] => {
@@ -349,12 +367,21 @@ export class ApiService {
       }
 
       if (query.sortBy && query.sortBy.length > 0) {
+        const monthOrder = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
         data.sort((a, b) => {
             for (const sort of query.sortBy) {
                 const field = sort.field;
                 const direction = sort.direction === 'asc' ? 1 : -1;
-                if (a[field] < b[field]) return -1 * direction;
-                if (a[field] > b[field]) return 1 * direction;
+                let valA = a[field];
+                let valB = b[field];
+
+                if(field === 'date.month') {
+                    valA = monthOrder.indexOf(valA);
+                    valB = monthOrder.indexOf(valB);
+                }
+
+                if (valA < valB) return -1 * direction;
+                if (valA > valB) return 1 * direction;
             }
             return 0;
         });
@@ -428,6 +455,40 @@ export class ApiService {
     },
     update: async (id: number, data: Partial<Contact>): Promise<Contact> => { return this.updateOneIn(MOCK_CONTACTS, id, data); },
     deleteMany: async (ids: (string|number)[]): Promise<void> => { MOCK_CONTACTS = this.deleteManyFrom(MOCK_CONTACTS, ids); }
+  };
+  
+  // FIX: Add 'logs' property to implement the API for the logs page.
+  logs = {
+    search: async(params: { query: string; severities: LogSeverity[] }): Promise<{ rows: LogEntry[] }> => {
+        await new Promise(res => setTimeout(res, 200));
+        let results = [...MOCK_LOGS];
+        if (params.query) {
+            const q = params.query.toLowerCase();
+            results = results.filter(log => log.message.toLowerCase().includes(q) || log.service.toLowerCase().includes(q) || log.source.toLowerCase().includes(q));
+        }
+        if (params.severities && params.severities.length > 0) {
+            const severitiesSet = new Set(params.severities);
+            results = results.filter(log => severitiesSet.has(log.severity));
+        }
+        return { rows: results.sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()) };
+    },
+    createMockLog: (): LogEntry => {
+      const severities: LogSeverity[] = ['DEBUG', 'INFO', 'WARN', 'ERROR'];
+      const services = ['auth-service', 'payment-processor', 'product-service', 'api-gateway'];
+      const messages = ['User action recorded', 'Data fetched successfully', 'Cache miss for key', 'Request timed out', 'Invalid input received'];
+      const newId = `log-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      const newLog: LogEntry = {
+          id: newId,
+          timestamp: new Date().toISOString(),
+          severity: severities[Math.floor(Math.random() * severities.length)],
+          message: messages[Math.floor(Math.random() * messages.length)],
+          source: 'frontend',
+          service: services[Math.floor(Math.random() * services.length)],
+          attributes: { userId: 'user-abc' }
+      };
+      MOCK_LOGS.unshift(newLog);
+      return newLog;
+    }
   };
 
   // --- CREATE Methods ---

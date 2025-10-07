@@ -281,6 +281,21 @@ export interface TaxSummaryRow {
   taxCollected: number;
 }
 
+// --- Notifications ---
+export type NotificationType = 'invoice' | 'stock' | 'system' | 'purchase_order' | 'mention' | 'cheque' | 'quotation' | 'generic';
+export type NotificationPriority = 'high' | 'medium' | 'low';
+
+export interface Notification {
+  id: number;
+  type: NotificationType;
+  title: string;
+  body: string;
+  createdAt: string; // ISO string
+  read: boolean;
+  link?: string;
+  priority: NotificationPriority;
+}
+
 // --- NEW DYNAMIC REPORTING TYPES ---
 
 export interface SchemaField {
@@ -314,7 +329,7 @@ export interface ReportView {
   name: string;
   description: string;
   query: ReportQuery;
-  visualizationType: 'table' | 'bar' | 'pivot' | 'donut';
+  visualizationType: 'table' | 'bar' | 'pivot' | 'donut' | 'line';
   owner: {
     name: string;
     avatarUrl: string;
@@ -328,4 +343,19 @@ export interface ReportResult {
   meta: { columns: { key: string; label: string; type: 'string' | 'currency' | 'date' | 'number' }[] };
   data: Record<string, any>[];
   queryExecutionTime: number;
+}
+
+// --- LOGS ---
+export type LogSeverity = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'FATAL';
+
+export interface LogEntry {
+  id: string;
+  timestamp: string; // ISO string
+  severity: LogSeverity;
+  message: string;
+  source: string; // e.g., 'api-gateway', 'database', 'frontend'
+  service: string; // e.g., 'auth-service', 'payment-processor'
+  attributes: Record<string, any>;
+  traceId?: string;
+  spanId?: string;
 }

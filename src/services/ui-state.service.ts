@@ -22,6 +22,7 @@ type PrintableDocument = Invoice | Quotation | PurchaseOrder | Receipt;
 export class UiStateService {
   isSidebarCollapsed = signal(false);
   isSearchOpen = signal(false);
+  isNotificationsOpen = signal(false);
   
   // Drawer State
   isDrawerOpen = signal(false);

@@ -9,6 +9,7 @@ import { UiStateService, DrawerContext } from './services/ui-state.service';
 import { ConfirmationModalComponent } from './components/confirmation-modal/confirmation-modal.component';
 import { DocumentPreviewModalComponent } from './components/document-preview-modal/document-preview-modal.component';
 import { Invoice, Quotation, PurchaseOrder, Receipt } from './models/types';
+import { NotificationsDropdownComponent } from './components/notifications-dropdown/notifications-dropdown.component';
 
 type PrintableDocument = Invoice | Quotation | PurchaseOrder | Receipt;
 
@@ -26,6 +27,7 @@ type PrintableDocument = Invoice | Quotation | PurchaseOrder | Receipt;
     UniversalAddDrawerComponent,
     ConfirmationModalComponent,
     DocumentPreviewModalComponent,
+    NotificationsDropdownComponent,
   ],
   host: {
     '(window:keydown)': 'handleKeyboardEvent($event)',
@@ -35,6 +37,7 @@ export class AppComponent {
   uiStateService = inject(UiStateService);
   isSidebarCollapsed = this.uiStateService.isSidebarCollapsed;
   isSearchOpen = this.uiStateService.isSearchOpen;
+  isNotificationsOpen = this.uiStateService.isNotificationsOpen;
   isDrawerOpen = this.uiStateService.isDrawerOpen;
   drawerContext = this.uiStateService.drawerContext;
   confirmationState = this.uiStateService.confirmationState;
@@ -45,7 +48,7 @@ export class AppComponent {
 
   constructor() {
     effect(() => {
-      if (this.isSearchOpen() || this.isDrawerOpen() || this.confirmationState() || this.documentPreviewState()) {
+      if (this.isSearchOpen() || this.isDrawerOpen() || this.confirmationState() || this.documentPreviewState() || this.isNotificationsOpen()) {
         document.body.style.overflow = 'hidden';
       } else {
         document.body.style.overflow = 'auto';
@@ -117,6 +120,10 @@ export class AppComponent {
       }
       if (this.confirmationState()) {
         this.onCancel();
+        return;
+      }
+      if (this.isNotificationsOpen()) {
+        this.isNotificationsOpen.set(false);
         return;
       }
       if (this.isDrawerOpen()) {

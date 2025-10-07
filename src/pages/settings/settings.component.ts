@@ -1,86 +1,93 @@
 
-import { Component, ChangeDetectionStrategy, inject, signal, computed, ElementRef, viewChild, afterNextRender } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { SettingsSearchComponent } from '../../components/settings-search/settings-search.component';
 import { SettingsService } from '../../services/settings.service';
 import { SettingDefinition } from '../../data/settings.registry';
-import { SettingsSearchComponent } from '../../components/settings-search/settings-search.component';
-import { SettingCardComponent } from '../../components/setting-card/setting-card.component';
 
-interface SettingsGroup {
-  section: string;
-  settings: SettingDefinition[];
+interface NavLink {
+  path: string;
+  label: string;
+  icon: string;
 }
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, SettingsSearchComponent, SettingCardComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, SettingsSearchComponent],
   templateUrl: './settings.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SettingsComponent {
   private settingsService = inject(SettingsService);
-  contentArea = viewChild<ElementRef<HTMLDivElement>>('contentArea');
+  private router = inject(Router);
 
   allSettings = signal<SettingDefinition[]>(this.settingsService.registry);
 
-  groupedSettings = computed<SettingsGroup[]>(() => {
-    const registry = this.allSettings();
-    const groups = new Map<string, SettingDefinition[]>();
+  navLinks = computed<NavLink[]>(() => {
+    const sectionToIcon: Record<string, string> = {
+        'Organization': 'fa-solid fa-building',
+        'Auth & Security': 'fa-solid fa-shield-halved',
+        'Regional & Tax': 'fa-solid fa-landmark',
+        'POS': 'fa-solid fa-cash-register',
+        'Sales & Invoices': 'fa-solid fa-file-invoice-dollar',
+        'Inventory & Purchasing': 'fa-solid fa-boxes-stacked',
+        'Appearance': 'fa-solid fa-palette'
+    };
+
+    const sections = [...new Set(this.allSettings().map(s => s.section))].sort((a,b) => a.localeCompare(b));
     
-    for (const setting of registry) {
-      if (!groups.has(setting.section)) {
-        groups.set(setting.section, []);
-      }
-      groups.get(setting.section)!.push(setting);
+    const links: NavLink[] = [];
+    if (sections.includes('Organization') || sections.includes('Regional & Tax')) {
+        links.push({ path: 'organization', label: 'Organization', icon: sectionToIcon['Organization'] });
+    }
+    if (sections.includes('Auth & Security')) {
+        links.push({ path: 'security', label: 'Security', icon: sectionToIcon['Auth & Security'] });
+    }
+    if (sections.includes('POS')) {
+        links.push({ path: 'pos', label: 'POS', icon: sectionToIcon['POS'] });
+    }
+    if (sections.includes('Sales & Invoices')) {
+        links.push({ path: 'sales', label: 'Sales', icon: sectionToIcon['Sales & Invoices'] });
+    }
+    if (sections.includes('Inventory & Purchasing')) {
+        links.push({ path: 'inventory', label: 'Inventory', icon: sectionToIcon['Inventory & Purchasing'] });
+    }
+    if (sections.includes('Appearance')) {
+        links.push({ path: 'appearance', label: 'Appearance', icon: sectionToIcon['Appearance'] });
     }
     
-    // Sort sections alphabetically for consistent order
-    const sortedGroups = Array.from(groups.entries()).sort((a, b) => a[0].localeCompare(b[0]));
-    
-    return sortedGroups.map(([section, settings]) => ({ section, settings }));
+    return links;
   });
-
-  sections = computed(() => this.groupedSettings().map(g => g.section));
-  
-  activeSection = signal<string | null>(null);
-
-  constructor() {
-    afterNextRender(() => {
-        this.activeSection.set(this.sections()[0] ?? null);
-    });
-  }
-
-  scrollToSection(sectionId: string, event?: MouseEvent) {
-    event?.preventDefault();
-    const element = document.getElementById(this.getSectionId(sectionId));
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      this.activeSection.set(sectionId);
-    }
-  }
 
   handleJumpToSetting(key: string) {
     const setting = this.allSettings().find(s => s.key === key);
     if (!setting) return;
     
-    this.scrollToSection(setting.section);
+    const sectionPathMap: Record<string, string> = {
+      'Organization': 'organization',
+      'Regional & Tax': 'organization',
+      'Auth & Security': 'security',
+      'POS': 'pos',
+      'Sales & Invoices': 'sales',
+      'Inventory & Purchasing': 'inventory',
+      'Appearance': 'appearance'
+    };
 
-    // Add a temporary highlight to the card
-    setTimeout(() => {
-       const element = document.getElementById(this.getSettingId(key));
-       if (element) {
-         element.classList.add('setting-highlight');
-         setTimeout(() => element.classList.remove('setting-highlight'), 2000);
-       }
-    }, 300); // wait for scroll to finish
-  }
-
-  // Helper to create safe IDs for DOM elements
-  getSectionId(section: string): string {
-    return `section-${section.replace(/[^a-zA-Z0-9]/g, '-')}`;
-  }
-  getSettingId(key: string): string {
-    return `setting-${key}`;
+    const path = sectionPathMap[setting.section];
+    if (path) {
+      this.router.navigate(['/settings', path]).then(() => {
+        // Add a temporary highlight to the card
+        setTimeout(() => {
+          const element = document.getElementById(`setting-${setting.key}`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            element.classList.add('setting-highlight');
+            setTimeout(() => element.classList.remove('setting-highlight'), 2500);
+          }
+        }, 100); // wait for navigation and rendering
+      });
+    }
   }
 }

@@ -21,14 +21,19 @@
         placeholder="Search everything..." 
         class="w-full bg-surface-inset text-lg text-charcoal-100 placeholder-charcoal-400 dark:placeholder-charcoal-500 focus:outline-none rounded-lg px-2 py-1"
         (input)="onInput($event)"
-        [value]="query()" />
+        [value]="query()"
+        role="combobox"
+        aria-controls="search-results-list"
+        [attr.aria-expanded]="true"
+        [attr.aria-activedescendant]="activeItemId()" />
       <span class="text-xs text-charcoal-400 dark:text-charcoal-500 bg-surface-inset px-2 py-1 rounded-md shadow-inner-sm ml-2">ESC</span>
     </div>
     <!-- Filter Chips -->
     <div class="flex items-center gap-2 overflow-x-auto pb-1">
-       @for(filter of ['All', 'Invoices', 'Quotations', 'Products', 'POs', 'Recurring']; track filter) {
-        <button class="px-3 py-1 text-sm font-semibold rounded-full transition-all duration-150 shadow-sm whitespace-nowrap"
-                [class]="filter === 'All' ? 'bg-surface-inset text-primary shadow-inner-sm' : 'bg-surface-raised hover:bg-surface-inset'">
+       @for(filter of filters; track filter) {
+        <button (click)="selectFilter(filter)" 
+                class="px-3 py-1 text-sm font-semibold rounded-full transition-all duration-150 shadow-sm whitespace-nowrap"
+                [class]="activeFilter() === filter ? 'bg-primary/20 text-primary shadow-inner-sm' : 'bg-surface-raised hover:bg-surface-inset'">
             {{filter}}
         </button>
        }
@@ -38,16 +43,21 @@
   <!-- Body -->
   <div class="flex max-h-[60vh] min-h-[40vh] overflow-hidden">
     <!-- Left: Results List -->
-    <div class="w-[48%] divider-r overflow-y-auto" role="listbox">
+    <div id="search-results-list" class="w-[48%] divider-r overflow-y-auto" role="listbox">
       @if (results().length === 0 && !isLoading()) {
-        <p class="p-6 text-center text-charcoal-500">No results found for "{{ query() }}"</p>
+        <div class="p-6 text-center text-charcoal-500">
+            <i class="fa-solid fa-ghost text-4xl mb-4"></i>
+            <p class="font-semibold text-charcoal-300">No results found for "{{ query() }}"</p>
+            <p class="text-sm mt-1">Try a different search term or check for typos.</p>
+        </div>
       } @else {
         @for (group of results(); track group.group; let g = $index) {
           <div>
             <h3 class="sticky top-0 bg-surface-raised/80 backdrop-blur-sm px-4 py-1.5 text-xs font-semibold text-charcoal-400 uppercase tracking-wider">{{ group.group }}</h3>
             <ul>
-              @for (item of group.items; track item.title + item.secondary; let i = $index) {
+              @for (item of group.items; track item.id; let i = $index) {
                 <li (mouseover)="setActive(g, i)" (click)="handleSelect()"
+                    [id]="item.id"
                     [class]="'flex items-center gap-4 py-2 cursor-pointer transition-all duration-150 group border-l-2 ' + (activeGroupIndex() === g && activeItemIndex() === i ? 'bg-primary/10 border-primary pl-3 pr-4' : 'border-transparent pl-4 pr-4 hover:bg-surface-raised hover:shadow-sm')"
                     role="option" [attr.aria-selected]="activeGroupIndex() === g && activeItemIndex() === i">
                   <div class="flex items-center justify-center w-8 h-8 text-lg bg-surface-inset rounded-lg text-charcoal-300 shadow-inner-sm">

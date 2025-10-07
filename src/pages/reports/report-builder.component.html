@@ -17,6 +17,11 @@
                     title="Table View">
                 <i class="fa-solid fa-table-cells"></i>
             </button>
+            <button (click)="setActiveVisualization('line')" 
+                    [class]="'w-9 h-8 flex items-center justify-center rounded-md transition-colors ' + (activeVisualization() === 'line' ? 'bg-surface-raised shadow-sm text-charcoal-100' : 'text-charcoal-400 hover:text-charcoal-200')" 
+                    title="Line Chart">
+                <i class="fa-solid fa-chart-line"></i>
+            </button>
             <button (click)="setActiveVisualization('donut')" 
                     [class]="'w-9 h-8 flex items-center justify-center rounded-md transition-colors ' + (activeVisualization() === 'donut' ? 'bg-surface-raised shadow-sm text-charcoal-100' : 'text-charcoal-400 hover:text-charcoal-200')" 
                     title="Donut Chart">
@@ -99,6 +104,17 @@
                                 <i class="fa-solid fa-circle-exclamation text-4xl text-amber-500 mb-4"></i>
                                 <h3 class="font-semibold text-lg text-charcoal-200">Incompatible Query</h3>
                                 <p>Donut charts require exactly 1 Dimension and 1 Metric.</p>
+                            </div>
+                        }
+                    }
+                    @case ('line') {
+                        @if (isLineCompatible()) {
+                            <app-line-chart [labels]="lineChartData().labels" [datasets]="lineChartData().datasets"></app-line-chart>
+                        } @else {
+                            <div class="h-full flex flex-col items-center justify-center text-charcoal-500 text-center p-4">
+                                <i class="fa-solid fa-circle-exclamation text-4xl text-amber-500 mb-4"></i>
+                                <h3 class="font-semibold text-lg text-charcoal-200">Incompatible Query</h3>
+                                <p>Line charts require 1 Dimension (e.g. Month) and at least 1 Metric.</p>
                             </div>
                         }
                     }

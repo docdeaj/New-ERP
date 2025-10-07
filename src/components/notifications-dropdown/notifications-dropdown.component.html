@@ -1,0 +1,44 @@
+<!-- Backdrop -->
+<div class="fixed inset-0 z-40" (click)="close.emit()"></div>
+
+<!-- Dropdown Panel -->
+<div class="absolute top-20 right-4 w-full max-w-sm bg-surface/90 backdrop-blur-xl rounded-2xl shadow-2xl z-50 animate-[slide-down_220ms_cubic-bezier(0.2,0.8,0.2,1)] border border-charcoal-700/30">
+    <!-- Header -->
+    <header class="flex items-center justify-between p-3 border-b border-charcoal-800/50">
+        <h3 class="text-base font-semibold">Notifications</h3>
+        <button (click)="markAllAsRead()" [disabled]="notificationService.unreadCount() === 0" class="text-xs font-semibold text-primary disabled:opacity-50 hover:underline">
+            Mark all as read
+        </button>
+    </header>
+
+    <!-- List -->
+    <main class="max-h-96 overflow-y-auto">
+        @if(recentUnread().length > 0) {
+            <ul>
+                @for(notification of recentUnread(); track notification.id) {
+                    <li (click)="handleNotificationClick(notification)" class="group p-3 flex items-start gap-3 transition-colors hover:bg-surface-raised cursor-pointer border-b border-charcoal-800/50 last:border-b-0">
+                        <div class="w-8 h-8 rounded-full bg-surface-inset flex items-center justify-center text-charcoal-300 shadow-inner-sm text-base flex-shrink-0">
+                            <i [class]="getIconForType(notification.type)"></i>
+                        </div>
+                        <div class="flex-1 overflow-hidden">
+                            <p class="font-semibold text-sm text-charcoal-100 truncate">{{ notification.title }}</p>
+                            <p class="text-xs text-charcoal-400 mt-0.5 line-clamp-2">{{ notification.body }}</p>
+                        </div>
+                    </li>
+                }
+            </ul>
+        } @else {
+            <div class="p-12 text-center text-charcoal-500">
+                <i class="fa-solid fa-party-horn text-3xl mb-3"></i>
+                <p class="text-sm">You're all caught up!</p>
+            </div>
+        }
+    </main>
+    
+    <!-- Footer -->
+    <footer class="p-2 border-t border-charcoal-800/50">
+        <button (click)="viewAll()" class="w-full text-center px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/10 rounded-lg transition-colors">
+            View all notifications
+        </button>
+    </footer>
+</div>

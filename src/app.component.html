@@ -15,6 +15,10 @@
     <app-universal-search (close)="closeSearch()"></app-universal-search>
   }
 
+  @if (isNotificationsOpen()) {
+    <app-notifications-dropdown (close)="isNotificationsOpen.set(false)"></app-notifications-dropdown>
+  }
+
   @if (isDrawerOpen()) {
     <app-universal-add-drawer 
       [context]="drawerContext()"

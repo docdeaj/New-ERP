@@ -1,4 +1,5 @@
 
+
 import { Routes } from '@angular/router';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { InvoicesComponent } from './pages/invoices/invoices.component';
@@ -15,8 +16,9 @@ import { PlaceholderComponent } from './pages/placeholder.component';
 import { ExpensesComponent } from './pages/expenses/expenses.component';
 import { PaymentWorkspaceComponent } from './pages/payment-workspace/payment-workspace.component';
 import { RecurringExpensesComponent } from './pages/recurring-expenses/recurring-expenses.component';
-import { SettingsComponent } from './pages/settings/settings.component';
 import { ReportBuilderComponent } from './pages/reports/report-builder.component';
+import { NotificationsComponent } from './pages/notifications/notifications.component';
+import { LogsComponent } from './pages/logs/logs.component';
 
 
 export const APP_ROUTES: Routes = [
@@ -36,7 +38,13 @@ export const APP_ROUTES: Routes = [
   { path: 'reports', component: ReportsComponent, title: 'Reports' },
   { path: 'reports/builder', component: ReportBuilderComponent, title: 'Report Builder' },
   { path: 'reports/builder/:id', component: ReportBuilderComponent, title: 'Report Builder' },
-  { path: 'settings', component: SettingsComponent, title: 'Settings' },
+  { path: 'notifications', component: NotificationsComponent, title: 'Notifications' },
+  { path: 'logs', component: LogsComponent, title: 'Logs' },
+  { 
+    path: 'settings', 
+    title: 'Settings',
+    loadChildren: () => import('./pages/settings/settings.routes').then(m => m.SETTINGS_ROUTES) 
+  },
   { path: 'recurring', component: RecurringExpensesComponent, title: 'Recurring Expenses' },
   { path: '**', redirectTo: 'dashboard' } 
 ];

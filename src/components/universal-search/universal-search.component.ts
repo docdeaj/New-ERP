@@ -5,6 +5,8 @@ import { HighlightPipe } from '../../pipes/highlight.pipe';
 import { Invoice, Product, PurchaseOrder, RecurringExpense, Quotation } from '../../models/types';
 import { InvoicePdfComponent } from '../invoice-pdf/invoice-pdf.component';
 import { PdfGenerationService } from '../../services/pdf.service';
+import { UiStateService, DrawerContext } from '../../services/ui-state.service';
+import { Router } from '@angular/router';
 
 interface SearchResultItem {
   type: string;
@@ -13,12 +15,15 @@ interface SearchResultItem {
   secondary?: string;
   meta?: any;
   data: any;
+  id: string; // For aria-activedescendant
 }
 
 interface SearchResultGroup {
   group: string;
   items: SearchResultItem[];
 }
+
+type SearchFilter = 'All' | 'Invoices' | 'Quotations' | 'Products' | 'POs' | 'Recurring';
 
 @Component({
   selector: 'app-universal-search',
@@ -41,11 +46,15 @@ export class UniversalSearchComponent {
 
   api = inject(ApiService);
   pdfService = inject(PdfGenerationService);
+  uiState = inject(UiStateService);
+  router = inject(Router);
   
   query = signal('');
   results = signal<SearchResultGroup[]>([]);
   isLoading = signal(false);
   recents = signal<string[]>(['INV-2024-002', 'Wireless Mouse', '#po']);
+  activeFilter = signal<SearchFilter>('All');
+  filters: SearchFilter[] = ['All', 'Invoices', 'Quotations', 'Products', 'POs', 'Recurring'];
 
   // Navigation state
   activeGroupIndex = signal(0);
@@ -55,13 +64,13 @@ export class UniversalSearchComponent {
 
   // Static items
   sidebarItems: SearchResultItem[] = [
-    { type: 'nav', icon: 'fa-solid fa-chart-pie', title: 'Dashboard', secondary: 'Navigate to Dashboard', data: { path: '/dashboard' } },
-    { type: 'nav', icon: 'fa-solid fa-cash-register', title: 'POS', secondary: 'Navigate to Point of Sale', data: { path: '/pos' } },
+    { id: 'nav-dashboard', type: 'nav', icon: 'fa-solid fa-chart-pie', title: 'Dashboard', secondary: 'Navigate to Dashboard', data: { path: '/dashboard' } },
+    { id: 'nav-pos', type: 'nav', icon: 'fa-solid fa-cash-register', title: 'POS', secondary: 'Navigate to Point of Sale', data: { path: '/pos' } },
   ];
   quickActions: SearchResultItem[] = [
-      { type: 'action', icon: 'fa-solid fa-file-invoice-dollar', title: 'New Invoice', secondary: 'Create a new customer invoice', data: {} },
-      { type: 'action', icon: 'fa-solid fa-money-bill-wave', title: 'Add Expense', secondary: 'Record a new business expense', data: {} },
-      { type: 'action', icon: 'fa-solid fa-cart-shopping', title: 'New Purchase Order', secondary: 'Create a new PO for a supplier', data: {} },
+      { id: 'action-new-invoice', type: 'action', icon: 'fa-solid fa-file-invoice-dollar', title: 'New Invoice', secondary: 'Create a new customer invoice', data: {} },
+      { id: 'action-add-expense', type: 'action', icon: 'fa-solid fa-money-bill-wave', title: 'Add Expense', secondary: 'Record a new business expense', data: {} },
+      { id: 'action-new-po', type: 'action', icon: 'fa-solid fa-cart-shopping', title: 'New Purchase Order', secondary: 'Create a new PO for a supplier', data: {} },
   ];
   
   baseResults = computed<SearchResultGroup[]>(() => {
@@ -78,18 +87,31 @@ export class UniversalSearchComponent {
     return group?.items[this.activeItemIndex()] ?? null;
   });
 
+  activeItemId = computed(() => {
+    const item = this.selectedItem();
+    return item ? item.id : null;
+  });
+
   constructor() {
     afterNextRender(() => this.searchInput()?.nativeElement.focus());
     effect((onCleanup) => {
       const currentQuery = this.query();
+      // This effect should also depend on the filter
+      this.activeFilter(); 
+
       this.activeGroupIndex.set(0);
       this.activeItemIndex.set(0);
-      if (currentQuery.length === 0) {
-        this.results.set(this.baseResults());
-        return;
-      }
-      this.isLoading.set(true);
-      const timerId = setTimeout(() => this.performSearch(currentQuery), 150);
+      
+      const timerId = setTimeout(() => {
+        if (currentQuery.length === 0 && this.activeFilter() === 'All') {
+          this.results.set(this.baseResults());
+          this.isLoading.set(false);
+          return;
+        }
+        this.isLoading.set(true);
+        this.performSearch(currentQuery);
+      }, 150);
+
       onCleanup(() => clearTimeout(timerId));
     });
 
@@ -118,20 +140,21 @@ export class UniversalSearchComponent {
 
   async performSearch(query: string) {
     const lowerQuery = query.toLowerCase();
+    const filter = this.activeFilter();
     const [invoices, products, pos, recurring, quotations] = await Promise.all([
-      this.api.invoices.list({ query }),
-      this.api.products.list({ query }),
-      this.api.purchaseOrders.list({ query }),
-      this.api.recurringExpenses.list({ query }),
-      this.api.quotations.list({ query }),
+      (filter === 'All' || filter === 'Invoices') ? this.api.invoices.list({ query }) : Promise.resolve([]),
+      (filter === 'All' || filter === 'Products') ? this.api.products.list({ query }) : Promise.resolve([]),
+      (filter === 'All' || filter === 'POs') ? this.api.purchaseOrders.list({ query }) : Promise.resolve([]),
+      (filter === 'All' || filter === 'Recurring') ? this.api.recurringExpenses.list({ query }) : Promise.resolve([]),
+      (filter === 'All' || filter === 'Quotations') ? this.api.quotations.list({ query }) : Promise.resolve([]),
     ]);
 
     const newResults: SearchResultGroup[] = [];
 
     const groupOrder = ['nav', 'action', 'invoice', 'quotation', 'recurring', 'product', 'po'];
     const dataMap: { [key: string]: any[] } = {
-      nav: this.sidebarItems.filter(i => i.title.toLowerCase().includes(lowerQuery)),
-      action: this.quickActions.filter(i => i.title.toLowerCase().includes(lowerQuery)),
+      nav: (filter === 'All') ? this.sidebarItems.filter(i => i.title.toLowerCase().includes(lowerQuery)) : [],
+      action: (filter === 'All') ? this.quickActions.filter(i => i.title.toLowerCase().includes(lowerQuery)) : [],
       invoice: invoices,
       quotation: quotations,
       product: products,
@@ -166,15 +189,17 @@ export class UniversalSearchComponent {
   }
 
   mapToSearchResult(item: any, type: string): SearchResultItem {
+     const uniquePart = (item.id || item.title).toString().replace(/\s+/g, '-');
+     const id = `search-item-${type}-${uniquePart}`;
      switch(type) {
-      case 'nav': return item;
-      case 'action': return item;
-      case 'invoice': return { type, icon: 'fa-solid fa-file-invoice-dollar', title: item.invoiceNumber, secondary: item.customerName, meta: { amount: item.amount, status: item.status, date: item.dueDate }, data: item };
-      case 'quotation': return { type, icon: 'fa-solid fa-file-lines', title: item.quotationNumber, secondary: item.customerName, meta: { amount: item.amount, status: item.status, date: item.expiryDate }, data: item };
-      case 'product': return { type, icon: 'fa-solid fa-box', title: item.name, secondary: `SKU: ${item.sku}`, meta: { price: item.price }, data: item };
-      case 'po': return { type, icon: 'fa-solid fa-cart-shopping', title: item.poNumber, secondary: item.supplierName, meta: { amount: item.amount, status: item.status, date: item.expectedDate }, data: item };
-      case 'recurring': return { type, icon: 'fa-solid fa-sync', title: item.description, secondary: `Next: ${new Date(item.nextDueDate).toLocaleDateString()}`, meta: { amount: item.amount, cadence: item.cadence }, data: item };
-      default: return { type: 'unknown', icon: 'fa-solid fa-question-circle', title: 'Unknown Item', data: item };
+      case 'nav': return { ...item, id };
+      case 'action': return { ...item, id };
+      case 'invoice': return { id, type, icon: 'fa-solid fa-file-invoice-dollar', title: item.invoiceNumber, secondary: item.customerName, meta: { amount: item.amount, status: item.status, date: item.dueDate }, data: item };
+      case 'quotation': return { id, type, icon: 'fa-solid fa-file-lines', title: item.quotationNumber, secondary: item.customerName, meta: { amount: item.amount, status: item.status, date: item.expiryDate }, data: item };
+      case 'product': return { id, type, icon: 'fa-solid fa-box', title: item.name, secondary: `SKU: ${item.sku}`, meta: { price: item.price }, data: item };
+      case 'po': return { id, type, icon: 'fa-solid fa-cart-shopping', title: item.poNumber, secondary: item.supplierName, meta: { amount: item.amount, status: item.status, date: item.expectedDate }, data: item };
+      case 'recurring': return { id, type, icon: 'fa-solid fa-sync', title: item.description, secondary: `Next: ${new Date(item.nextDueDate).toLocaleDateString()}`, meta: { amount: item.amount, cadence: item.cadence }, data: item };
+      default: return { id, type: 'unknown', icon: 'fa-solid fa-question-circle', title: 'Unknown Item', data: item };
      }
   }
 
@@ -183,6 +208,10 @@ export class UniversalSearchComponent {
   setActive(groupIndex: number, itemIndex: number) {
     this.activeGroupIndex.set(groupIndex);
     this.activeItemIndex.set(itemIndex);
+  }
+
+  selectFilter(filter: SearchFilter) {
+    this.activeFilter.set(filter);
   }
 
   downloadPreviewPdf() {
@@ -198,7 +227,7 @@ export class UniversalSearchComponent {
     else if (key === 'ArrowUp') { event.preventDefault(); this.navigateUp(); }
     else if (key === 'Enter') { event.preventDefault(); this.handleSelect(); }
     else if (key === 'Tab' || key === 'ArrowRight') {
-      if (this.focusTarget() === 'list') {
+      if (this.focusTarget() === 'list' && this.selectedItem()) {
         event.preventDefault(); this.focusTarget.set('preview');
       }
     } else if (key === 'ArrowLeft') {
@@ -209,7 +238,29 @@ export class UniversalSearchComponent {
   }
   
   handleSelect() {
-    console.log('Selected:', this.selectedItem());
+    const item = this.selectedItem();
+    if (!item) return;
+
+    switch (item.type) {
+      case 'nav':
+        this.router.navigate([item.data.path]);
+        break;
+      case 'action': {
+        let context: DrawerContext | null = null;
+        if (item.title === 'New Invoice') context = 'new-invoice';
+        else if (item.title === 'Add Expense') context = 'new-expense';
+        else if (item.title === 'New Purchase Order') context = 'new-po';
+        if (context) this.uiState.openDrawer(context);
+        break;
+      }
+      case 'invoice':
+      case 'quotation':
+      case 'po':
+        this.uiState.showDocumentPreview(item.data);
+        break;
+      default:
+        console.log('Selected item with no default action:', item);
+    }
     this.onClose();
   }
 

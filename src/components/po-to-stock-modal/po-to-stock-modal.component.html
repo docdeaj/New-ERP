@@ -46,7 +46,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (item of purchaseOrder().items; track item.productId) {
+            @for (item of purchaseOrder().lineItems; track item.productId) {
               <tr class="hover:bg-surface-raised">
                 <td class="px-4 py-2 font-medium text-charcoal-100">{{ item.productName }}</td>
                 <td class="px-4 py-2 text-right font-semibold tabular-nums">{{ item.quantity }}</td>

@@ -1,4 +1,3 @@
-
 import '@angular/compiler';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter, withHashLocation } from '@angular/router';
@@ -12,6 +11,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CalendarDataService } from './src/services/calendar-data.service';
 import { SettingsService } from './src/services/settings.service';
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { NotificationService } from './src/services/notification.service';
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -20,7 +20,8 @@ bootstrapApplication(AppComponent, {
     provideHttpClient(),
     importProvidersFrom(ScrollingModule, FormsModule, ReactiveFormsModule, DragDropModule),
     CalendarDataService,
-    SettingsService
+    SettingsService,
+    NotificationService,
   ],
 }).catch((err) => console.error(err));
 

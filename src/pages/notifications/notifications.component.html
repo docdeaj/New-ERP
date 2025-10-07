@@ -1,0 +1,75 @@
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-bold text-brand-text">Notifications</h1>
+      <p class="text-charcoal-400 mt-1">Stay up to date with everything important.</p>
+    </div>
+    <button (click)="markAllAsRead()" [disabled]="notificationService.unreadCount() === 0" class="aurora-button-secondary font-semibold text-charcoal-200 px-4 py-2 rounded-xl">
+      <i class="fa-solid fa-check-double mr-2"></i>
+      Mark All as Read
+    </button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="border-b border-charcoal-800/50">
+    <nav class="-mb-px flex space-x-6" aria-label="Tabs">
+      <button (click)="activeFilter.set('all')"
+              class="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors"
+              [class]="activeFilter() === 'all' ? 'border-primary text-primary' : 'border-transparent text-charcoal-400 hover:text-charcoal-200 hover:border-charcoal-500'">
+        All
+      </button>
+      <button (click)="activeFilter.set('unread')"
+              class="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors"
+              [class]="activeFilter() === 'unread' ? 'border-primary text-primary' : 'border-transparent text-charcoal-400 hover:text-charcoal-200 hover:border-charcoal-500'">
+        Unread
+        @if(notificationService.unreadCount() > 0) {
+          <span class="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">{{ notificationService.unreadCount() }}</span>
+        }
+      </button>
+    </nav>
+  </div>
+  
+  <!-- Notification List -->
+  <div class="bg-surface rounded-2xl shadow-lg">
+    <ul class="divide-y divide-charcoal-800/50">
+      @for(notification of filteredNotifications(); track notification.id) {
+        <li (click)="handleNotificationClick(notification)" 
+            class="group p-4 flex items-start gap-4 transition-colors"
+            [class.cursor-pointer]="notification.link"
+            [class.hover:bg-surface-raised]="notification.link"
+            [class.opacity-60]="notification.read">
+          <div class="relative flex-shrink-0">
+            <div class="w-10 h-10 rounded-full bg-surface-inset flex items-center justify-center text-charcoal-300 shadow-inner-sm text-lg">
+              <i [class]="getIconForType(notification.type)"></i>
+            </div>
+            @if(!notification.read) {
+              <span class="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-surface"></span>
+            }
+          </div>
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+                <p class="font-semibold text-charcoal-100">{{ notification.title }}</p>
+                <div class="flex items-center gap-2 text-xs text-charcoal-400">
+                    <div [class]="'w-2 h-2 rounded-full ' + getPriorityColor(notification.priority)" [title]="'Priority: ' + notification.priority"></div>
+                    <span>{{ notification.createdAt | date:'short' }}</span>
+                </div>
+            </div>
+            <p class="text-sm text-charcoal-400 mt-1">{{ notification.body }}</p>
+          </div>
+          @if(notification.link) {
+            <div class="flex items-center self-center text-charcoal-500 group-hover:text-primary transition-colors">
+              <i class="fa-solid fa-arrow-right"></i>
+            </div>
+          }
+        </li>
+      } @empty {
+        <li class="p-12 text-center text-charcoal-500">
+          <i class="fa-solid fa-party-horn text-4xl mb-4"></i>
+          <p class="text-charcoal-400">All caught up!</p>
+        </li>
+      }
+    </ul>
+  </div>
+
+</div>

@@ -7,13 +7,14 @@ import { DataTableComponent, ColumnDefinition } from '../../components/data-tabl
 import { SchemaExplorerComponent } from '../../components/schema-explorer/schema-explorer.component';
 import { QueryBuilderComponent } from '../../components/query-builder/query-builder.component';
 import { DonutChartComponent } from '../../components/donut-chart/donut-chart.component';
+import { LineChartComponent } from '../../components/line-chart/line-chart.component';
 
 @Component({
   selector: 'app-report-builder',
   templateUrl: './report-builder.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, RouterLink, DataTableComponent, SchemaExplorerComponent, QueryBuilderComponent, DonutChartComponent, CurrencyPipe, DatePipe],
+  imports: [CommonModule, RouterLink, DataTableComponent, SchemaExplorerComponent, QueryBuilderComponent, DonutChartComponent, LineChartComponent, CurrencyPipe, DatePipe],
 })
 export class ReportBuilderComponent implements OnInit {
   private route = inject(ActivatedRoute);
@@ -28,7 +29,7 @@ export class ReportBuilderComponent implements OnInit {
   reportResult = signal<ReportResult | null>(null);
   isLoading = signal(true);
   isDirty = signal(false);
-  activeVisualization = signal<'table' | 'bar' | 'pivot' | 'donut'>('table');
+  activeVisualization = signal<'table' | 'bar' | 'pivot' | 'donut' | 'line'>('table');
 
   // Columns for the data table, derived from results
   dataTableColumns = computed<ColumnDefinition<Record<string, any>>[]>(() => {
@@ -59,6 +60,33 @@ export class ReportBuilderComponent implements OnInit {
           label: String(row[dimKey]),
           value: Number(row[metKey]),
       }));
+  });
+
+  isLineCompatible = computed(() => {
+    const q = this.reportQuery();
+    // Requires one dimension (like date) and at least one metric
+    return q.dimensions.length === 1 && q.metrics.length > 0;
+  });
+
+  lineChartData = computed(() => {
+    if (!this.isLineCompatible() || !this.reportResult()) {
+      return { labels: [], datasets: [] };
+    }
+    const result = this.reportResult()!;
+    const q = this.reportQuery();
+    const dimensionKey = q.dimensions[0];
+
+    const labels = [...new Set(result.data.map(row => String(row[dimensionKey])))];
+    
+    const datasets = q.metrics.map(metricKey => {
+      const metricLabel = this.reportSchema()?.metrics.find(m => m.key === metricKey)?.label || metricKey;
+      return {
+        label: metricLabel,
+        data: result.data.map(row => Number(row[metricKey]))
+      };
+    });
+
+    return { labels, datasets };
   });
 
   ngOnInit() {
@@ -119,7 +147,7 @@ export class ReportBuilderComponent implements OnInit {
     this.isDirty.set(true);
   }
 
-  setActiveVisualization(vis: 'table' | 'bar' | 'pivot' | 'donut') {
+  setActiveVisualization(vis: 'table' | 'bar' | 'pivot' | 'donut' | 'line') {
     this.activeVisualization.set(vis);
   }
 

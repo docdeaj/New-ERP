@@ -29,7 +29,9 @@ export class SidebarComponent {
     { path: '/inventory', icon: 'fa-solid fa-boxes-stacked', label: 'Inventory' },
     { path: '/contacts', icon: 'fa-solid fa-address-book', label: 'Contacts' },
     { path: '/reports', icon: 'fa-solid fa-chart-simple', label: 'Reports' },
+    { path: '/logs', icon: 'fa-solid fa-file-waveform', label: 'Logs' },
     { path: '/media', icon: 'fa-solid fa-photo-film', label: 'Media' },
+    { path: '/notifications', icon: 'fa-solid fa-bell', label: 'Notifications' },
     { path: '/settings', icon: 'fa-solid fa-gear', label: 'Settings' },
   ];
 

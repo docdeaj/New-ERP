@@ -1,8 +1,3 @@
-
-
-
-
-
 import { Component, ChangeDetectionStrategy, input, output, computed, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormArray, FormGroup } from '@angular/forms';
@@ -55,10 +50,10 @@ export class UniversalAddDrawerComponent {
     // Effect for line item totals
     effect((onCleanup) => {
       const form = this.getCurrentForm();
-      // FIX: Check if the form has an 'items' control before accessing it.
-      // This resolves a TypeScript error with the union of form types.
       if (form && 'items' in form.controls) {
-        const items = form.get('items') as FormArray;
+        // FIX: Cast `form` to a non-generic `FormGroup` to resolve TypeScript's inability to unify
+        // the `get` method signatures from the union of different `FormGroup` types.
+        const items = (form as FormGroup).get('items') as FormArray;
         const sub = items.valueChanges.pipe(startWith(items.value)).subscribe(val => {
           this.currentItems.set(val);
         });
@@ -79,10 +74,10 @@ export class UniversalAddDrawerComponent {
 
       if (this.isEditMode() && data && form) {
         form.patchValue(data);
-        // FIX: Check if the form has an 'items' control before accessing it.
-        // This resolves a TypeScript error with the union of form types.
         if ('items' in form.controls && data.lineItems) {
-          const items = form.get('items') as FormArray;
+          // FIX: Cast `form` to a non-generic `FormGroup` to resolve TypeScript's inability to unify
+          // the `get` method signatures from the union of different `FormGroup` types.
+          const items = (form as FormGroup).get('items') as FormArray;
           items.clear();
           data.lineItems.forEach((item: any) => items.push(this.createLineItem(item)));
         }
@@ -161,10 +156,10 @@ export class UniversalAddDrawerComponent {
 
   get itemsFormArray(): FormArray | null {
     const form = this.getCurrentForm();
-    // FIX: Check if the form has an 'items' control before accessing it.
-    // This resolves a TypeScript error with the union of form types.
     if (form && 'items' in form.controls) {
-      return form.get('items') as FormArray;
+      // FIX: Cast `form` to a non-generic `FormGroup` to resolve TypeScript's inability to unify
+      // the `get` method signatures from the union of different `FormGroup` types.
+      return (form as FormGroup).get('items') as FormArray;
     }
     return null;
   }
