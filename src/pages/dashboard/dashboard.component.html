@@ -6,7 +6,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       
       <!-- KPI Today: Sales -->
-      <a routerLink="/invoices" class="group block bg-gradient-to-br from-surface to-surface-raised rounded-2xl shadow-lg p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 hover:ring-2 hover:ring-primary-500/50">
+      <a routerLink="/invoices" class="group block bg-gradient-to-br from-surface to-surface-raised rounded-2xl shadow-lg p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
         @if (salesKpi(); as kpi) {
           <div class="flex flex-col justify-between h-full">
             <div>
@@ -44,7 +44,7 @@
       </a>
 
       <!-- KPI Today: Expenses -->
-      <a routerLink="/expenses" class="group block bg-gradient-to-br from-surface to-surface-raised rounded-2xl shadow-lg p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 hover:ring-2 hover:ring-primary-500/50">
+      <a routerLink="/expenses" class="group block bg-gradient-to-br from-surface to-surface-raised rounded-2xl shadow-lg p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
         @if (expensesKpi(); as kpi) {
         <div class="flex flex-col justify-between h-full">
           <div>

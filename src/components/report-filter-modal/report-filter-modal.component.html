@@ -16,17 +16,12 @@
     <div class="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
       <!-- Date Range -->
       <fieldset>
-        <legend class="text-sm font-medium text-charcoal-300 mb-2">Custom Date Range</legend>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label for="startDate" class="block text-xs text-charcoal-400 mb-1">Start Date</label>
-            <input type="date" id="startDate" formControlName="startDate" class="aurora-input block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm">
-          </div>
-          <div>
-            <label for="endDate" class="block text-xs text-charcoal-400 mb-1">End Date</label>
-            <input type="date" id="endDate" formControlName="endDate" class="aurora-input block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm">
-          </div>
-        </div>
+        <app-date-picker 
+          mode="range" 
+          label="Custom Date Range"
+          placeholder="Select date range"
+          formControlName="dateRange">
+        </app-date-picker>
       </fieldset>
 
       <!-- Conditional Filters -->

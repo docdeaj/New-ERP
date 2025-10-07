@@ -6,6 +6,7 @@ let MOCK_INVOICES: Invoice[] = [
   { id: 2, invoiceNumber: 'INV-2024-002', customerName: 'Creative Solutions', customerAvatarUrl: 'https://picsum.photos/seed/2/40/40', amount: 8500.50, issueDate: '2024-07-18', dueDate: '2024-08-17', status: 'Overdue', totalPaid: 0, balance: 8500.50 },
   { id: 3, invoiceNumber: 'INV-2024-003', customerName: 'Global Exports', customerAvatarUrl: 'https://picsum.photos/seed/3/40/40', amount: 250000.00, issueDate: '2024-07-15', dueDate: '2024-07-30', status: 'Pending', totalPaid: 150000, balance: 100000 },
   { id: 4, invoiceNumber: 'INV-2024-004', customerName: 'Local Supplies Co.', customerAvatarUrl: 'https://picsum.photos/seed/4/40/40', amount: 5000.00, issueDate: '2024-07-22', dueDate: '2024-08-21', status: 'Pending', totalPaid: 0, balance: 5000.00 },
+  { id: 5, invoiceNumber: 'INV-2024-005', customerName: 'Colombo Traders', customerAvatarUrl: 'https://picsum.photos/seed/coltraders/40/40', amount: 45000.00, issueDate: '2024-07-25', dueDate: '2024-07-30', status: 'Pending', totalPaid: 0, balance: 45000.00 },
 ];
 
 let MOCK_PRODUCTS: Product[] = [
@@ -19,11 +20,16 @@ let MOCK_PRODUCTS: Product[] = [
 let MOCK_EXPENSES: Expense[] = [
     { id: 1, category: 'Utilities', amount: 15000, date: '2024-07-20', vendor: 'Electricity Board', status: 'Paid', notes: 'Monthly electricity bill for the office premises.' },
     { id: 2, category: 'Rent', amount: 75000, date: '2024-07-01', vendor: 'City Properties', status: 'Paid', notes: 'Office rent for July.' },
+    { id: 3, category: 'Office Supplies', amount: 8500, date: '2024-07-22', vendor: 'Stationery World', status: 'Paid', notes: 'Pens, paper, and other office supplies.' },
+    { id: 4, category: 'Marketing', amount: 25000, date: '2024-07-25', vendor: 'Facebook Ads', status: 'Paid', notes: 'Social media campaign for July.' },
+    { id: 5, category: 'Maintenance', amount: 3000, date: '2024-07-26', vendor: 'CleanCo', status: 'Unpaid', notes: 'Weekly cleaning service fee.' }
 ];
 
 let MOCK_RECURRING_EXPENSES: RecurringExpense[] = [
   { id: 1, description: 'SaaS Subscription', category: 'Software', amount: 5000, cadence: 'Monthly', nextDueDate: '2024-08-15', vendor: 'CloudCorp' },
   { id: 2, description: 'Office Rent', category: 'Rent', amount: 75000, cadence: 'Monthly', nextDueDate: '2024-08-01', vendor: 'City Properties' },
+  { id: 3, description: 'Weekly Cleaning Service', category: 'Maintenance', amount: 3000, cadence: 'Weekly', nextDueDate: '2024-07-26', vendor: 'CleanCo' },
+  { id: 4, description: 'Domain Renewal', category: 'Web', amount: 1500, cadence: 'Yearly', nextDueDate: '2024-07-30', vendor: 'GoDaddy' }
 ];
 
 let MOCK_INVENTORY: InventoryItem[] = MOCK_PRODUCTS.map((p) => ({
@@ -41,11 +47,13 @@ let MOCK_RECEIPTS: Receipt[] = [
 
 let MOCK_CHEQUES: Cheque[] = [
   { id: 2, chequeNumber: '654321', bank: 'Commercial Bank', payee: 'Global Exports', payer: 'Aurora ERP', amount: 100000, chequeDate: '2024-08-05', status: 'Pending' },
+  { id: 3, chequeNumber: '789012', bank: 'Sampath Bank', payee: 'Stationery World', payer: 'Aurora ERP', amount: 8500, chequeDate: '2024-07-30', status: 'Pending' },
 ];
 
 let MOCK_PURCHASE_ORDERS: PurchaseOrder[] = [
   { id: 1, poNumber: 'PO-2024-001', supplierName: 'Global Tech Suppliers', amount: 130000, orderDate: '2024-07-15', expectedDate: '2024-08-15', status: 'Ordered', lineItems: [{ productId: 1, productName: 'Wireless Mouse', quantity: 50, unitPrice: 800, total: 40000 }, { productId: 2, productName: 'Mechanical Keyboard', quantity: 20, unitPrice: 4500, total: 90000 }] },
   { id: 2, poNumber: 'PO-2024-002', supplierName: 'Office Essentials Ltd.', amount: 45000, orderDate: '2024-07-20', expectedDate: '2024-07-28', status: 'Received', lineItems: [{ productId: 3, productName: 'USB-C Hub', quantity: 25, unitPrice: 1800, total: 45000 }] },
+  { id: 3, poNumber: 'PO-2024-003', supplierName: 'Accessory Kings', amount: 90000, orderDate: '2024-07-25', expectedDate: '2024-07-30', status: 'Shipped', lineItems: [{ productId: 4, productName: '4K Webcam', quantity: 10, unitPrice: 9000, total: 90000 }] },
 ];
 
 let MOCK_CONTACTS: Contact[] = [

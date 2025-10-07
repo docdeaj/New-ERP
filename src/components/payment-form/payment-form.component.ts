@@ -1,7 +1,8 @@
-import { Component, ChangeDetectionStrategy, input, output, signal, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { ReceiptPaymentMethod } from '../../models/types';
+import { DatePickerComponent } from '../date-picker/date-picker.component';
 
 type PaymentMethod = 'Cash' | 'Card' | 'Cheque';
 
@@ -10,16 +11,24 @@ type PaymentMethod = 'Cash' | 'Card' | 'Cheque';
   templateUrl: './payment-form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, DatePickerComponent],
 })
 export class PaymentFormComponent {
   totalAmount = input.required<number>();
   paymentSuccess = output<{ method: ReceiptPaymentMethod, amountTendered: number | null }>();
 
+  private fb = inject(FormBuilder);
+  
   activeTab = signal<PaymentMethod>('Cash');
   amountTendered = signal<number | null>(null);
   isSaving = signal(false);
   today = new Date().toISOString().substring(0, 10);
+
+  chequeForm = this.fb.group({
+    chequeNumber: [''],
+    bank: [''],
+    chequeDate: [this.today]
+  });
 
   changeDue = computed(() => {
     const tendered = this.amountTendered() || 0;

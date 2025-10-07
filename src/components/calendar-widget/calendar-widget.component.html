@@ -31,79 +31,79 @@
       @for (day of calendarGrid(); track day.dateString) {
         @let dayEvents = events().get(day.dateString) || [];
         <div (click)="selectDay(day)" 
-             class="group relative flex flex-col items-center justify-start p-1 border-t border-charcoal-800/15 cursor-pointer transition-colors"
-             [class.bg-primary-900/30]="day.dateString === selectedDateString()">
-          <span [class]="'w-8 h-8 flex items-center justify-center rounded-full font-semibold text-sm transition-colors ' + 
-                         (day.isToday ? 'bg-primary text-white shadow-md' : 
-                         (day.isCurrentMonth ? 'text-charcoal-200 group-hover:bg-surface-raised' : 
-                         'text-charcoal-600'))">
+             class="group relative flex flex-col items-center justify-start p-1 border-t border-charcoal-800/15 cursor-pointer transition-colors hover:bg-surface-raised"
+             [class.bg-primary/25]="day.dateString === selectedDateString()"
+             [class.opacity-40]="!day.isCurrentMonth">
+
+          <span class="relative w-7 h-7 flex items-center justify-center text-sm rounded-full transition-colors"
+                [class.text-primary]="day.isToday && day.dateString !== selectedDateString()"
+                [class.font-bold]="day.isToday"
+                [class.text-white]="day.dateString === selectedDateString()">
             {{ day.dayOfMonth }}
+            @if(day.dateString === selectedDateString()) {
+              <div class="absolute inset-0 rounded-full ring-2 ring-inset ring-primary/50"></div>
+            }
           </span>
-          @if (dayEvents.length > 0) {
-            <div class="flex items-center justify-center gap-0.5 mt-1">
-              @for(event of dayEvents.slice(0, 3); track event.id) {
-                <div [class]="'w-1.5 h-1.5 rounded-full ' + colorMap[event.color_hint]"></div>
-              }
-              @if(dayEvents.length > 3) {
-                <span class="text-xs text-charcoal-400 font-bold">+{{ dayEvents.length - 3 }}</span>
-              }
-            </div>
-          }
-        </div>
-      }
-    </div>
-  </div>
-
-  <!-- Right Side: Day Detail List -->
-  <div class="w-full lg:w-3/5 flex flex-col bg-surface-inset rounded-lg p-4">
-    <!-- Subheader -->
-    <div class="pb-3">
-      <h4 class="font-bold text-lg text-brand-text">{{ selectedDate() | date:'fullDate' }}</h4>
-      <div class="flex items-center gap-2 mt-2 overflow-x-auto">
-        <button (click)="clearFilters()"
-                [class]="'px-2.5 py-1 text-xs font-semibold rounded-full transition-colors whitespace-nowrap shadow-sm ' + (activeFilters().size === 0 ? 'bg-primary text-white' : 'bg-surface-raised hover:bg-surface-inset')">All</button>
-        @for(filter of filterChips; track filter.key) {
-          <button (click)="toggleFilter(filter.key)" [class]="'px-2.5 py-1 text-xs font-semibold rounded-full transition-colors whitespace-nowrap shadow-sm ' + (activeFilters().has(filter.key) ? 'bg-primary text-white' : 'bg-surface-raised hover:bg-surface-inset')">{{filter.label}}</button>
-        }
-      </div>
-    </div>
-    
-    <!-- List -->
-    <div class="flex-1 overflow-y-auto pt-3 space-y-2">
-      @if (filteredEventsForSelectedDate().length === 0) {
-        <div class="h-full flex flex-col items-center justify-center text-charcoal-500">
-            <i class="fa-solid fa-calendar-check text-4xl mb-4"></i>
-            <p>No events scheduled.</p>
-        </div>
-      }
-      @for (event of filteredEventsForSelectedDate(); track event.id) {
-        <div class="flex items-center gap-3 p-2 rounded-md bg-surface">
-          <div [class]="'w-2 h-10 rounded-full ' + colorMap[event.color_hint]"></div>
-          <div class="flex-1 overflow-hidden">
-            <p class="font-semibold text-sm truncate text-charcoal-100">{{ event.title }}</p>
-            <p class="text-xs text-charcoal-400 truncate">{{ event.secondary }}</p>
+          
+          <div class="mt-1 flex items-center justify-center gap-0.5 flex-wrap">
+            @for(event of dayEvents.slice(0, 4); track event.id) {
+              <div class="w-1.5 h-1.5 rounded-full" [class]="colorMap[event.color_hint]"></div>
+            }
           </div>
-          @if(event.amount_lkr) {
-            <p [class]="'text-sm font-bold tabular-nums whitespace-nowrap ' + (event.type === 'receivable' ? 'text-green-400' : 'text-red-400')">
-              {{ event.amount_lkr | currency:'LKR ' }}
-            </p>
-          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Right Side: Event Details -->
+  <div class="w-full lg:w-3/5 flex flex-col bg-surface-raised rounded-2xl shadow-inner-sm p-6">
+    <h3 class="text-xl font-bold text-brand-text">{{ selectedDate() | date:'fullDate' }}</h3>
+    <div class="flex items-center gap-2 mt-2">
+      @for(chip of filterChips; track chip.key) {
+        <button (click)="toggleFilter(chip.key)" class="px-3 py-1 text-xs font-semibold rounded-full transition-colors"
+                [class]="activeFilters().has(chip.key) ? 'bg-primary/20 text-primary shadow-inner-sm' : 'bg-surface hover:bg-surface-inset'">
+            {{ chip.label }}
+        </button>
+      }
+      @if(activeFilters().size > 0) {
+        <button (click)="clearFilters()" class="text-xs font-semibold text-red-400 hover:underline">Clear</button>
+      }
+    </div>
+
+    <div class="mt-4 flex-1 overflow-y-auto pr-2 space-y-3">
+       @if (filteredEventsForSelectedDate().length > 0) {
+        @for (event of filteredEventsForSelectedDate(); track event.id) {
+          <div class="flex items-start gap-3 p-3 bg-surface rounded-lg shadow-md">
+            <div class="w-2 h-10 rounded-full mt-px" [class]="colorMap[event.color_hint]"></div>
+            <div class="flex-1">
+              <p class="font-semibold text-charcoal-100">{{ event.title }}</p>
+              <p class="text-sm text-charcoal-400">{{ event.secondary }}</p>
+            </div>
+            @if(event.amount_lkr) {
+              <div class="font-bold text-lg tabular-nums" [class.text-green-400]="event.type === 'receivable'" [class.text-orange-400]="event.type === 'recurring_expense'">
+                {{ event.amount_lkr | currency:'LKR ':'symbol':'1.0-0' }}
+              </div>
+            }
+          </div>
+        }
+      } @else {
+        <div class="h-full flex flex-col items-center justify-center text-charcoal-500 text-center">
+            <i class="fa-solid fa-calendar-check text-4xl mb-3"></i>
+            <p class="font-semibold">No events for this day.</p>
         </div>
       }
     </div>
 
-    <!-- Totals Strip -->
-    @if(dailyTotals().receivables > 0 || dailyTotals().expenses > 0) {
-      <div class="pt-3 flex justify-around text-center">
-        <div>
-          <p class="text-xs text-green-400 font-semibold">Receivables</p>
-          <p class="font-bold tabular-nums">{{ dailyTotals().receivables | currency:'LKR ' }}</p>
+     <div class="mt-4 pt-4 border-t border-charcoal-800/50 grid grid-cols-2 gap-4">
+        <div class="bg-surface p-3 rounded-lg text-center">
+          <p class="text-xs text-green-400 uppercase font-semibold">Total Receivables</p>
+          <p class="text-2xl font-bold tabular-nums text-green-300">{{ dailyTotals().receivables | currency:'LKR ':'symbol':'1.0-0' }}</p>
         </div>
-        <div>
-          <p class="text-xs text-red-400 font-semibold">Expenses</p>
-          <p class="font-bold tabular-nums">{{ dailyTotals().expenses | currency:'LKR ' }}</p>
+        <div class="bg-surface p-3 rounded-lg text-center">
+          <p class="text-xs text-orange-400 uppercase font-semibold">Total Recurring</p>
+          <p class="text-2xl font-bold tabular-nums text-orange-300">{{ dailyTotals().expenses | currency:'LKR ':'symbol':'1.0-0' }}</p>
         </div>
-      </div>
-    }
+     </div>
   </div>
+
 </div>

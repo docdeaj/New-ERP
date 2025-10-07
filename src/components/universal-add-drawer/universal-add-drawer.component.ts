@@ -9,13 +9,14 @@ import { startWith } from 'rxjs/operators';
 import { CustomerPickerComponent } from '../customer-picker/customer-picker.component';
 import { GeminiService } from '../../services/gemini.service';
 import { SettingsService } from '../../services/settings.service';
+import { DatePickerComponent } from '../date-picker/date-picker.component';
 
 @Component({
   selector: 'app-universal-add-drawer',
   templateUrl: './universal-add-drawer.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MiniMediaBrowserComponent, CustomerPickerComponent],
+  imports: [CommonModule, ReactiveFormsModule, MiniMediaBrowserComponent, CustomerPickerComponent, DatePickerComponent],
 })
 export class UniversalAddDrawerComponent {
   context = input.required<DrawerContext | null>();

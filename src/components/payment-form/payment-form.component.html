@@ -83,20 +83,17 @@
       </div>
     }
     @case ('Cheque') {
-       <div class="space-y-4">
+       <form [formGroup]="chequeForm" class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-charcoal-300">Cheque Number</label>
-          <input type="text" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
+          <input type="text" formControlName="chequeNumber" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
         </div>
         <div>
           <label class="block text-sm font-medium text-charcoal-300">Bank</label>
-          <input type="text" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
+          <input type="text" formControlName="bank" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
         </div>
-        <div>
-          <label class="block text-sm font-medium text-charcoal-300">Cheque Date</label>
-          <input type="date" [value]="today" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
-        </div>
-      </div>
+        <app-date-picker label="Cheque Date" formControlName="chequeDate"></app-date-picker>
+      </form>
     }
   }
 </div>

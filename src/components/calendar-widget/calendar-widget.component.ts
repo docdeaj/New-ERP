@@ -32,12 +32,12 @@ export class CalendarWidgetComponent implements OnInit {
   weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   colorMap: Record<CalendarEventColor, string> = {
-    emerald: 'bg-emerald-500',
-    orange: 'bg-orange-500',
-    violet: 'bg-violet-500',
-    blue: 'bg-blue-500',
-    slate: 'bg-slate-500',
-    cyan: 'bg-cyan-500'
+    emerald: 'bg-green-500',    // receivables (green)
+    orange: 'bg-red-500',       // recurring_expense (red)
+    slate: 'bg-orange-500',     // holiday (orange)
+    violet: 'bg-pink-500',      // cheque (pink)
+    blue: 'bg-pink-500',        // po_eta (pink)
+    cyan: 'bg-cyan-500'         // default cyan
   };
 
   filterChips: { key: CalendarEventType, label: string }[] = [
@@ -78,6 +78,7 @@ export class CalendarWidgetComponent implements OnInit {
     startDate.setDate(startDate.getDate() - firstDayOfMonth.getDay());
 
     const grid: CalendarDay[] = [];
+    // Always generate 42 days to check the 6th week
     for (let i = 0; i < 42; i++) {
       const day = new Date(startDate);
       day.setDate(day.getDate() + i);
@@ -90,7 +91,11 @@ export class CalendarWidgetComponent implements OnInit {
         dateString: day.toISOString().split('T')[0]
       });
     }
-    return grid;
+
+    // Check if the 6th week (starting at index 35) is necessary
+    const sixthWeekIsNecessary = grid[35]?.isCurrentMonth;
+    
+    return sixthWeekIsNecessary ? grid : grid.slice(0, 35);
   });
   
   eventsForSelectedDate = computed(() => {

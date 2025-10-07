@@ -32,20 +32,8 @@
 
             <!-- Dates -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div>
-                <label for="issueDate" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
-                  <i class="fa-solid fa-calendar-day w-4 text-center text-charcoal-400"></i>
-                  <span>Issue Date</span>
-                </label>
-                <input type="date" id="issueDate" formControlName="issueDate" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
-              </div>
-              <div>
-                <label for="dueDate" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
-                  <i class="fa-solid fa-calendar-check w-4 text-center text-charcoal-400"></i>
-                  <span>Due Date</span>
-                </label>
-                <input type="date" id="dueDate" formControlName="dueDate" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
-              </div>
+              <app-date-picker label="Issue Date" formControlName="issueDate"></app-date-picker>
+              <app-date-picker label="Due Date" formControlName="dueDate"></app-date-picker>
             </div>
 
             <!-- Line Items -->
@@ -129,13 +117,7 @@
                   </label>
                   <input type="number" id="amount" formControlName="amount" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
                 </div>
-                 <div>
-                  <label for="date" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
-                    <i class="fa-solid fa-calendar-day w-4 text-center text-charcoal-400"></i>
-                    <span>Date</span>
-                  </label>
-                  <input type="date" id="date" formControlName="date" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
-                </div>
+                 <app-date-picker label="Date" formControlName="date"></app-date-picker>
             </div>
              <div>
               <label for="category" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
@@ -204,13 +186,7 @@
                     <option>Yearly</option>
                   </select>
                 </div>
-                <div>
-                  <label for="nextDueDate" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
-                    <i class="fa-solid fa-calendar-check w-4 text-center text-charcoal-400"></i>
-                    <span>Next Due Date</span>
-                  </label>
-                  <input type="date" id="nextDueDate" formControlName="nextDueDate" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
-                </div>
+                <app-date-picker label="Next Due Date" formControlName="nextDueDate"></app-date-picker>
               </div>
             }
           </form>
@@ -277,13 +253,7 @@
                 </label>
                 <input type="number" id="payment-amount" formControlName="amount" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
               </div>
-              <div>
-                <label for="payment-date" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
-                  <i class="fa-solid fa-calendar-day w-4 text-center text-charcoal-400"></i>
-                  <span>Payment Date</span>
-                </label>
-                <input type="date" id="payment-date" formControlName="paymentDate" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
-              </div>
+              <app-date-picker label="Payment Date" formControlName="paymentDate"></app-date-picker>
             </div>
              <div>
               <label class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
@@ -456,14 +426,8 @@
               <input type="text" id="supplierName" formControlName="supplierName" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div>
-                <label for="orderDate" class="block text-sm font-medium text-charcoal-300">Order Date</label>
-                <input type="date" id="orderDate" formControlName="orderDate" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
-              </div>
-              <div>
-                <label for="expectedDate" class="block text-sm font-medium text-charcoal-300">Expected Date</label>
-                <input type="date" id="expectedDate" formControlName="expectedDate" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
-              </div>
+              <app-date-picker label="Order Date" formControlName="orderDate"></app-date-picker>
+              <app-date-picker label="Expected Date" formControlName="expectedDate"></app-date-picker>
             </div>
              <div class="py-6" formArrayName="items">
                 <h3 class="text-lg font-medium text-brand-text mb-4">Items</h3>
@@ -489,14 +453,8 @@
               <input type="text" id="quotation-customerName" formControlName="customerName" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div>
-                <label for="quotation-issueDate" class="block text-sm font-medium text-charcoal-300">Issue Date</label>
-                <input type="date" id="quotation-issueDate" formControlName="issueDate" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
-              </div>
-              <div>
-                <label for="quotation-expiryDate" class="block text-sm font-medium text-charcoal-300">Expiry Date</label>
-                <input type="date" id="quotation-expiryDate" formControlName="expiryDate" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
-              </div>
+              <app-date-picker label="Issue Date" formControlName="issueDate"></app-date-picker>
+              <app-date-picker label="Expiry Date" formControlName="expiryDate"></app-date-picker>
             </div>
             <div class="py-6" formArrayName="items">
                 <h3 class="text-lg font-medium text-brand-text mb-4">Items</h3>
@@ -542,10 +500,7 @@
                   <label for="cheque-amount" class="block text-sm font-medium text-charcoal-300">Amount (LKR)</label>
                   <input type="number" id="cheque-amount" formControlName="amount" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
                 </div>
-                 <div>
-                  <label for="chequeDate" class="block text-sm font-medium text-charcoal-300">Cheque Date</label>
-                  <input type="date" id="chequeDate" formControlName="chequeDate" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
-                </div>
+                 <app-date-picker label="Cheque Date" formControlName="chequeDate"></app-date-picker>
             </div>
           </form>
         }

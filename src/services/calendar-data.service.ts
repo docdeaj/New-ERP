@@ -3,6 +3,37 @@ import { ApiService } from './api.service';
 import { CalendarEvent, CalendarEventType, CalendarEventColor } from '../models/types';
 import { RecurringExpense } from '../models/types';
 
+const SRI_LANKAN_HOLIDAYS_2024 = [
+    { month: 0, day: 15, name: 'Tamil Thai Pongal Day', type: 'Public' },
+    { month: 0, day: 25, name: 'Duruthu Full Moon Poya Day', type: 'Public' },
+    { month: 1, day: 4, name: 'National Day', type: 'Public' },
+    { month: 1, day: 23, name: 'Navam Full Moon Poya Day', type: 'Public' },
+    { month: 2, day: 8, name: 'Mahasivarathri Day', type: 'Public' },
+    { month: 2, day: 24, name: 'Medin Full Moon Poya Day', type: 'Public' },
+    { month: 2, day: 29, name: 'Good Friday', type: 'Public' },
+    { month: 3, day: 11, name: 'Id-Ul-Fitr (Ramazan)', type: 'Public' },
+    { month: 3, day: 12, name: 'Day prior to Sinhala & Tamil New Year Day', type: 'Bank' },
+    { month: 3, day: 13, name: 'Sinhala & Tamil New Year Day', type: 'Public' },
+    { month: 3, day: 14, name: 'Day following Sinhala & Tamil New Year Day', type: 'Public' },
+    { month: 3, day: 23, name: 'Bak Full Moon Poya Day', type: 'Public' },
+    { month: 4, day: 1, name: 'May Day', type: 'Public' },
+    { month: 4, day: 23, name: 'Vesak Full Moon Poya Day', type: 'Public' },
+    { month: 4, day: 24, name: 'Day following Vesak', type: 'Public' },
+    { month: 5, day: 17, name: 'Id-Ul-Alha (Hajj)', type: 'Public' },
+    { month: 5, day: 21, name: 'Poson Full Moon Poya Day', type: 'Public' },
+    { month: 6, day: 20, name: 'Esala Full Moon Poya Day', type: 'Public' },
+    { month: 7, day: 19, name: 'Nikini Full Moon Poya Day', type: 'Public' },
+    { month: 8, day: 16, name: 'Milad-Un-Nabi (Prophet Muhammad\'s Birthday)', type: 'Public' },
+    { month: 8, day: 17, name: 'Binara Full Moon Poya Day', type: 'Public' },
+    { month: 9, day: 17, name: 'Vap Full Moon Poya Day', type: 'Public' },
+    { month: 9, day: 31, name: 'Deepavali Festival Day', type: 'Public' },
+    { month: 10, day: 15, name: 'Il Full Moon Poya Day', type: 'Public' },
+    { month: 11, day: 14, name: 'Unduvap Full Moon Poya Day', type: 'Public' },
+    { month: 11, day: 25, name: 'Christmas Day', type: 'Public' },
+    { month: 11, day: 31, name: 'Special Bank Holiday', type: 'Bank' },
+];
+
+
 @Injectable({
   providedIn: 'root'
 })
@@ -74,7 +105,7 @@ export class CalendarDataService {
       });
     });
 
-    // 5. Add Mock Holidays
+    // 5. Add Sri Lankan Holidays
     this.getSriLankanHolidays(year, month).forEach(addEvent);
 
     return eventsMap;
@@ -130,19 +161,18 @@ export class CalendarDataService {
   }
 
   private getSriLankanHolidays(year: number, month: number): CalendarEvent[] {
-    const holidays = [
-        { month: 0, day: 15, name: 'Tamil Thai Pongal Day' },
-        { month: 1, day: 4, name: 'National Day' },
-        { month: 4, day: 1, name: 'May Day' },
-        { month: 11, day: 25, name: 'Christmas Day' }
-    ];
-    return holidays
+    if (year !== 2024) {
+      return []; // Data is only for 2024
+    }
+    
+    return SRI_LANKAN_HOLIDAYS_2024
         .filter(h => h.month === month)
         .map(h => ({
-            id: `holiday-${h.name.replace(' ', '-')}`,
+            id: `holiday-${year}-${h.month}-${h.day}`,
             type: 'holiday',
             date: new Date(year, h.month, h.day).toISOString().split('T')[0],
             title: h.name,
+            secondary: `${h.type} Holiday`,
             color_hint: 'slate'
         }));
   }
