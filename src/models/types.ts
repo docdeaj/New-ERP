@@ -59,7 +59,7 @@ export interface Quotation {
   expiryDate: string;
   status: QuotationStatus;
   customerAvatarUrl?: string;
-  items?: LineItem[];
+  lineItems?: LineItem[];
   subtotal?: number;
   tax?: number;
 }
@@ -107,6 +107,11 @@ export interface Contact {
   email: string;
   phone: string;
   avatarUrl: string;
+  tags?: string[];
+  stats?: {
+    open_invoices?: number;
+    balance_lkr?: number;
+  };
 }
 
 export interface Product {
@@ -175,4 +180,101 @@ export interface DailyReport {
   cashSales: number;
   nonCashSales: number;
   chequesPending: number;
+}
+
+// --- Calendar Widget Types ---
+export type CalendarEventType = 'receivable' | 'recurring_expense' | 'cheque' | 'po_eta' | 'holiday' | 'reminder';
+export type CalendarEventColor = 'emerald' | 'orange' | 'violet' | 'blue' | 'slate' | 'cyan';
+
+export interface CalendarEvent {
+  id: string; // e.g., 'invoice-2', 'recurring-1'
+  type: CalendarEventType;
+  date: string; // ISO string for the date part YYYY-MM-DD
+  title: string;
+  secondary?: string; // customer/supplier/category etc.
+  amount_lkr?: number;
+  color_hint: CalendarEventColor;
+  meta?: {
+    invoice_id?: number;
+    po_id?: number;
+    // ... other metadata
+  };
+}
+
+// --- Reports Page Types ---
+export interface ReportSummary {
+  grossSales: Kpi;
+  netSales: Kpi;
+  cogs: Kpi;
+  grossMargin: Kpi & { percentage: number };
+  netProfit: Kpi;
+  expenses: Kpi;
+  paymentMix: { label: string; value: number; }[];
+  arToday: { count: number; amount: number; overdueCount: number; };
+}
+
+export interface SalesTrend {
+  labels: string[];
+  datasets: { label: string, data: number[] }[];
+}
+
+export interface TopProductReport {
+  id: number;
+  name: string;
+  sku: string;
+  imageUrl: string;
+  quantity: number;
+  revenue: number;
+}
+
+export interface ArAgingRow {
+  id: number;
+  customerName: string;
+  customerAvatarUrl: string;
+  bucket_0_30: number;
+  bucket_31_60: number;
+  bucket_61_90: number;
+  bucket_90_plus: number;
+  total: number;
+}
+
+export interface ApAgingRow {
+  id: number;
+  supplierName: string;
+  supplierAvatarUrl: string;
+  bucket_0_30: number;
+  bucket_31_60: number;
+  bucket_61_90: number;
+  bucket_90_plus: number;
+  total: number;
+}
+
+export interface SlowMover {
+  id: number;
+  productName: string;
+  sku: string;
+  imageUrl: string;
+  daysSinceLastSale: number;
+  onHand: number;
+}
+
+export interface InventorySnapshot {
+  valuationLkr: Kpi;
+  turnProxy: Kpi;
+  slowMovers: SlowMover[];
+}
+
+export interface RecurringForecastRow {
+  id: number;
+  name: string;
+  cadence: 'Daily' | 'Weekly' | 'Monthly' | 'Yearly';
+  nextDueDate: string;
+  amount: number;
+}
+
+export interface TaxSummaryRow {
+  id: number;
+  rate: string;
+  taxableSales: number;
+  taxCollected: number;
 }

@@ -11,6 +11,7 @@
   <app-data-table 
     [columns]="columns" 
     [data]="invoices()"
+    [initialSearchQuery]="initialQuery()"
     context="invoice"
     (rowAction)="handleRowAction($event)"
     (bulkAction)="handleBulkAction($event)">

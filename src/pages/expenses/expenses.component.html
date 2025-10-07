@@ -10,6 +10,7 @@
   <app-data-table 
     [columns]="columns" 
     [data]="expenses()"
+    [initialSearchQuery]="initialQuery()"
     context="expense"
     (rowAction)="handleRowAction($event)"
     (bulkAction)="handleBulkAction($event)">

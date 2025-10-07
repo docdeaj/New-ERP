@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { DataTableComponent, ColumnDefinition } from '../../components/data-table/data-table.component';
 import { Invoice } from '../../models/types';
 import { ApiService } from '../../services/api.service';
@@ -19,9 +19,11 @@ export class InvoicesComponent {
   private api = inject(ApiService);
   private uiStateService = inject(UiStateService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private pdfService = inject(PdfGenerationService);
   invoices = signal<Invoice[]>([]);
   isLoading = signal(true);
+  initialQuery = signal<string | null>(null);
 
   columns: ColumnDefinition<Invoice>[] = [
     { key: 'invoiceNumber', label: 'Invoice #', type: 'string' },
@@ -33,6 +35,7 @@ export class InvoicesComponent {
   ];
 
   constructor() {
+    this.initialQuery.set(this.route.snapshot.queryParamMap.get('q'));
     this.loadInvoices(); // Initial load
     effect(() => {
       // Re-load when data changes
@@ -43,7 +46,8 @@ export class InvoicesComponent {
 
   async loadInvoices() {
     this.isLoading.set(true);
-    const data = await this.api.invoices.list();
+    const query = this.initialQuery() ?? undefined;
+    const data = await this.api.invoices.list({ query });
     this.invoices.set(data);
     this.isLoading.set(false);
   }
@@ -52,14 +56,19 @@ export class InvoicesComponent {
     if (event.action === 'record-payment') {
       this.router.navigate(['/payment-workspace', event.item.id]);
     } else if (event.action === 'download-pdf') {
-      this.pdfService.generateInvoicePdf(event.item);
+      this.pdfService.generatePdf(event.item);
     } else {
       console.log('Row Action:', event.action, 'on item:', event.item);
     }
   }
 
   handleBulkAction(event: { action: string, selectedIds: (string | number)[] }) {
-    console.log('Bulk Action:', event.action, 'on ids:', event.selectedIds);
+    if (event.action === 'delete') {
+      // In a real app, you might show a confirmation dialog here
+      this.api.invoices.deleteMany(event.selectedIds);
+    } else {
+      console.log('Bulk Action:', event.action, 'on ids:', event.selectedIds);
+    }
   }
   
   openAddNewInvoiceDrawer() {

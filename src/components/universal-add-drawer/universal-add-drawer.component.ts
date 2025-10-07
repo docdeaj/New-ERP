@@ -3,16 +3,17 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormArray, FormGroup } from '@angular/forms';
 import { DrawerContext, UiStateService } from '../../services/ui-state.service';
 import { MiniMediaBrowserComponent } from '../mini-media-browser/mini-media-browser.component';
-import { MediaItem, Product, Quotation } from '../../models/types';
+import { MediaItem, Product, Quotation, Contact, ReceiptPaymentMethod } from '../../models/types';
 import { ApiService } from '../../services/api.service';
 import { startWith } from 'rxjs/operators';
+import { CustomerPickerComponent } from '../customer-picker/customer-picker.component';
 
 @Component({
   selector: 'app-universal-add-drawer',
   templateUrl: './universal-add-drawer.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MiniMediaBrowserComponent],
+  imports: [CommonModule, ReactiveFormsModule, MiniMediaBrowserComponent, CustomerPickerComponent],
 })
 export class UniversalAddDrawerComponent {
   context = input.required<DrawerContext | null>();
@@ -55,13 +56,17 @@ export class UniversalAddDrawerComponent {
       const data = this.uiState.drawerData();
       if (data && this.context() === 'new-invoice') {
         const quotation = data as Quotation;
+        // This is a bit of a hack since we don't have a full customer object from the quotation.
+        // In a real app, quotation would have a customer_id.
+        const mockCustomer: Partial<Contact> = { name: quotation.customerName, avatarUrl: quotation.customerAvatarUrl };
         this.invoiceForm.patchValue({
-          customerName: quotation.customerName,
+          customer: mockCustomer as Contact
         });
         
         const items = this.invoiceForm.get('items') as FormArray;
         items.clear(); // Clear default item
-        quotation.items?.forEach(item => {
+        // FIX: Changed 'quotation.items' to 'quotation.lineItems' to match the Quotation type.
+        quotation.lineItems?.forEach(item => {
           const lineItemGroup = this.createLineItem();
           lineItemGroup.patchValue(item);
           items.push(lineItemGroup);
@@ -113,7 +118,7 @@ export class UniversalAddDrawerComponent {
 
   // --- Form Definitions ---
   invoiceForm = this.fb.group({
-    customerName: ['', Validators.required],
+    customer: [null as Contact | null, Validators.required],
     issueDate: [new Date().toISOString().split('T')[0], Validators.required],
     dueDate: ['', Validators.required],
     items: this.fb.array([this.createLineItem()]),
@@ -179,6 +184,19 @@ export class UniversalAddDrawerComponent {
     chequeDate: [new Date().toISOString().split('T')[0], Validators.required],
   });
 
+  recordSaleForm = this.fb.group({
+    customer: [null as Contact | null],
+    amount: [null, [Validators.required, Validators.min(0.01)]],
+    paymentMethod: ['Cash' as ReceiptPaymentMethod, Validators.required],
+    notes: [''],
+  });
+
+  recordPaymentForm = this.fb.group({
+    customer: [null as Contact | null, Validators.required],
+    amount: [null, [Validators.required, Validators.min(0.01)]],
+    paymentDate: [new Date().toISOString().split('T')[0], Validators.required],
+    paymentMethod: ['Cash' as ReceiptPaymentMethod, Validators.required],
+  });
 
   title = computed(() => {
     switch(this.context()) {
@@ -190,6 +208,8 @@ export class UniversalAddDrawerComponent {
       case 'new-contact': return 'Add New Contact';
       case 'new-product': return 'Add New Product';
       case 'new-cheque': return 'Record New Cheque';
+      case 'record-sale': return 'Record a Quick Sale';
+      case 'record-payment': return 'Record Customer Payment';
       default: return 'Add New';
     }
   });
@@ -227,7 +247,10 @@ export class UniversalAddDrawerComponent {
       switch(this.context()) {
         case 'new-invoice':
           payload.lineItems = payload.items;
+          payload.customerName = payload.customer.name;
+          payload.customerAvatarUrl = payload.customer.avatarUrl;
           delete payload.items;
+          delete payload.customer;
           await this.api.createInvoice(payload);
           break;
         case 'new-po':
@@ -255,6 +278,8 @@ export class UniversalAddDrawerComponent {
         case 'new-product': await this.api.createProduct(this.productForm.value); break;
         case 'new-contact': await this.api.createContact(this.contactForm.value); break;
         case 'new-cheque': await this.api.createCheque(this.chequeForm.value); break;
+        case 'record-sale': await this.api.createSale(payload); break;
+        case 'record-payment': await this.api.createCustomerPayment(payload); break;
         default: console.warn(`No save handler for context: ${this.context()}`);
       }
       this.uiState.closeDrawer();
@@ -274,6 +299,8 @@ export class UniversalAddDrawerComponent {
       case 'new-po': return this.purchaseOrderForm;
       case 'new-quotation': return this.quotationForm;
       case 'new-cheque': return this.chequeForm;
+      case 'record-sale': return this.recordSaleForm;
+      case 'record-payment': return this.recordPaymentForm;
       default: return null;
     }
   }

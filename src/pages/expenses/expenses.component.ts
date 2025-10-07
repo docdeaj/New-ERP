@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { DataTableComponent, ColumnDefinition } from '../../components/data-table/data-table.component';
 import { Expense } from '../../models/types';
 import { ApiService } from '../../services/api.service';
@@ -16,8 +17,10 @@ export class ExpensesComponent {
   
   private api = inject(ApiService);
   private uiStateService = inject(UiStateService);
+  private route = inject(ActivatedRoute);
   expenses = signal<Expense[]>([]);
   isLoading = signal(true);
+  initialQuery = signal<string | null>(null);
 
   // FIX: Completed the column definitions for the data table.
   columns: ColumnDefinition<Expense>[] = [
@@ -29,6 +32,7 @@ export class ExpensesComponent {
   ];
 
   constructor() {
+    this.initialQuery.set(this.route.snapshot.queryParamMap.get('q'));
     this.loadExpenses(); // Initial load
     effect(() => {
       // Re-load when data changes
@@ -39,7 +43,8 @@ export class ExpensesComponent {
 
   async loadExpenses() {
     this.isLoading.set(true);
-    const data = await this.api.expenses.list();
+    const query = this.initialQuery() ?? undefined;
+    const data = await this.api.expenses.list({ query });
     this.expenses.set(data);
     this.isLoading.set(false);
   }
@@ -49,7 +54,11 @@ export class ExpensesComponent {
   }
 
   handleBulkAction(event: { action: string, selectedIds: (string | number)[] }) {
-    console.log('Bulk Action:', event.action, 'on ids:', event.selectedIds);
+    if (event.action === 'delete') {
+      this.api.expenses.deleteMany(event.selectedIds);
+    } else {
+      console.log('Bulk Action:', event.action, 'on ids:', event.selectedIds);
+    }
   }
   
   openAddNewExpenseDrawer() {

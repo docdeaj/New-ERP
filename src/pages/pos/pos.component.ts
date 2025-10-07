@@ -2,8 +2,9 @@ import { Component, ChangeDetectionStrategy, inject, signal, computed, afterNext
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
-import { Product, CartItem, ReceiptPaymentMethod, LineItem } from '../../models/types';
+import { Product, CartItem, ReceiptPaymentMethod, LineItem, Contact } from '../../models/types';
 import { CheckoutModalComponent } from '../../components/checkout-modal/checkout-modal.component';
+import { CustomerPickerComponent } from '../../components/customer-picker/customer-picker.component';
 
 type SortOption = 'Popular' | 'Name A-Z' | 'Price High-Low' | 'Price Low-High';
 
@@ -12,7 +13,7 @@ type SortOption = 'Popular' | 'Name A-Z' | 'Price High-Low' | 'Price Low-High';
   templateUrl: './pos.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, FormsModule, CheckoutModalComponent, CurrencyPipe],
+  imports: [CommonModule, FormsModule, CheckoutModalComponent, CurrencyPipe, CustomerPickerComponent],
 })
 export class PosComponent {
   private api = inject(ApiService);
@@ -27,9 +28,13 @@ export class PosComponent {
   isHeldOrdersVisible = signal(false);
   editingCartItemId = signal<number | null>(null);
   liveRegionMessage = signal('');
+  isSortDropdownOpen = signal(false);
+  sortOptions: SortOption[] = ['Popular', 'Name A-Z', 'Price High-Low', 'Price Low-High'];
+  selectedCustomer = signal<Contact | null>(null);
 
   // Elements
   searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
+  sortDropdownButton = viewChild<ElementRef<HTMLButtonElement>>('sortDropdownButton');
   
   constructor() {
     afterNextRender(() => this.searchInput()?.nativeElement.focus());
@@ -44,9 +49,9 @@ export class PosComponent {
     }
 
     switch (this.sortOption()) {
-      case 'Name A-Z': return filtered.sort((a, b) => a.name.localeCompare(b.name));
-      case 'Price High-Low': return filtered.sort((a, b) => b.price - a.price);
-      case 'Price Low-High': return filtered.sort((a, b) => a.price - b.price);
+      case 'Name A-Z': return [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+      case 'Price High-Low': return [...filtered].sort((a, b) => b.price - a.price);
+      case 'Price Low-High': return [...filtered].sort((a, b) => a.price - b.price);
       default: return filtered; // 'Popular' is default order
     }
   });
@@ -100,17 +105,48 @@ export class PosComponent {
     this.liveRegionMessage.set('Order restored.');
   }
 
-  async handleCheckoutComplete(paymentDetails: { method: ReceiptPaymentMethod, amountTendered: number | null }) {
+  async handleCheckoutComplete(paymentDetails: { method: ReceiptPaymentMethod, amountTendered: number | null, customer: Contact | null }) {
     if (this.cart().length === 0) return;
-    const newInvoice = await this.api.createInvoice({ customerName: 'POS Customer', issueDate: new Date().toISOString(), dueDate: new Date().toISOString(), amount: this.cartTotal(), subtotal: this.cartSubtotal(), tax: this.cartTax(), status: 'Paid', lineItems: this.cart().map(item => ({ productId: item.id, productName: item.name, quantity: item.quantity, unitPrice: item.price, total: item.quantity * item.price }))});
-    await this.api.createReceipt({ invoiceId: newInvoice.id, amount: this.cartTotal(), method: paymentDetails.method, paymentDate: new Date().toISOString() });
+    
+    const customerName = paymentDetails.customer?.name || 'POS Customer';
+    const customerAvatarUrl = paymentDetails.customer?.avatarUrl;
+
+    const newInvoice = await this.api.createInvoice({ 
+      customerName,
+      customerAvatarUrl,
+      issueDate: new Date().toISOString(), 
+      dueDate: new Date().toISOString(), 
+      amount: this.cartTotal(), 
+      subtotal: this.cartSubtotal(), 
+      tax: this.cartTax(), 
+      status: 'Paid', 
+      lineItems: this.cart().map(item => ({ 
+        productId: item.id, 
+        productName: item.name, 
+        quantity: item.quantity, 
+        unitPrice: item.price, 
+        total: item.quantity * item.price 
+      }))
+    });
+
+    await this.api.createReceipt({ 
+      invoiceId: newInvoice.id, 
+      amount: this.cartTotal(), 
+      method: paymentDetails.method, 
+      paymentDate: new Date().toISOString() 
+    });
+    
     this.clearCart();
     this.isCheckoutVisible.set(false);
     this.liveRegionMessage.set('Checkout complete. New sale recorded.');
   }
   
   // --- UI Helpers ---
-  
+  selectSort(option: SortOption) {
+    this.sortOption.set(option);
+    this.isSortDropdownOpen.set(false);
+  }
+
   getAvailableStock(p: Product): number { return Object.values(p.stock).reduce((a,b) => a+b, 0) - Object.values(p.committed).reduce((a,b) => a+b, 0); }
   getTotalStock(p: Product): number { return Object.values(p.stock).reduce((a,b) => a+b, 0); }
   
@@ -150,5 +186,12 @@ export class PosComponent {
       event.preventDefault();
       this.holdOrder();
     }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+      if (this.isSortDropdownOpen() && !this.sortDropdownButton()?.nativeElement.contains(event.target as Node)) {
+          this.isSortDropdownOpen.set(false);
+      }
   }
 }

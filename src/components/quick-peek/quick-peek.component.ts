@@ -53,7 +53,7 @@ export class QuickPeekComponent {
 
   downloadPdf() {
     if (this.normalizedItemType() === 'invoice') {
-      this.pdfService.generateInvoicePdf(this.asInvoice(this.item()));
+      this.pdfService.generatePdf(this.asInvoice(this.item()));
     }
   }
 

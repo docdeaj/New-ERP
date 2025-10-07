@@ -77,7 +77,7 @@ export class PaymentWorkspaceComponent {
   downloadInvoicePdf() {
     const inv = this.invoice();
     if (inv) {
-      this.pdfService.generateInvoicePdf(inv);
+      this.pdfService.generatePdf(inv);
     }
   }
 

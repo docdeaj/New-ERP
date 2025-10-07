@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, output, signal, ElementRef, viewChi
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 import { HighlightPipe } from '../../pipes/highlight.pipe';
-import { Invoice, Product, PurchaseOrder, RecurringExpense } from '../../models/types';
+import { Invoice, Product, PurchaseOrder, RecurringExpense, Quotation } from '../../models/types';
 import { InvoicePdfComponent } from '../invoice-pdf/invoice-pdf.component';
 import { PdfGenerationService } from '../../services/pdf.service';
 
@@ -35,6 +35,9 @@ interface SearchResultGroup {
 export class UniversalSearchComponent {
   close = output<void>();
   searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
+  pdfPreviewContainer = viewChild<ElementRef<HTMLDivElement>>('pdfPreviewContainer');
+  pdfPreviewWrapper = viewChild<ElementRef<HTMLDivElement>>('pdfPreviewWrapper');
+
   api = inject(ApiService);
   pdfService = inject(PdfGenerationService);
   
@@ -47,6 +50,7 @@ export class UniversalSearchComponent {
   activeGroupIndex = signal(0);
   activeItemIndex = signal(0);
   focusTarget = signal<'list' | 'preview'>('list');
+  previewScale = signal(1);
 
   // Static items
   sidebarItems: SearchResultItem[] = [
@@ -87,24 +91,48 @@ export class UniversalSearchComponent {
       const timerId = setTimeout(() => this.performSearch(currentQuery), 150);
       onCleanup(() => clearTimeout(timerId));
     });
+
+    // Effect for scaling PDF preview
+    effect(() => {
+        const item = this.selectedItem();
+        if ((item?.type === 'invoice' || item?.type === 'quotation') && this.pdfPreviewContainer() && this.pdfPreviewWrapper()) {
+            this.calculatePdfScale();
+        }
+    });
+  }
+  
+  calculatePdfScale() {
+    setTimeout(() => {
+      const container = this.pdfPreviewContainer()?.nativeElement;
+      const wrapper = this.pdfPreviewWrapper()?.nativeElement;
+      if (container && wrapper) {
+        // A4 width in pixels at 96 DPI is approx 794px
+        const contentWidth = 794; 
+        const containerWidth = container.offsetWidth;
+        const scale = containerWidth / contentWidth;
+        this.previewScale.set(scale);
+      }
+    });
   }
 
   async performSearch(query: string) {
     const lowerQuery = query.toLowerCase();
-    const [invoices, products, pos, recurring] = await Promise.all([
+    const [invoices, products, pos, recurring, quotations] = await Promise.all([
       this.api.invoices.list({ query }),
       this.api.products.list({ query }),
       this.api.purchaseOrders.list({ query }),
       this.api.recurringExpenses.list({ query }),
+      this.api.quotations.list({ query }),
     ]);
 
     const newResults: SearchResultGroup[] = [];
 
-    const groupOrder = ['nav', 'action', 'invoice', 'recurring', 'product', 'po'];
+    const groupOrder = ['nav', 'action', 'invoice', 'quotation', 'recurring', 'product', 'po'];
     const dataMap: { [key: string]: any[] } = {
       nav: this.sidebarItems.filter(i => i.title.toLowerCase().includes(lowerQuery)),
       action: this.quickActions.filter(i => i.title.toLowerCase().includes(lowerQuery)),
       invoice: invoices,
+      quotation: quotations,
       product: products,
       po: pos,
       recurring: recurring,
@@ -128,6 +156,7 @@ export class UniversalSearchComponent {
       case 'nav': return 'Navigation';
       case 'action': return 'Quick Actions';
       case 'invoice': return 'Invoices';
+      case 'quotation': return 'Quotations';
       case 'product': return 'Products';
       case 'po': return 'Purchase Orders';
       case 'recurring': return 'Recurring Expenses';
@@ -140,6 +169,7 @@ export class UniversalSearchComponent {
       case 'nav': return item;
       case 'action': return item;
       case 'invoice': return { type, icon: 'fa-solid fa-file-invoice-dollar', title: item.invoiceNumber, secondary: item.customerName, meta: { amount: item.amount, status: item.status, date: item.dueDate }, data: item };
+      case 'quotation': return { type, icon: 'fa-solid fa-file-lines', title: item.quotationNumber, secondary: item.customerName, meta: { amount: item.amount, status: item.status, date: item.expiryDate }, data: item };
       case 'product': return { type, icon: 'fa-solid fa-box', title: item.name, secondary: `SKU: ${item.sku}`, meta: { price: item.price }, data: item };
       case 'po': return { type, icon: 'fa-solid fa-cart-shopping', title: item.poNumber, secondary: item.supplierName, meta: { amount: item.amount, status: item.status, date: item.expectedDate }, data: item };
       case 'recurring': return { type, icon: 'fa-solid fa-sync', title: item.description, secondary: `Next: ${new Date(item.nextDueDate).toLocaleDateString()}`, meta: { amount: item.amount, cadence: item.cadence }, data: item };
@@ -156,8 +186,8 @@ export class UniversalSearchComponent {
 
   downloadPreviewPdf() {
     const item = this.selectedItem();
-    if (item?.type === 'invoice') {
-      this.pdfService.generateInvoicePdf(this.asInvoice(item.data));
+    if (item?.type === 'invoice' || item?.type === 'quotation') {
+      this.pdfService.generatePdf(item.data);
     }
   }
 
@@ -207,6 +237,7 @@ export class UniversalSearchComponent {
   }
   
   asInvoice(item: any): Invoice { return item as Invoice; }
+  asQuotation(item: any): Quotation { return item as Quotation; }
   asProduct(item: any): Product { return item as Product; }
   asPurchaseOrder(item: any): PurchaseOrder { return item as PurchaseOrder; }
   asRecurringExpense(item: any): RecurringExpense { return item as RecurringExpense; }

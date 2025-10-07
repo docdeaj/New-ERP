@@ -6,10 +6,10 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       
       <!-- KPI Today: Sales -->
-      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
+      <div class="bg-white dark:bg-charcoal-800 rounded-2xl shadow-md p-6">
         @if (salesKpi(); as kpi) {
           <div class="flex items-center justify-between">
-            <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400">Today's Sales</h3>
+            <h3 class="text-sm font-semibold text-gray-500 dark:text-charcoal-400">Today's Sales</h3>
             <i class="fa-solid fa-dollar-sign text-green-500"></i>
           </div>
           <p class="text-3xl font-bold mt-2 tabular-nums">LKR {{ kpi.value.toLocaleString() }}</p>
@@ -18,15 +18,15 @@
             <span>{{ kpi.delta.toFixed(1) }}% vs yesterday</span>
           </div>
         } @else {
-          <div class="h-full w-full bg-gray-200 dark:bg-gray-700 animate-pulse rounded-lg"></div>
+          <div class="h-full w-full bg-gray-200 dark:bg-charcoal-700 animate-pulse rounded-lg"></div>
         }
       </div>
 
       <!-- KPI Today: Expenses -->
-      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
+      <div class="bg-white dark:bg-charcoal-800 rounded-2xl shadow-md p-6">
         @if (expensesKpi(); as kpi) {
         <div class="flex items-center justify-between">
-          <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400">Today's Expenses</h3>
+          <h3 class="text-sm font-semibold text-gray-500 dark:text-charcoal-400">Today's Expenses</h3>
           <i class="fa-solid fa-arrow-down-long text-red-500"></i>
         </div>
         <p class="text-3xl font-bold mt-2 tabular-nums">LKR {{ kpi.value.toLocaleString() }}</p>
@@ -35,48 +35,17 @@
           <span>{{ kpi.delta.toFixed(1) }}% vs yesterday</span>
         </div>
          } @else {
-          <div class="h-full w-full bg-gray-200 dark:bg-gray-700 animate-pulse rounded-lg"></div>
+          <div class="h-full w-full bg-gray-200 dark:bg-charcoal-700 animate-pulse rounded-lg"></div>
         }
       </div>
       
        <!-- Time & Weather -->
-       <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6 flex flex-col justify-center items-center">
+       <div class="bg-white dark:bg-charcoal-800 rounded-2xl shadow-md p-6 flex flex-col justify-center items-center">
         <p class="text-4xl font-bold tabular-nums">10:30 AM</p>
-        <div class="flex items-center mt-2 text-gray-500 dark:text-gray-400">
+        <div class="flex items-center mt-2 text-gray-500 dark:text-charcoal-400">
             <i class="fa-solid fa-cloud-sun text-2xl mr-2 text-yellow-400"></i>
             <span class="font-semibold">28°C</span>
         </div>
-      </div>
-    </div>
-    
-    <!-- Sales Comparison -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
-      <h3 class="text-lg font-semibold mb-4">Sales Comparison</h3>
-      <div class="h-64">
-        @if(salesChartData(); as chartData) {
-          <app-simple-bar-chart 
-            [labels]="chartData.labels" 
-            [datasets]="chartData.datasets">
-          </app-simple-bar-chart>
-        } @else {
-           <div class="h-full w-full bg-gray-200 dark:bg-gray-700 animate-pulse rounded-lg"></div>
-        }
-      </div>
-      <h4 class="font-semibold mt-6 mb-2">Top Selling Products (This Month)</h4>
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm">
-          <thead class="text-xs text-gray-500 dark:text-gray-400 uppercase">
-            <tr><th class="p-2">Product</th><th class="p-2 text-right">Price</th></tr>
-          </thead>
-          <tbody>
-            @for (product of topSellingProducts(); track product.id) {
-              <tr class="border-t border-gray-200 dark:border-gray-700">
-                <td class="p-2 font-semibold">{{product.name}}</td>
-                <td class="p-2 text-right tabular-nums">LKR {{product.price.toLocaleString()}}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
       </div>
     </div>
   </div>
@@ -84,22 +53,66 @@
   <!-- Column 3 -->
   <div class="lg:col-span-1 space-y-6">
     <!-- Quick Actions -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
+    <div class="bg-white dark:bg-charcoal-800 rounded-2xl shadow-md p-6">
       <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
       <div class="grid grid-cols-3 gap-4">
         @for (action of quickActions; track action.label) {
-          <button (click)="onQuickAction(action.context)" class="flex flex-col items-center justify-center p-3 bg-gray-100 dark:bg-gray-700/50 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 rounded-xl transition-colors aspect-square focus:outline-none focus:ring-2 focus:ring-indigo-500" [title]="action.label">
-            <i [class]="action.icon + ' text-2xl text-indigo-500 dark:text-indigo-400'"></i>
-            <span class="text-xs font-semibold mt-2 text-center">{{ action.label }}</span>
+          <button (click)="onQuickAction(action.context)" 
+                  class="flex flex-col items-center justify-center p-3 bg-primary-100/50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/40 rounded-xl transition-all duration-200 aspect-square focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm hover:shadow-md" 
+                  [title]="action.label">
+            <i [class]="action.icon + ' text-2xl text-primary-600 dark:text-primary-400'"></i>
+            <span class="text-xs font-semibold mt-2 text-center text-primary-800 dark:text-primary-200">{{ action.label }}</span>
           </button>
         }
       </div>
     </div>
-    
-    <!-- Calendar -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
-       <app-calendar-widget></app-calendar-widget>
+  </div>
+  
+  <!-- Sales & Product Performance Widget -->
+  <div class="lg:col-span-3 bg-white dark:bg-charcoal-800 rounded-2xl shadow-md p-6">
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+      <!-- Left side: Sales Comparison -->
+      <div>
+        <h4 class="text-lg font-semibold mb-4">Sales Comparison</h4>
+        <div class="h-64">
+          @if(salesChartData(); as chartData) {
+            <app-simple-bar-chart 
+              [labels]="chartData.labels" 
+              [datasets]="chartData.datasets">
+            </app-simple-bar-chart>
+          } @else {
+            <div class="h-full w-full bg-gray-200 dark:bg-charcoal-700 animate-pulse rounded-lg"></div>
+          }
+        </div>
+      </div>
+      <!-- Right side: Top Selling Products -->
+      <div>
+        <h4 class="text-lg font-semibold mb-4">Top Selling Products (This Month)</h4>
+        <div class="overflow-y-auto h-64">
+          <table class="w-full text-left text-sm">
+            <thead class="text-xs text-gray-500 dark:text-charcoal-400 uppercase sticky top-0 bg-white dark:bg-charcoal-800">
+              <tr><th class="p-2">Product</th><th class="p-2 text-right">Price</th><th class="p-2 text-right">SKU</th></tr>
+            </thead>
+            <tbody>
+              @for (product of topSellingProducts(); track product.id) {
+                <tr class="border-t border-gray-200 dark:border-charcoal-700">
+                  <td class="p-2 font-semibold">{{product.name}}</td>
+                  <td class="p-2 text-right tabular-nums">LKR {{product.price.toLocaleString()}}</td>
+                  <td class="p-2 text-right font-mono text-xs">{{product.sku}}</td>
+                </tr>
+              } @empty {
+                 <tr><td colspan="3" class="text-center p-4 text-gray-500">No product data available.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
+  </div>
+
+  <!-- Calendar Widget (Full Width of main area) -->
+  <div class="lg:col-span-3 bg-white dark:bg-charcoal-800 rounded-2xl shadow-md p-6">
+     <app-calendar-widget></app-calendar-widget>
   </div>
 
 </div>

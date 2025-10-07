@@ -47,7 +47,11 @@ export class ReceiptsComponent {
   }
 
   handleBulkAction(event: { action: string, selectedIds: (string | number)[] }) {
-    console.log('Bulk Action:', event.action, 'on ids:', event.selectedIds);
+    if (event.action === 'delete') {
+      this.api.receipts.deleteMany(event.selectedIds);
+    } else {
+      console.log('Bulk Action:', event.action, 'on ids:', event.selectedIds);
+    }
   }
   
   openAddNewReceiptDrawer() {

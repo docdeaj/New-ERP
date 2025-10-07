@@ -1,36 +1,109 @@
-<div class="flex flex-col h-full">
-  <!-- Header -->
-  <div class="flex items-center justify-between mb-4">
-    <h3 class="text-lg font-semibold text-gray-800 dark:text-white">{{ monthDisplay() }}</h3>
-    <div class="flex items-center gap-1">
-      <button (click)="changeMonth(-1)" class="w-8 h-8 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
-        <i class="fa-solid fa-chevron-left text-sm"></i>
-      </button>
-      <button (click)="changeMonth(1)" class="w-8 h-8 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
-        <i class="fa-solid fa-chevron-right text-sm"></i>
-      </button>
+<div class="flex flex-col lg:flex-row gap-6 h-full min-h-[500px]">
+
+  <!-- Left Side: Month Grid -->
+  <div class="w-full lg:w-2/5 flex flex-col">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-2">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-white">{{ monthDisplay() }}</h3>
+        @if(isLoading()) {
+          <i class="fa-solid fa-spinner fa-spin text-gray-400"></i>
+        }
+      </div>
+      <div class="flex items-center gap-1">
+        <button (click)="goToToday()" class="px-3 h-8 text-sm font-semibold bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors">Today</button>
+        <button (click)="changeMonth(-1)" class="w-8 h-8 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+          <i class="fa-solid fa-chevron-left text-sm"></i>
+        </button>
+        <button (click)="changeMonth(1)" class="w-8 h-8 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+          <i class="fa-solid fa-chevron-right text-sm"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Calendar Grid -->
+    <div class="grid grid-cols-7 flex-1">
+      @for (day of weekdays; track day) {
+        <div class="text-center text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase pb-2">
+          {{ day }}
+        </div>
+      }
+      @for (day of calendarGrid(); track day.dateString) {
+        @let dayEvents = events().get(day.dateString) || [];
+        <div (click)="selectDay(day)" 
+             class="group relative flex flex-col items-center justify-start p-1 border-t border-gray-100 dark:border-gray-700/50 cursor-pointer transition-colors"
+             [class.bg-indigo-50]="day.dateString === selectedDateString()"
+             [class.dark:bg-indigo-900/30]="day.dateString === selectedDateString()">
+          <span [class]="'w-8 h-8 flex items-center justify-center rounded-full font-semibold text-sm transition-colors ' + 
+                         (day.isToday ? 'bg-indigo-600 text-white' : 
+                         (day.isCurrentMonth ? 'text-gray-700 dark:text-gray-200 group-hover:bg-gray-100 dark:group-hover:bg-gray-700' : 
+                         'text-gray-300 dark:text-gray-600'))">
+            {{ day.dayOfMonth }}
+          </span>
+          @if (dayEvents.length > 0) {
+            <div class="flex items-center justify-center gap-0.5 mt-1">
+              @for(event of dayEvents.slice(0, 3); track event.id) {
+                <div [class]="'w-1.5 h-1.5 rounded-full ' + colorMap[event.color_hint]"></div>
+              }
+              @if(dayEvents.length > 3) {
+                <span class="text-xs text-gray-400 font-bold">+{{ dayEvents.length - 3 }}</span>
+              }
+            </div>
+          }
+        </div>
+      }
     </div>
   </div>
 
-  <!-- Calendar Grid -->
-  <div class="grid grid-cols-7 gap-y-2 flex-1">
-    <!-- Weekday Headers -->
-    @for (day of weekdays; track day) {
-      <div class="text-center text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase">
-        {{ day }}
+  <!-- Right Side: Day Detail List -->
+  <div class="w-full lg:w-3/5 flex flex-col bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+    <!-- Subheader -->
+    <div class="pb-3 border-b border-gray-200 dark:border-gray-700">
+      <h4 class="font-bold text-lg">{{ selectedDate() | date:'fullDate' }}</h4>
+      <div class="flex items-center gap-2 mt-2 overflow-x-auto">
+        <button (click)="clearFilters()"
+                [class]="'px-2.5 py-1 text-xs font-semibold rounded-full transition-colors whitespace-nowrap ' + (activeFilters().size === 0 ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600')">All</button>
+        @for(filter of filterChips; track filter.key) {
+          <button (click)="toggleFilter(filter.key)" [class]="'px-2.5 py-1 text-xs font-semibold rounded-full transition-colors whitespace-nowrap ' + (activeFilters().has(filter.key) ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600')">{{filter.label}}</button>
+        }
       </div>
-    }
+    </div>
+    
+    <!-- List -->
+    <div class="flex-1 overflow-y-auto pt-3 space-y-2">
+      @if (filteredEventsForSelectedDate().length === 0) {
+        <div class="h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500">
+            <i class="fa-solid fa-calendar-check text-4xl mb-4"></i>
+            <p>No events scheduled.</p>
+        </div>
+      }
+      @for (event of filteredEventsForSelectedDate(); track event.id) {
+        <div class="flex items-center gap-3 p-2 rounded-md bg-white dark:bg-gray-700/50">
+          <div [class]="'w-2 h-10 rounded-full ' + colorMap[event.color_hint]"></div>
+          <div class="flex-1 overflow-hidden">
+            <p class="font-semibold text-sm truncate">{{ event.title }}</p>
+            <p class="text-xs text-gray-500 truncate">{{ event.secondary }}</p>
+          </div>
+          @if(event.amount_lkr) {
+            <p [class]="'text-sm font-bold tabular-nums whitespace-nowrap ' + (event.type === 'receivable' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')">
+              {{ event.amount_lkr | currency:'LKR ' }}
+            </p>
+          }
+        </div>
+      }
+    </div>
 
-    <!-- Day Cells -->
-    @for (day of calendarGrid(); track day.date) {
-      <div class="flex items-center justify-center">
-        <button 
-          [class]="'w-9 h-9 flex items-center justify-center rounded-full font-semibold transition-colors text-sm ' + 
-                   (day.isToday ? 'bg-indigo-600 text-white' : 
-                   (day.isCurrentMonth ? 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700' : 
-                   'text-gray-300 dark:text-gray-600'))">
-          {{ day.dayOfMonth }}
-        </button>
+    <!-- Totals Strip -->
+    @if(dailyTotals().receivables > 0 || dailyTotals().expenses > 0) {
+      <div class="pt-3 border-t border-gray-200 dark:border-gray-700 flex justify-around text-center">
+        <div>
+          <p class="text-xs text-green-600 dark:text-green-400 font-semibold">Receivables</p>
+          <p class="font-bold tabular-nums">{{ dailyTotals().receivables | currency:'LKR ' }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-red-600 dark:text-red-400 font-semibold">Expenses</p>
+          <p class="font-bold tabular-nums">{{ dailyTotals().expenses | currency:'LKR ' }}</p>
+        </div>
       </div>
     }
   </div>

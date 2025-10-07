@@ -1,3 +1,4 @@
+
 import '@angular/compiler';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter, withHashLocation } from '@angular/router';
@@ -7,14 +8,16 @@ import { APP_ROUTES } from './src/app.routes';
 import { AppComponent } from './src/app.component';
 import { importProvidersFrom } from '@angular/core';
 import { ScrollingModule } from '@angular/cdk/scrolling';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { CalendarDataService } from './src/services/calendar-data.service';
 
 bootstrapApplication(AppComponent, {
   providers: [
     provideZonelessChangeDetection(),
     provideRouter(APP_ROUTES, withHashLocation()),
     provideHttpClient(),
-    importProvidersFrom(ScrollingModule, ReactiveFormsModule)
+    importProvidersFrom(ScrollingModule, FormsModule, ReactiveFormsModule),
+    CalendarDataService
   ],
 }).catch((err) => console.error(err));
 

@@ -1,27 +1,27 @@
 <div class="space-y-6">
   <div class="flex items-center gap-4">
-    <a routerLink="/invoices" class="flex items-center justify-center w-10 h-10 bg-white dark:bg-gray-800 rounded-full shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+    <a routerLink="/invoices" class="flex items-center justify-center w-10 h-10 bg-white dark:bg-charcoal-800 rounded-full shadow-sm hover:bg-gray-100 dark:hover:bg-charcoal-700 transition-colors">
       <i class="fa-solid fa-arrow-left"></i>
     </a>
     <h2 class="text-2xl font-bold">Payment Workspace</h2>
   </div>
 
   @if (isLoading()) {
-    <div class="h-96 bg-gray-200 dark:bg-gray-700 rounded-2xl animate-pulse"></div>
+    <div class="h-96 bg-gray-200 dark:bg-charcoal-700 rounded-2xl animate-pulse"></div>
   } @else if (invoice(); as inv) {
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
       
       <!-- Left side: Invoice Summary & Payment Form -->
       <div class="lg:col-span-3 space-y-6">
         <!-- Invoice Summary Card -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
+        <div class="bg-white dark:bg-charcoal-800 rounded-2xl shadow-md p-6">
             <div class="flex justify-between items-start">
               <div>
-                <h3 class="text-xl font-bold text-gray-800 dark:text-white">{{ inv.invoiceNumber }}</h3>
-                <p class="text-gray-500 dark:text-gray-400">{{ inv.customerName }}</p>
+                <h3 class="text-xl font-bold text-gray-800 dark:text-charcoal-100">{{ inv.invoiceNumber }}</h3>
+                <p class="text-gray-500 dark:text-charcoal-400">{{ inv.customerName }}</p>
               </div>
               <div class="flex items-center gap-2">
-                <button (click)="downloadInvoicePdf()" class="flex items-center justify-center w-9 h-9 bg-gray-100 dark:bg-gray-700 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors" title="Download PDF">
+                <button (click)="downloadInvoicePdf()" class="flex items-center justify-center w-9 h-9 bg-gray-100 dark:bg-charcoal-700 rounded-full hover:bg-gray-200 dark:hover:bg-charcoal-600 transition-colors" title="Download PDF">
                   <i class="fa-solid fa-file-arrow-down"></i>
                 </button>
                 <span [class]="'px-3 py-1 text-sm font-semibold rounded-full ' + getStatusColor(inv.status)">{{ inv.status }}</span>
@@ -29,19 +29,19 @@
             </div>
             <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
               <div>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Total Amount</p>
+                <p class="text-sm text-gray-500 dark:text-charcoal-400">Total Amount</p>
                 <p class="font-bold text-lg tabular-nums">{{ inv.amount | currency:'LKR ' }}</p>
               </div>
               <div>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Paid Amount</p>
+                <p class="text-sm text-gray-500 dark:text-charcoal-400">Paid Amount</p>
                 <p class="font-bold text-lg tabular-nums text-green-600 dark:text-green-400">{{ inv.totalPaid | currency:'LKR ' }}</p>
               </div>
                <div>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Balance Due</p>
+                <p class="text-sm text-gray-500 dark:text-charcoal-400">Balance Due</p>
                 <p class="font-bold text-lg tabular-nums text-red-600 dark:text-red-400">{{ inv.balance | currency:'LKR ' }}</p>
               </div>
                <div>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Due Date</p>
+                <p class="text-sm text-gray-500 dark:text-charcoal-400">Due Date</p>
                 <p class="font-bold text-lg">{{ inv.dueDate | date:'mediumDate' }}</p>
               </div>
             </div>
@@ -49,14 +49,14 @@
         
         <!-- Payment Form Card -->
         @if (inv.balance > 0) {
-          <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md">
+          <div class="bg-white dark:bg-charcoal-800 rounded-2xl shadow-md">
             <app-payment-form 
               [totalAmount]="inv.balance"
               (paymentSuccess)="handlePaymentSuccess($event)">
             </app-payment-form>
           </div>
         } @else {
-           <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6 text-center">
+           <div class="bg-white dark:bg-charcoal-800 rounded-2xl shadow-md p-6 text-center">
              <i class="fa-solid fa-check-circle text-4xl text-green-500 mb-4"></i>
              <h3 class="text-lg font-semibold">Invoice Fully Paid</h3>
              <p class="text-sm text-gray-500">No outstanding balance.</p>
@@ -66,8 +66,8 @@
 
       <!-- Right side: Receipt History -->
       <div class="lg:col-span-2">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md">
-           <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+        <div class="bg-white dark:bg-charcoal-800 rounded-2xl shadow-md">
+           <div class="p-4 border-b border-gray-200 dark:border-charcoal-700">
              <h3 class="font-semibold">Receipt History</h3>
            </div>
            <app-data-table
@@ -81,7 +81,7 @@
     </div>
 
   } @else {
-    <div class="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl shadow-md">
+    <div class="text-center py-16 bg-white dark:bg-charcoal-800 rounded-2xl shadow-md">
        <i class="fa-solid fa-file-circle-question text-5xl text-gray-400 mb-4"></i>
        <h3 class="text-xl font-bold">Invoice Not Found</h3>
        <p class="text-gray-500">The requested invoice could not be found.</p>

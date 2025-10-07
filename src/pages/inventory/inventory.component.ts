@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { DataTableComponent, ColumnDefinition } from '../../components/data-table/data-table.component';
 import { StockTransferModalComponent } from '../../components/stock-transfer-modal/stock-transfer-modal.component';
 import { InventoryItem, LocationKey } from '../../models/types';
@@ -22,10 +23,12 @@ interface DisplayInventoryItem extends InventoryItem {
 export class InventoryComponent {
   private api = inject(ApiService);
   private uiStateService = inject(UiStateService);
+  private route = inject(ActivatedRoute);
   inventory = signal<DisplayInventoryItem[]>([]);
   isLoading = signal(true);
   isTransferModalOpen = signal(false);
   selectedIdsForTransfer = signal<(string | number)[]>([]);
+  initialQuery = signal<string | null>(null);
 
   columns: ColumnDefinition<DisplayInventoryItem>[] = [
     { key: 'productName', label: 'Product', type: 'avatar', avatarUrlKey: 'imageUrl' },
@@ -36,6 +39,7 @@ export class InventoryComponent {
   ];
 
   constructor() {
+    this.initialQuery.set(this.route.snapshot.queryParamMap.get('q'));
     this.loadInventory();
     effect(() => {
       this.api.dataChanged();
@@ -45,7 +49,8 @@ export class InventoryComponent {
 
   async loadInventory() {
     this.isLoading.set(true);
-    const data = await this.api.inventory.list();
+    const query = this.initialQuery() ?? undefined;
+    const data = await this.api.inventory.list({ query });
     const displayData = data.map(item => ({
       ...item,
       availableMainWarehouse: item.onHand.mainWarehouse - item.committed.mainWarehouse,
@@ -64,6 +69,10 @@ export class InventoryComponent {
     if (event.action === 'transfer-stock') {
       this.selectedIdsForTransfer.set(event.selectedIds);
       this.isTransferModalOpen.set(true);
+    } else if (event.action === 'delete') {
+      this.api.inventory.deleteMany(event.selectedIds);
+    } else {
+      console.log('Bulk Action:', event.action, 'on ids:', event.selectedIds);
     }
   }
   

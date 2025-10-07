@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, input, output, signal, computed, effect, inject, viewChild, ElementRef, afterNextRender } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, signal, computed, effect, inject, viewChild, ElementRef } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { UiStateService } from '../../services/ui-state.service';
@@ -35,6 +35,7 @@ export class DataTableComponent<T extends { id: any, amount?: number }> {
   columns = input.required<ColumnDefinition<T>[]>();
   data = input.required<T[]>();
   context = input<string>('default'); // For context-aware actions/math
+  initialSearchQuery = input<string | null>(null);
   rowAction = output<{ action: string, item: T }>();
   bulkAction = output<{ action: string, selectedIds: (string | number)[] }>();
 
@@ -71,8 +72,16 @@ export class DataTableComponent<T extends { id: any, amount?: number }> {
         this.isSearchVisible.set(true);
         this.searchQuery.set(key);
         this.uiStateService.dataTableSearchTrigger.set(null);
-        afterNextRender(() => this.searchInput()?.nativeElement.focus());
+        setTimeout(() => this.searchInput()?.nativeElement.focus());
       }
+    });
+
+    // Effect to handle initial search query from input
+    effect(() => {
+        const initialQuery = this.initialSearchQuery();
+        if (initialQuery) {
+            this.searchQuery.set(initialQuery);
+        }
     });
   }
   
@@ -132,6 +141,14 @@ export class DataTableComponent<T extends { id: any, amount?: number }> {
            { key: 'convert-to-invoice', label: 'Convert to Invoice', icon: 'fa-solid fa-file-invoice' },
            { key: 'edit', label: 'Edit', icon: 'fa-solid fa-pen' },
            { key: 'delete', label: 'Delete', icon: 'fa-solid fa-trash' },
+        ];
+       case 'ar-aging':
+        return [
+          { key: 'view-invoices', label: 'View Invoices', icon: 'fa-solid fa-arrow-up-right-from-square' },
+        ];
+      case 'ap-aging':
+        return [
+          { key: 'view-bills', label: 'View Bills', icon: 'fa-solid fa-arrow-up-right-from-square' },
         ];
        default:
         return [
@@ -214,7 +231,7 @@ export class DataTableComponent<T extends { id: any, amount?: number }> {
   onToggleSearch() {
     this.isSearchVisible.update(v => !v);
     if (this.isSearchVisible()) {
-      afterNextRender(() => this.searchInput()?.nativeElement.focus());
+      setTimeout(() => this.searchInput()?.nativeElement.focus());
     }
   }
 

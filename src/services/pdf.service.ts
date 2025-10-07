@@ -1,5 +1,5 @@
 import { Injectable, createComponent, ApplicationRef, EnvironmentInjector, inject } from '@angular/core';
-import { Invoice } from '../models/types';
+import { Invoice, Quotation } from '../models/types';
 import { InvoicePdfComponent } from '../components/invoice-pdf/invoice-pdf.component';
 
 @Injectable({
@@ -9,53 +9,71 @@ export class PdfGenerationService {
   private appRef = inject(ApplicationRef);
   private injector = inject(EnvironmentInjector);
 
-  async generateInvoicePdf(invoice: Invoice) {
-    // 1. Create a container element
+  async generatePdf(data: Invoice | Quotation) {
+    // 1. Create a container element that will be captured
     const container = document.createElement('div');
     container.style.position = 'absolute';
     container.style.left = '-9999px'; // Position off-screen
     container.style.width = '210mm'; // A4 width
     
-    // 2. Create component ref
+    // 2. Create the Angular component dynamically
     const componentRef = createComponent(InvoicePdfComponent, {
       environmentInjector: this.injector,
     });
     
-    // 3. Set component input using .set() for signal inputs
-    componentRef.instance.invoice.set(invoice);
+    // 3. Set the component's input data
+    componentRef.setInput('data', data);
     
-    // 4. Attach component to the app so that it's rendered
+    // 4. Attach the component to the DOM to be rendered
     this.appRef.attachView(componentRef.hostView);
     container.appendChild(componentRef.location.nativeElement);
     document.body.appendChild(container);
     
-    // Allow time for rendering
+    // Allow a brief moment for the component to render fully
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    // 5. Use html2canvas from the window object to capture the component
-    const canvas = await (window as any).html2canvas(container, {
-      scale: 2, // Higher scale for better quality
-      useCORS: true
-    });
+    try {
+      const win = window as any;
+      // 5. Check if the required PDF generation libraries are loaded from the CDN
+      if (typeof win.jspdf?.jsPDF !== 'function' || typeof win.html2canvas !== 'function') {
+        const errorMsg = "PDF generation libraries could not be loaded. Please check your internet connection or ad blocker.";
+        console.error(errorMsg);
+        alert(errorMsg);
+        return;
+      }
 
-    // 6. Use jspdf from the window object to create PDF from canvas
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new (window as any).jspdf.jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4'
-    });
-    
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-    
-    // 7. Download PDF
-    pdf.save(`invoice-${invoice.invoiceNumber}.pdf`);
+      // 6. Initialize jsPDF
+      const pdf = new win.jspdf.jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
 
-    // 8. Clean up
-    this.appRef.detachView(componentRef.hostView);
-    componentRef.destroy();
-    document.body.removeChild(container);
+      const docType = 'invoiceNumber' in data ? 'invoice' : 'quotation';
+      const docNumber = 'invoiceNumber' in data ? data.invoiceNumber : data.quotationNumber;
+      
+      // 7. Use the .html() method which internally uses html2canvas and returns a Promise
+      await pdf.html(container, {
+        html2canvas: {
+          scale: 2, // Use a higher scale for better image quality
+          useCORS: true
+        },
+        autoPaging: 'text',
+        width: 210, // A4 width in mm
+        windowWidth: 794, // Approx A4 width in pixels for scaling
+      });
+      
+      // 8. Save the generated PDF
+      pdf.save(`${docType}-${docNumber}.pdf`);
+
+    } catch (error) {
+      console.error("PDF generation failed:", error);
+      alert("An error occurred while generating the PDF.");
+    } finally {
+      // 9. Clean up: destroy the component and remove the container from the DOM
+      this.appRef.detachView(componentRef.hostView);
+      componentRef.destroy();
+      document.body.removeChild(container);
+    }
   }
 }
