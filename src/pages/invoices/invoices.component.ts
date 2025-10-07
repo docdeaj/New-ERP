@@ -6,13 +6,14 @@ import { Invoice } from '../../models/types';
 import { ApiService } from '../../services/api.service';
 import { UiStateService } from '../../services/ui-state.service';
 import { PdfGenerationService } from '../../services/pdf.service';
+import { DocumentPreviewModalComponent } from '../../components/document-preview-modal/document-preview-modal.component';
 
 @Component({
   selector: 'app-invoices',
   templateUrl: './invoices.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, DataTableComponent],
+  imports: [CommonModule, DataTableComponent, DocumentPreviewModalComponent],
 })
 export class InvoicesComponent {
   
@@ -24,6 +25,7 @@ export class InvoicesComponent {
   invoices = signal<Invoice[]>([]);
   isLoading = signal(true);
   initialQuery = signal<string | null>(null);
+  previewedInvoice = signal<Invoice | null>(null);
 
   columns: ColumnDefinition<Invoice>[] = [
     { key: 'invoiceNumber', label: 'Invoice #', type: 'string' },
@@ -94,6 +96,7 @@ export class InvoicesComponent {
   }
 
   editInvoice(invoice: Invoice) {
+    this.previewedInvoice.set(null); // Close preview if open
     this.uiStateService.openDrawer('new-invoice', invoice);
   }
 

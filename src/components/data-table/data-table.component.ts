@@ -45,9 +45,12 @@ export class DataTableComponent<T extends { id: any, amount?: number }> {
   emptyStateConfig = input<EmptyStateConfig | null>(null);
   title = input<string>('');
   description = input<string | null>(null);
+  disableQuickPeek = input<boolean>(false);
+  
   rowAction = output<{ action: string, item: T }>();
   bulkAction = output<{ action: string, selectedIds: (string | number)[] }>();
   emptyStateAction = output<void>();
+  rowClicked = output<T>();
 
   // Search and Sort State
   searchQuery = signal('');
@@ -208,8 +211,12 @@ export class DataTableComponent<T extends { id: any, amount?: number }> {
       // If we are already in selection mode, a simple click toggles the item.
       this.toggleSelection(item.id);
     } else {
-      // Otherwise, a simple click opens the quick peek view.
-      this.quickPeekItem.set(item);
+      if (this.disableQuickPeek()) {
+        this.rowClicked.emit(item);
+      } else {
+        // Otherwise, a simple click opens the quick peek view.
+        this.quickPeekItem.set(item);
+      }
     }
   }
 

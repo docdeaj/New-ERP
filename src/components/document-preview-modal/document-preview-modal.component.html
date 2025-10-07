@@ -1,0 +1,64 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <!-- Backdrop -->
+  <div class="aurora-backdrop absolute inset-0 animate-[fade-in_180ms_ease-in-out]" (click)="onClose()"></div>
+
+  <!-- Modal Content -->
+  <div class="relative w-auto max-w-[92vw] max-h-[92vh] bg-surface/90 backdrop-blur-xl rounded-2xl shadow-2xl flex flex-col animate-[slide-down_180ms_cubic-bezier(0.2,0.8,0.2,1)]"
+       role="dialog" aria-modal="true" (window:resize)="calculateScale()">
+    
+    @if (normalizedData(); as normData) {
+      <!-- Header -->
+      <header class="flex-shrink-0 flex items-start justify-between p-4 border-b border-charcoal-800/50">
+        <div>
+          <h3 class="text-xl font-semibold text-charcoal-100">
+            {{ normData.type }} {{ normData.number }}
+          </h3>
+          <p class="text-sm text-charcoal-400">
+            {{ normData.customerName }}
+            @if(normData.balance && normData.balance > 0) {
+              <span class="text-red-400 font-semibold ml-2">• Balance Due: {{ normData.balance | currency:'LKR ' }}</span>
+            }
+          </p>
+        </div>
+        <div class="flex items-center gap-4">
+            <span [class]="'px-3 py-1 text-sm font-semibold rounded-full ' + getStatusColor(normData.status)">{{ normData.status }}</span>
+            <button type="button" (click)="onClose()" class="text-charcoal-400 bg-transparent hover:bg-surface-raised rounded-xl text-sm p-1.5 ml-auto inline-flex items-center">
+              <i class="fa-solid fa-times w-5 h-5"></i>
+              <span class="sr-only">Close modal</span>
+            </button>
+        </div>
+      </header>
+
+      <!-- Body: Document Viewport -->
+      <main class="flex-1 flex items-center justify-center p-4 overflow-hidden">
+        <div #pdfContainer class="w-full h-full">
+            <div #pdfWrapper [style.transform]="'scale(' + scale() + ')'" class="origin-top-left bg-white shadow-lg">
+              @switch (normData.type) {
+                @case ('Invoice') {
+                  <app-invoice-pdf [data]="asInvoice(data())"></app-invoice-pdf>
+                }
+                @case ('Quotation') {
+                  <app-invoice-pdf [data]="asQuotation(data())"></app-invoice-pdf>
+                }
+                @case ('Purchase Order') {
+                  <!-- NOTE: Using invoice PDF template for PO as a fallback. A specific PO template would be better. -->
+                  <app-invoice-pdf [data]="asPurchaseOrder(data())"></app-invoice-pdf>
+                }
+              }
+            </div>
+        </div>
+      </main>
+
+      <!-- Footer Actions -->
+      <footer class="flex-shrink-0 flex items-center justify-end p-4 space-x-2 border-t border-charcoal-800/50">
+        <button (click)="onDownloadPdf()" type="button" class="aurora-button-secondary inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-4 py-2 rounded-xl">
+          <i class="fa-solid fa-file-arrow-down"></i>Download PDF
+        </button>
+        <button (click)="onEdit()" type="button" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl">
+            <i class="fa-solid fa-pen"></i>
+            <span>Edit</span>
+        </button>
+      </footer>
+    }
+  </div>
+</div>

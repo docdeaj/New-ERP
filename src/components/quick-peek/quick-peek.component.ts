@@ -1,6 +1,6 @@
-import { Component, ChangeDetectionStrategy, input, output, computed, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, computed, inject, viewChild, ElementRef, signal, effect } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
-import { Invoice, Product } from '../../models/types';
+import { Invoice, Product, Quotation } from '../../models/types';
 import { InvoicePdfComponent } from '../invoice-pdf/invoice-pdf.component';
 import { PdfGenerationService } from '../../services/pdf.service';
 import { UiStateService, DrawerContext } from '../../services/ui-state.service';
@@ -20,6 +20,9 @@ export class QuickPeekComponent {
   private pdfService = inject(PdfGenerationService);
   private uiStateService = inject(UiStateService);
 
+  pdfPreviewContainer = viewChild<ElementRef<HTMLDivElement>>('pdfPreviewContainer');
+  previewScale = signal(1);
+
   // This computed signal simplifies the template and fixes a recurring JIT compiler error
   // with the @switch fall-through syntax.
   normalizedItemType = computed(() => {
@@ -27,6 +30,7 @@ export class QuickPeekComponent {
     // Consolidate 'inventory' and 'product' types for display purposes
     if (type === 'inventory' || type === 'product') return 'product';
     if (type === 'recurring-expense') return 'expense';
+    if (type === 'quotation') return 'quotation';
     return type;
   });
 
@@ -56,6 +60,28 @@ export class QuickPeekComponent {
   });
 
   isLoss = computed(() => (this.product()?.price ?? 0) < (this.product()?.cost ?? 0));
+
+  constructor() {
+    effect(() => {
+        const item = this.item();
+        const type = this.normalizedItemType();
+        // Using a timeout to ensure the view is rendered before we measure it.
+        if (item && (type === 'invoice' || type === 'quotation')) {
+            setTimeout(() => this.calculatePdfScale(), 50);
+        }
+    });
+  }
+
+  calculatePdfScale() {
+      const container = this.pdfPreviewContainer()?.nativeElement;
+      if (container) {
+          // A4 width in pixels at 96 DPI is approx 794px
+          const contentWidth = 794; 
+          const containerWidth = container.offsetWidth;
+          const scale = containerWidth / contentWidth;
+          this.previewScale.set(scale);
+      }
+  }
 
   onClose() {
     this.close.emit();
@@ -91,6 +117,10 @@ export class QuickPeekComponent {
 
   asInvoice(item: any): Invoice {
     return item as Invoice;
+  }
+
+  asQuotation(item: any): Quotation {
+    return item as Quotation;
   }
 
   asProduct(item: any): Product {

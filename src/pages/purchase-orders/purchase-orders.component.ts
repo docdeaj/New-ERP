@@ -5,13 +5,14 @@ import { PurchaseOrder } from '../../models/types';
 import { ApiService } from '../../services/api.service';
 import { UiStateService } from '../../services/ui-state.service';
 import { PoToStockModalComponent } from '../../components/po-to-stock-modal/po-to-stock-modal.component';
+import { DocumentPreviewModalComponent } from '../../components/document-preview-modal/document-preview-modal.component';
 
 @Component({
   selector: 'app-purchase-orders',
   templateUrl: './purchase-orders.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, DataTableComponent, PoToStockModalComponent],
+  imports: [CommonModule, DataTableComponent, PoToStockModalComponent, DocumentPreviewModalComponent],
 })
 export class PurchaseOrdersComponent {
   private api = inject(ApiService);
@@ -21,6 +22,7 @@ export class PurchaseOrdersComponent {
   
   isConversionModalOpen = signal(false);
   selectedPoForConversion = signal<PurchaseOrder | null>(null);
+  previewedPO = signal<PurchaseOrder | null>(null);
 
   columns: ColumnDefinition<PurchaseOrder>[] = [
     { key: 'poNumber', label: 'PO #', type: 'string' },
@@ -87,6 +89,7 @@ export class PurchaseOrdersComponent {
   }
 
   editPurchaseOrder(po: PurchaseOrder) {
+    this.previewedPO.set(null);
     this.uiStateService.openDrawer('new-po', po);
   }
 

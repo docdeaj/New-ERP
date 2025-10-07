@@ -1,9 +1,9 @@
 import { Component, ChangeDetectionStrategy, input, computed } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
-import { Invoice, Quotation, LineItem } from '../../models/types';
+import { Invoice, Quotation, LineItem, PurchaseOrder } from '../../models/types';
 
 interface NormalizedPdfData {
-  type: 'Invoice' | 'Quotation';
+  type: 'Invoice' | 'Quotation' | 'Purchase Order';
   number: string;
   customerName: string;
   issueDate: string;
@@ -26,7 +26,7 @@ interface NormalizedPdfData {
   imports: [CommonModule, CurrencyPipe, DatePipe],
 })
 export class InvoicePdfComponent {
-  data = input.required<Invoice | Quotation>();
+  data = input.required<Invoice | Quotation | PurchaseOrder>();
 
   pdfData = computed<NormalizedPdfData>(() => {
     const doc = this.data();
@@ -45,7 +45,7 @@ export class InvoicePdfComponent {
         totalPaid: doc.totalPaid,
         balance: doc.balance,
       };
-    } else { // It's a Quotation
+    } else if ('quotationNumber' in doc) { // It's a Quotation
       return {
         type: 'Quotation',
         number: doc.quotationNumber,
@@ -58,6 +58,19 @@ export class InvoicePdfComponent {
         tax: doc.tax ?? 0,
         amount: doc.amount,
       };
+    } else { // It's a Purchase Order
+        return {
+            type: 'Purchase Order',
+            number: doc.poNumber,
+            customerName: doc.supplierName,
+            issueDate: doc.orderDate,
+            dueDateLabel: 'Expected Date',
+            dueDate: doc.expectedDate,
+            lineItems: doc.lineItems,
+            subtotal: doc.subtotal ?? doc.amount,
+            tax: doc.tax ?? 0,
+            amount: doc.amount,
+        };
     }
   });
 }

@@ -4,19 +4,21 @@ import { DataTableComponent, ColumnDefinition } from '../../components/data-tabl
 import { Quotation } from '../../models/types';
 import { ApiService } from '../../services/api.service';
 import { UiStateService } from '../../services/ui-state.service';
+import { DocumentPreviewModalComponent } from '../../components/document-preview-modal/document-preview-modal.component';
 
 @Component({
   selector: 'app-quotations',
   templateUrl: './quotations.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, DataTableComponent],
+  imports: [CommonModule, DataTableComponent, DocumentPreviewModalComponent],
 })
 export class QuotationsComponent {
   private api = inject(ApiService);
   private uiStateService = inject(UiStateService);
   quotations = signal<Quotation[]>([]);
   isLoading = signal(true);
+  previewedQuotation = signal<Quotation | null>(null);
 
   columns: ColumnDefinition<Quotation>[] = [
     { key: 'quotationNumber', label: 'Quotation #', type: 'string' },
@@ -68,6 +70,7 @@ export class QuotationsComponent {
   }
 
   editQuotation(quotation: Quotation) {
+    this.previewedQuotation.set(null);
     this.uiStateService.openDrawer('new-quotation', quotation);
   }
 

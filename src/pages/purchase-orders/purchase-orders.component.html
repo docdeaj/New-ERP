@@ -5,6 +5,8 @@
     [columns]="columns" 
     [data]="purchaseOrders()"
     context="purchase-order"
+    [disableQuickPeek]="true"
+    (rowClicked)="previewedPO.set($event)"
     (rowAction)="handleRowAction($event)"
     (bulkAction)="handleBulkAction($event)">
      <button table-tools (click)="openAddNewDrawer()" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl transition-all duration-150 ease-in-out">
@@ -13,6 +15,14 @@
     </button>
   </app-data-table>
 </div>
+
+@if(previewedPO(); as po) {
+  <app-document-preview-modal
+    [data]="po"
+    (close)="previewedPO.set(null)"
+    (edit)="editPurchaseOrder($event)">
+  </app-document-preview-modal>
+}
 
 @if (isConversionModalOpen() && selectedPoForConversion(); as po) {
   <app-po-to-stock-modal

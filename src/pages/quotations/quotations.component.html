@@ -5,6 +5,8 @@
     [columns]="columns" 
     [data]="quotations()"
     context="quotation"
+    [disableQuickPeek]="true"
+    (rowClicked)="previewedQuotation.set($event)"
     (rowAction)="handleRowAction($event)"
     (bulkAction)="handleBulkAction($event)">
     <button table-tools (click)="openAddNewQuotationDrawer()" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl transition-all duration-150 ease-in-out">
@@ -13,3 +15,11 @@
     </button>
   </app-data-table>
 </div>
+
+@if(previewedQuotation(); as quotation) {
+  <app-document-preview-modal 
+    [data]="quotation"
+    (close)="previewedQuotation.set(null)"
+    (edit)="editQuotation($event)">
+  </app-document-preview-modal>
+}
