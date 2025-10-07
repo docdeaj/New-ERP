@@ -1,0 +1,23 @@
+@keyframes bulk-actions-in {
+  from { transform: translateY(20px) translateX(-50%); opacity: 0; }
+  to { transform: translateY(0) translateX(-50%); opacity: 1; }
+}
+.animate-bulk-actions-in {
+  animation: bulk-actions-in 180ms cubic-bezier(0.2,0.8,0.2,1);
+}
+
+@keyframes details-in {
+  from { transform: translateX(100%); opacity: 0.8; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.animate-details-in {
+  animation: details-in 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes uploader-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-uploader-in {
+  animation: uploader-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}

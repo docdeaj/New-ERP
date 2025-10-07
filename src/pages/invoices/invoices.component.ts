@@ -90,10 +90,6 @@ export class InvoicesComponent {
     }
   }
   
-  openPreview(invoice: Invoice) {
-    this.uiStateService.showDocumentPreview(invoice);
-  }
-  
   openAddNewInvoiceDrawer() {
     this.uiStateService.openDrawer('new-invoice');
   }

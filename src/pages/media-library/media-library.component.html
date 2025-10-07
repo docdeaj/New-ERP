@@ -1,41 +1,182 @@
-<div class="space-y-6">
-  <div class="flex items-center justify-between">
-    <h2 class="text-xl font-semibold">Media Library</h2>
-    <button class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl transition-all duration-150 ease-in-out" disabled>
-      <i class="fa-solid fa-upload"></i>
-      <span>Bulk Upload</span>
-    </button>
-  </div>
+<div class="flex h-[calc(100vh-88px)] bg-surface-inset">
 
-  <div class="bg-surface rounded-2xl shadow-lg p-4">
-    <!-- Filters placeholder -->
-    <div class="flex items-center gap-4 mb-4">
-      <div class="relative flex-1">
-        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400"></i>
-        <input type="text" placeholder="Search media..." class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 pl-10 pr-4 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
+  <!-- Left Sidebar (Folders/Tags) -->
+  <aside class="w-64 flex-shrink-0 bg-surface rounded-l-2xl shadow-lg flex flex-col p-4 border-r border-charcoal-800/50">
+    <h2 class="text-lg font-semibold text-brand-text mb-4">Library</h2>
+    <nav class="space-y-4">
+      <div>
+        <h3 class="px-2 text-xs font-semibold text-charcoal-400 uppercase tracking-wider mb-1">Filters</h3>
+        <ul class="space-y-1">
+          <li><a (click)="setFilter(null)" href="javascript:void(0)" class="flex items-center gap-3 px-2 py-1.5 rounded-md text-sm font-medium" [class.bg-primary/10]="activeFilters().size === 0" [class.text-primary-200]="activeFilters().size === 0" [class.text-charcoal-300]="activeFilters().size > 0" [class.hover:bg-surface-inset]="activeFilters().size > 0"><i class="fa-solid fa-folder w-5 text-center"></i> <span>All Files</span></a></li>
+          <li><a (click)="setFilter('image')" href="javascript:void(0)" class="flex items-center gap-3 px-2 py-1.5 rounded-md text-sm font-medium" [class.bg-primary/10]="activeFilters().has('image')" [class.text-primary-200]="activeFilters().has('image')" [class.text-charcoal-300]="!activeFilters().has('image')" [class.hover:bg-surface-inset]="!activeFilters().has('image')"><i class="fa-solid fa-image w-5 text-center"></i> <span>Images</span></a></li>
+          <li><a (click)="setFilter('video')" href="javascript:void(0)" class="flex items-center gap-3 px-2 py-1.5 rounded-md text-sm font-medium" [class.bg-primary/10]="activeFilters().has('video')" [class.text-primary-200]="activeFilters().has('video')" [class.text-charcoal-300]="!activeFilters().has('video')" [class.hover:bg-surface-inset]="!activeFilters().has('video')"><i class="fa-solid fa-film w-5 text-center"></i> <span>Videos</span></a></li>
+          <li><a (click)="setFilter('document')" href="javascript:void(0)" class="flex items-center gap-3 px-2 py-1.5 rounded-md text-sm font-medium" [class.bg-primary/10]="activeFilters().has('document')" [class.text-primary-200]="activeFilters().has('document')" [class.text-charcoal-300]="!activeFilters().has('document')" [class.hover:bg-surface-inset]="!activeFilters().has('document')"><i class="fa-solid fa-file-invoice w-5 text-center"></i> <span>Documents</span></a></li>
+        </ul>
       </div>
-      <!-- More filters can go here -->
-    </div>
+       <div>
+        <h3 class="px-2 text-xs font-semibold text-charcoal-400 uppercase tracking-wider mb-1">Tags</h3>
+        <ul class="space-y-1">
+          <li><a href="#" class="flex items-center gap-2 px-2 py-1 rounded-md text-sm text-charcoal-300 hover:bg-surface-inset"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> <span>Campaign 2024</span></a></li>
+          <li><a href="#" class="flex items-center gap-2 px-2 py-1 rounded-md text-sm text-charcoal-300 hover:bg-surface-inset"><span class="w-2.5 h-2.5 rounded-full bg-green-500"></span> <span>Social Media</span></a></li>
+          <li><a href="#" class="flex items-center gap-2 px-2 py-1 rounded-md text-sm text-charcoal-300 hover:bg-surface-inset"><span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> <span>Archived</span></a></li>
+        </ul>
+      </div>
+    </nav>
+  </aside>
 
-    <!-- Media Grid -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-4">
+  <!-- Main Content (Toolbar + Grid/List) -->
+  <main class="flex-1 flex flex-col min-w-0" [class.rounded-r-2xl]="!selectedItemForDetail()">
+    <!-- Toolbar -->
+    <header class="flex-shrink-0 p-4 flex items-center justify-between gap-4 bg-surface" [class.rounded-tr-2xl]="!selectedItemForDetail()">
+      <div class="relative flex-1 max-w-lg">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400"></i>
+        <input type="text" placeholder="Search media..." [(ngModel)]="searchQuery" class="aurora-input w-full bg-surface-inset text-brand-text rounded-lg py-2 pl-10 pr-4 sm:text-sm h-10">
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="p-1 bg-surface-inset rounded-lg flex items-center">
+            <button (click)="viewMode.set('grid')" class="w-9 h-8 flex items-center justify-center rounded-md transition-colors" [class]="viewMode() === 'grid' ? 'bg-surface-raised shadow-sm text-charcoal-100' : 'text-charcoal-400 hover:text-charcoal-200'" title="Grid View">
+                <i class="fa-solid fa-grip"></i>
+            </button>
+            <button (click)="viewMode.set('list')" class="w-9 h-8 flex items-center justify-center rounded-md transition-colors" [class]="viewMode() === 'list' ? 'bg-surface-raised shadow-sm text-charcoal-100' : 'text-charcoal-400 hover:text-charcoal-200'" title="List View">
+                <i class="fa-solid fa-list"></i>
+            </button>
+        </div>
+        <button (click)="isUploaderOpen.set(true)" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 h-10 rounded-xl">
+            <i class="fa-solid fa-upload"></i><span>Upload</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="flex-1 overflow-y-auto p-4 relative" [class.rounded-br-2xl]="!selectedItemForDetail()">
       @if (isLoading()) {
-        @for (_ of [1,2,3,4,5,6,7,8]; track $index) {
-          <div class="aspect-square bg-surface-raised rounded-lg animate-pulse"></div>
-        }
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-4">
+          @for (_ of [1,2,3,4,5,6,7,8]; track $index) {
+            <div class="aspect-square bg-surface-raised rounded-lg animate-pulse"></div>
+          }
+        </div>
       } @else {
-        @for (item of mediaItems(); track item.id) {
-          <div class="group relative aspect-square rounded-lg overflow-hidden cursor-pointer shadow-md transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
-            <img [src]="item.url" [alt]="item.name" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <div class="absolute bottom-0 left-0 p-2 text-white">
-                <p class="text-xs font-semibold truncate">{{ item.name }}</p>
-                <p class="text-xs opacity-80">{{ formatBytes(item.size) }}</p>
+        <!-- Grid View -->
+        @if (viewMode() === 'grid') {
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-4">
+            @for (item of filteredItems(); track item.id) {
+              <div (click)="selectItemForDetail(item)" 
+                   [class]="'group relative aspect-square rounded-lg overflow-hidden cursor-pointer shadow-lg transition-all duration-200 hover:-translate-y-1 bg-surface-raised ' + (selectedItemForDetail()?.id === item.id ? 'ring-4 ring-primary ring-offset-4 ring-offset-surface-inset' : '')">
+                <img [src]="item.url" [alt]="item.name" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                <div class="absolute top-2 left-2">
+                  <div (click)="toggleSelection($event, item.id)" [class]="'w-6 h-6 rounded-md flex items-center justify-center cursor-pointer transition-all duration-200 ' + (selectedIds().has(item.id) ? 'bg-primary shadow-md' : 'bg-black/40 backdrop-blur-sm group-hover:opacity-100 ' + (selectionMode() ? 'opacity-100' : 'opacity-0'))">
+                    @if(selectedIds().has(item.id)) { <i class="fa-solid fa-check text-white text-sm"></i> }
+                  </div>
+                </div>
+                <div class="absolute bottom-0 left-0 p-2 text-white">
+                  <p class="text-xs font-semibold truncate">{{ item.name }}</p>
+                </div>
               </div>
-            </div>
+            }
           </div>
         }
+        <!-- List View -->
+        @if (viewMode() === 'list') {
+          <table class="w-full text-sm text-left text-charcoal-400">
+            <thead class="text-xs uppercase bg-surface-inset sticky top-0">
+              <tr>
+                <th scope="col" class="p-4 w-12"><div (click)="toggleSelectAll()" [class]="'w-5 h-5 rounded-md flex items-center justify-center cursor-pointer ' + (selectionMode() ? 'bg-primary' : 'bg-charcoal-700')">@if(isAllSelected()){<i class="fa-solid fa-check text-white text-xs"></i>}</div></th>
+                <th scope="col" class="px-6 py-3">File</th>
+                <th scope="col" class="px-6 py-3">Type</th>
+                <th scope="col" class="px-6 py-3">Size</th>
+                <th scope="col" class="px-6 py-3">Date Added</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of filteredItems(); track item.id) {
+                <tr (click)="selectItemForDetail(item)" class="cursor-pointer hover:bg-surface-raised" [class.bg-primary/10]="selectedItemForDetail()?.id === item.id">
+                  <td class="p-4"><div (click)="toggleSelection($event, item.id)" [class]="'w-5 h-5 rounded-md flex items-center justify-center cursor-pointer ' + (selectedIds().has(item.id) ? 'bg-primary' : 'bg-charcoal-700')">@if(selectedIds().has(item.id)){<i class="fa-solid fa-check text-white text-xs"></i>}</div></td>
+                  <td class="px-6 py-4 font-medium text-charcoal-100 whitespace-nowrap"><div class="flex items-center gap-3"><img [src]="item.url" [alt]="item.name" class="w-10 h-10 rounded-md object-cover"><span>{{item.name}}</span></div></td>
+                  <td class="px-6 py-4">{{item.mimeType}}</td>
+                  <td class="px-6 py-4">{{formatBytes(item.size)}}</td>
+                  <td class="px-6 py-4">{{item.createdAt | date:'short'}}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+         @if (filteredItems().length === 0) {
+            <div class="h-full flex flex-col items-center justify-center text-charcoal-500">
+                <i class="fa-solid fa-ghost text-5xl mb-4"></i>
+                <p>No media files found.</p>
+            </div>
+        }
       }
+      
+      <!-- Bulk Actions Bar -->
+      @if (selectionMode()) {
+        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 w-auto bg-charcoal-900/80 backdrop-blur-md text-white rounded-xl shadow-2xl px-4 py-2 flex items-center gap-2 animate-bulk-actions-in">
+            <span class="text-sm font-semibold pr-3 border-r border-white/20">{{ selectedIds().size }} selected</span>
+            <button class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/10 transition-colors" title="Tag"><i class="fa-solid fa-tags"></i></button>
+            <button class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/10 transition-colors" title="Move"><i class="fa-solid fa-folder-tree"></i></button>
+            <button (click)="deleteSelectedItems()" class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-red-500/50 transition-colors" title="Delete"><i class="fa-solid fa-trash"></i></button>
+            <div class="w-px h-6 bg-white/20"></div>
+            <button (click)="clearSelection()" class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/10 transition-colors" title="Cancel"><i class="fa-solid fa-times"></i></button>
+        </div>
+      }
+
     </div>
-  </div>
+  </main>
+
+  <!-- Right Details Panel -->
+  @if (selectedItemForDetail(); as item) {
+    <aside #detailsPanel class="w-96 flex-shrink-0 bg-surface rounded-r-2xl shadow-lg flex flex-col animate-details-in border-l border-charcoal-800/50">
+      <header class="flex-shrink-0 p-4 flex items-center justify-between border-b border-charcoal-800/50">
+        <h3 class="text-lg font-semibold text-brand-text">Details</h3>
+        <button (click)="closeDetailPanel()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-inset text-charcoal-400 hover:text-white transition-colors"><i class="fa-solid fa-times"></i></button>
+      </header>
+      <div class="flex-1 overflow-y-auto p-4 space-y-4">
+        <div class="aspect-video bg-surface-inset rounded-lg flex items-center justify-center shadow-inner-sm">
+          <img [src]="item.url" [alt]="item.name" class="max-w-full max-h-full object-contain rounded-md">
+        </div>
+        <div class="space-y-3">
+          <h4 class="font-semibold text-charcoal-100">{{ item.name }}</h4>
+          <div class="grid grid-cols-2 gap-3 text-sm">
+              <div><p class="text-charcoal-400">Type</p><p class="font-medium">{{item.mimeType}}</p></div>
+              <div><p class="text-charcoal-400">Size</p><p class="font-medium">{{formatBytes(item.size)}}</p></div>
+              @if(item.width && item.height) {
+                <div><p class="text-charcoal-400">Dimensions</p><p class="font-medium">{{item.width}} x {{item.height}}</p></div>
+              }
+              <div><p class="text-charcoal-400">Created</p><p class="font-medium">{{item.createdAt | date:'medium'}}</p></div>
+          </div>
+        </div>
+        <div>
+            <label for="alt-text" class="block text-sm font-medium text-charcoal-300 mb-1">Alt Text</label>
+            <textarea #altText rows="2" class="aurora-input w-full bg-surface-inset" placeholder="Descriptive text for accessibility...">{{ item.alt || '' }}</textarea>
+        </div>
+        <div>
+            <label for="tags" class="block text-sm font-medium text-charcoal-300 mb-1">Tags</label>
+            <input #tags type="text" id="tags" class="aurora-input w-full bg-surface-inset" [value]="item.tags?.join(', ') || ''" placeholder="comma, separated, tags">
+        </div>
+         <div class="border-t border-charcoal-800/50 pt-4 space-y-2">
+            <h4 class="text-sm font-semibold text-charcoal-300">Variants</h4>
+            <p class="text-xs text-charcoal-500">Different sizes of this image.</p>
+        </div>
+        <div class="border-t border-charcoal-800/50 pt-4 space-y-2">
+            <h4 class="text-sm font-semibold text-charcoal-300">Usage</h4>
+            <p class="text-xs text-charcoal-500">Where this asset is being used.</p>
+        </div>
+      </div>
+      <footer class="flex-shrink-0 p-4 flex items-center gap-3 border-t border-charcoal-800/50">
+        <button (click)="saveDetails(item, altText.value, tags.value)" [disabled]="isSavingDetails()" class="aurora-button-primary flex-1">
+          @if(isSavingDetails()) {
+            <i class="fa-solid fa-spinner fa-spin"></i>
+          } @else {
+            <span>Save Changes</span>
+          }
+        </button>
+        <button (click)="deleteSingleItem($event, item)" class="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-xl bg-red-600/20 text-red-400 hover:bg-red-600/40 transition-colors" title="Delete"><i class="fa-solid fa-trash"></i></button>
+      </footer>
+    </aside>
+  }
 </div>
+
+@if(isUploaderOpen()) {
+  <app-uploader-modal (close)="isUploaderOpen.set(false)" (uploadComplete)="isUploaderOpen.set(false)"></app-uploader-modal>
+}

@@ -111,6 +111,9 @@ export interface Contact {
   stats?: {
     open_invoices?: number;
     balance_lkr?: number;
+    total_sales_lkr?: number;
+    open_pos?: number;
+    total_purchases_lkr?: number;
   };
 }
 
@@ -171,8 +174,13 @@ export interface MediaItem {
   name: string;
   url: string;
   size: number; // in bytes
-  type: string; // e.g., 'image/jpeg'
+  type: 'image' | 'video' | 'document';
+  mimeType: string; // e.g., 'image/jpeg'
   createdAt: string;
+  width?: number;
+  height?: number;
+  alt?: string;
+  tags?: string[];
 }
 
 export interface DailyReport {

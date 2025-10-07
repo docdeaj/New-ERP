@@ -7,8 +7,6 @@
     [initialSearchQuery]="initialQuery()"
     context="invoice"
     [emptyStateConfig]="emptyStateConfig"
-    [disableQuickPeek]="true"
-    (rowClicked)="openPreview($event)"
     (rowAction)="handleRowAction($event)"
     (bulkAction)="handleBulkAction($event)"
     (emptyStateAction)="handleEmptyStateAction()">

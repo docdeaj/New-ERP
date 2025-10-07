@@ -1,0 +1,103 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <!-- Backdrop -->
+  <div class="aurora-backdrop absolute inset-0 animate-[fade-in_180ms_ease-in-out]" (click)="onClose()"></div>
+
+  <!-- Modal -->
+  <div class="relative w-full max-w-4xl h-[90vh] bg-surface/90 backdrop-blur-xl rounded-2xl shadow-2xl flex flex-col animate-uploader-in" role="dialog" aria-modal="true">
+    <!-- Header -->
+    <header class="flex-shrink-0 flex items-center justify-between p-4 border-b border-charcoal-800/50">
+      <h3 class="text-xl font-bold">Upload Media</h3>
+      <button (click)="onClose()" [disabled]="isUploading()" class="text-charcoal-400 disabled:opacity-50 hover:text-charcoal-100 transition-colors p-2 rounded-full">
+        <i class="fa-solid fa-times text-xl"></i>
+      </button>
+    </header>
+
+    <!-- Body -->
+    <main class="flex-1 p-6 overflow-y-auto" [formGroup]="uploadForm">
+      @if (filesToUpload().length === 0) {
+        <div 
+          (click)="fileInput.click()"
+          (drop)="onFileDrop($event)"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)"
+          class="h-full flex flex-col items-center justify-center border-2 border-dashed rounded-2xl cursor-pointer transition-colors"
+          [class]="isDragging() ? 'border-primary bg-primary/10' : 'border-charcoal-700 hover:border-primary-700 hover:bg-primary/5'">
+          <i class="fa-solid fa-cloud-arrow-up text-5xl text-charcoal-400 mb-4"></i>
+          <p class="font-semibold text-lg">Drag & drop files here</p>
+          <p class="text-charcoal-400">or click to browse</p>
+          <input #fileInput type="file" multiple class="hidden" (change)="onFileSelect($event)" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,application/pdf">
+        </div>
+      } @else {
+        <div formArrayName="files" class="space-y-4">
+          @for(file of filesToUpload(); track file.previewUrl; let i = $index) {
+            <div [formGroupName]="i" class="flex gap-4 p-3 bg-surface-inset rounded-lg shadow-sm" [class.ring-2]="file.error" [class.ring-red-500]="file.error">
+              <img [src]="file.previewUrl" [alt]="file.file.name" class="w-24 h-24 rounded-md object-cover flex-shrink-0">
+              <div class="flex-1 space-y-2">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <p class="font-semibold text-sm">{{ file.file.name }}</p>
+                    <p class="text-xs text-charcoal-400">{{ formatBytes(file.file.size) }}</p>
+                  </div>
+                   @if(!isUploading()) {
+                    <button (click)="removeFile(i)" class="w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-surface text-charcoal-400 hover:text-red-400 transition-colors" title="Remove">
+                      <i class="fa-solid fa-times text-sm"></i>
+                    </button>
+                  }
+                </div>
+                 @if(file.progress > 0 && !file.error) {
+                  <div class="w-full bg-surface-raised rounded-full h-2 overflow-hidden">
+                    <div class="bg-primary h-2 rounded-full transition-all duration-300" [style.width.%]="file.progress"></div>
+                  </div>
+                  <p class="text-xs text-primary-400">{{ file.progress < 100 ? 'Uploading...' : 'Processing...' }}</p>
+                 } @else if (file.error) {
+                    <div class="p-2 rounded-md bg-red-900/50 text-red-300 text-sm font-semibold">
+                      {{ file.error }}
+                    </div>
+                 } @else {
+                    <div class="grid grid-cols-2 gap-2">
+                      <div class="relative">
+                        <input type="text" formControlName="alt" placeholder="Alt text..." class="aurora-input text-xs w-full pr-8">
+                        @if (altTextStates()[i] === 'generating') {
+                          <i class="fa-solid fa-spinner fa-spin absolute right-2.5 top-1/2 -translate-y-1/2 text-primary-400"></i>
+                        } @else if (file.file.type.startsWith('image/')) {
+                          <button (click)="generateAltTextForFile(i)" type="button" [disabled]="altTextStates()[i] === 'generating'" class="absolute right-2 top-1/2 -translate-y-1/2 text-primary-400 hover:text-primary-300 disabled:opacity-50" title="Generate with AI">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                          </button>
+                        }
+                      </div>
+                      <input type="text" formControlName="tags" placeholder="Tags, comma, separated" class="aurora-input text-xs w-full">
+                    </div>
+                 }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </main>
+
+    <!-- Footer -->
+    <footer class="flex-shrink-0 p-4 flex justify-between items-center gap-3 border-t border-charcoal-800/50">
+      <div>
+        <label class="aurora-button-secondary cursor-pointer inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-4 py-2 rounded-xl">
+          <i class="fa-solid fa-plus"></i>
+          <span>Add More Files</span>
+          <input #addMoreInput type="file" multiple class="hidden" (change)="onFileSelect($event)" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,application/pdf">
+        </label>
+      </div>
+      <div class="flex items-center gap-3">
+        <button (click)="onClose()" [disabled]="isUploading()" type="button" class="aurora-button-secondary inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-4 py-2 rounded-xl">
+            Cancel
+        </button>
+        <button (click)="uploadAll()" [disabled]="isUploading() || filesToUpload().length === 0 || filesToUpload().every(f => f.error)" type="button" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl min-w-[120px]">
+           @if(isUploading()) {
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            <span>Uploading...</span>
+           } @else {
+             <i class="fa-solid fa-upload"></i>
+            <span>Upload {{ filesToUpload().filter(f => !f.error).length }} File(s)</span>
+           }
+        </button>
+      </div>
+    </footer>
+  </div>
+</div>

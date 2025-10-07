@@ -49,20 +49,20 @@ let MOCK_PURCHASE_ORDERS: PurchaseOrder[] = [
 ];
 
 let MOCK_CONTACTS: Contact[] = [
-  { id: 1, name: 'Tech Innovators Inc.', type: 'Customer', email: 'contact@techinnovators.com', phone: '+94 112 345 678', avatarUrl: 'https://picsum.photos/seed/1/40/40', stats: { open_invoices: 1, balance_lkr: 100000 } },
-  { id: 2, name: 'Creative Solutions', type: 'Customer', email: 'hello@creative.lk', phone: '0771234567', avatarUrl: 'https://picsum.photos/seed/2/40/40', stats: { open_invoices: 1, balance_lkr: 8500.50 }, tags: ['VIP'] },
-  { id: 3, name: 'Global Exports', type: 'Customer', email: 'sales@globalexports.com', phone: '0719876543', avatarUrl: 'https://picsum.photos/seed/3/40/40', stats: { open_invoices: 0, balance_lkr: 0 } },
-  { id: 4, name: 'Local Supplies Co.', type: 'Customer', email: 'info@localsupplies.lk', phone: '0752223344', avatarUrl: 'https://picsum.photos/seed/4/40/40' },
-  { id: 5, name: 'Pixel Perfect Designs', type: 'Customer', email: 'designs@pixelperfect.io', phone: '+94 71 555 1212', avatarUrl: 'https://picsum.photos/seed/q1/40/40', stats: { open_invoices: 0, balance_lkr: 0 } },
-  { id: 6, name: 'Global Tech Suppliers', type: 'Supplier', email: 'sales@globaltech.com', phone: '+94 76 999 8888', avatarUrl: 'https://picsum.photos/seed/s1/40/40' },
-  { id: 7, name: 'Office Essentials Ltd.', type: 'Supplier', email: 'contact@office-essentials.com', phone: '+94 112 123 123', avatarUrl: 'https://picsum.photos/seed/s2/40/40' },
-  { id: 8, name: 'Island Wide Logistics', type: 'Customer', email: 'dispatch@islandlog.lk', phone: '+94 112 999 000', avatarUrl: 'https://picsum.photos/seed/c8/40/40', stats: { open_invoices: 3, balance_lkr: 25000 }, tags: ['VIP'] },
-  { id: 9, name: 'Ceylon Tea Exports', type: 'Customer', email: 'exports@ceylontea.com', phone: '+94 77 888 7777', avatarUrl: 'https://picsum.photos/seed/c9/40/40', stats: { open_invoices: 0, balance_lkr: 0 } },
-  { id: 10, name: 'Kandy Spice Emporium', type: 'Customer', email: 'spices@kandy.lk', phone: '+94 81 222 3333', avatarUrl: 'https://picsum.photos/seed/c10/40/40', stats: { open_invoices: 0, balance_lkr: 0 } },
-  { id: 11, name: 'Galle Gems & Jewellery', type: 'Customer', email: 'gems@galle.lk', phone: '+94 91 444 5555', avatarUrl: 'https://picsum.photos/seed/c11/40/40', stats: { open_invoices: 1, balance_lkr: 120000 } },
-  { id: 12, name: 'Colombo Construction Co.', type: 'Customer', email: 'info@construction.lk', phone: '+94 11 777 6666', avatarUrl: 'https://picsum.photos/seed/c12/40/40', stats: { open_invoices: 5, balance_lkr: 550000 }, tags: ['VIP'] },
-  { id: 13, name: 'M Leather', type: 'Customer', email: 'orders@mleather.lk', phone: '0765558899', avatarUrl: 'https://picsum.photos/seed/mleather/40/40', stats: { open_invoices: 0, balance_lkr: 0 } },
-  { id: 14, name: 'Colombo Traders', type: 'Customer', email: 'contact@coltraders.lk', phone: '0703332211', avatarUrl: 'https://picsum.photos/seed/coltraders/40/40', stats: { open_invoices: 2, balance_lkr: 45000 } },
+  { id: 1, name: 'Tech Innovators Inc.', type: 'Customer', email: 'contact@techinnovators.com', phone: '+94 112 345 678', avatarUrl: 'https://picsum.photos/seed/1/40/40', stats: { open_invoices: 1, balance_lkr: 100000, total_sales_lkr: 750000 } },
+  { id: 2, name: 'Creative Solutions', type: 'Customer', email: 'hello@creative.lk', phone: '0771234567', avatarUrl: 'https://picsum.photos/seed/2/40/40', stats: { open_invoices: 1, balance_lkr: 8500.50, total_sales_lkr: 125000 }, tags: ['VIP'] },
+  { id: 3, name: 'Global Exports', type: 'Customer', email: 'sales@globalexports.com', phone: '0719876543', avatarUrl: 'https://picsum.photos/seed/3/40/40', stats: { open_invoices: 0, balance_lkr: 0, total_sales_lkr: 250000 } },
+  { id: 4, name: 'Local Supplies Co.', type: 'Customer', email: 'info@localsupplies.lk', phone: '0752223344', avatarUrl: 'https://picsum.photos/seed/4/40/40', stats: { open_invoices: 1, balance_lkr: 5000, total_sales_lkr: 5000 } },
+  { id: 5, name: 'Pixel Perfect Designs', type: 'Customer', email: 'designs@pixelperfect.io', phone: '+94 71 555 1212', avatarUrl: 'https://picsum.photos/seed/q1/40/40', stats: { open_invoices: 0, balance_lkr: 0, total_sales_lkr: 44000 } },
+  { id: 6, name: 'Global Tech Suppliers', type: 'Supplier', email: 'sales@globaltech.com', phone: '+94 76 999 8888', avatarUrl: 'https://picsum.photos/seed/s1/40/40', stats: { open_pos: 1, total_purchases_lkr: 130000 } },
+  { id: 7, name: 'Office Essentials Ltd.', type: 'Supplier', email: 'contact@office-essentials.com', phone: '+94 112 123 123', avatarUrl: 'https://picsum.photos/seed/s2/40/40', stats: { open_pos: 0, total_purchases_lkr: 45000 } },
+  { id: 8, name: 'Island Wide Logistics', type: 'Customer', email: 'dispatch@islandlog.lk', phone: '+94 112 999 000', avatarUrl: 'https://picsum.photos/seed/c8/40/40', stats: { open_invoices: 3, balance_lkr: 25000, total_sales_lkr: 95000 }, tags: ['VIP'] },
+  { id: 9, name: 'Ceylon Tea Exports', type: 'Customer', email: 'exports@ceylontea.com', phone: '+94 77 888 7777', avatarUrl: 'https://picsum.photos/seed/c9/40/40', stats: { open_invoices: 0, balance_lkr: 0, total_sales_lkr: 320000 } },
+  { id: 10, name: 'Kandy Spice Emporium', type: 'Customer', email: 'spices@kandy.lk', phone: '+94 81 222 3333', avatarUrl: 'https://picsum.photos/seed/c10/40/40', stats: { open_invoices: 0, balance_lkr: 0, total_sales_lkr: 15000 } },
+  { id: 11, name: 'Galle Gems & Jewellery', type: 'Customer', email: 'gems@galle.lk', phone: '+94 91 444 5555', avatarUrl: 'https://picsum.photos/seed/c11/40/40', stats: { open_invoices: 1, balance_lkr: 120000, total_sales_lkr: 120000 } },
+  { id: 12, name: 'Colombo Construction Co.', type: 'Customer', email: 'info@construction.lk', phone: '+94 11 777 6666', avatarUrl: 'https://picsum.photos/seed/c12/40/40', stats: { open_invoices: 5, balance_lkr: 550000, total_sales_lkr: 1200000 }, tags: ['VIP'] },
+  { id: 13, name: 'M Leather', type: 'Customer', email: 'orders@mleather.lk', phone: '0765558899', avatarUrl: 'https://picsum.photos/seed/mleather/40/40', stats: { open_invoices: 0, balance_lkr: 0, total_sales_lkr: 0 } },
+  { id: 14, name: 'Colombo Traders', type: 'Customer', email: 'contact@coltraders.lk', phone: '0703332211', avatarUrl: 'https://picsum.photos/seed/coltraders/40/40', stats: { open_invoices: 2, balance_lkr: 45000, total_sales_lkr: 85000 } },
 ];
 
 const MOCK_AR_AGING: ArAgingRow[] = [
@@ -140,9 +140,14 @@ let MOCK_REPORT_VIEWS: ReportView[] = [
   }
 ];
 
-const MOCK_MEDIA: MediaItem[] = Array.from({ length: 15 }, (_, i) => ({
-  id: `media-${i + 1}`, name: `product_image_${i + 1}.jpg`, url: `https://picsum.photos/seed/img${i}/400/400`, size: 1024 * (150 + i*10), type: 'image/jpeg', createdAt: new Date(Date.now() - i * 1000 * 60 * 60 * 24).toISOString(),
-}));
+let MOCK_MEDIA: MediaItem[] = [
+  { id: 'media-1', name: 'leather_wallet_brown.jpg', url: 'https://picsum.photos/seed/m1/800/600', size: 345678, type: 'image', mimeType: 'image/jpeg', createdAt: '2024-07-29T10:00:00Z', width: 800, height: 600, alt: 'A brown leather wallet on a wooden table.', tags: ['products', 'leather', 'campaign 2024'] },
+  { id: 'media-2', name: 'handbag_promo_video.mp4', url: 'https://picsum.photos/seed/m2/800/600', size: 12500000, type: 'video', mimeType: 'video/mp4', createdAt: '2024-07-28T14:30:00Z', width: 800, height: 600, tags: ['social media'] },
+  { id: 'media-3', name: 'user_avatar_jane.png', url: 'https://picsum.photos/seed/jane/400/400', size: 89012, type: 'image', mimeType: 'image/png', createdAt: '2024-07-27T09:15:00Z', width: 400, height: 400, alt: 'Avatar for user Jane Doe.', tags: ['avatars'] },
+  { id: 'media-4', name: 'returns_policy.pdf', url: 'https://picsum.photos/seed/m4/800/600', size: 123456, type: 'document', mimeType: 'application/pdf', createdAt: '2024-07-26T11:00:00Z', width: 800, height: 1100, tags: ['documents'] },
+  { id: 'media-5', name: 'black_leather_belt.jpg', url: 'https://picsum.photos/seed/m5/800/600', size: 412345, type: 'image', mimeType: 'image/jpeg', createdAt: '2024-07-25T16:45:00Z', width: 800, height: 600, tags: ['products'] },
+  { id: 'media-6', name: 'company_logo_final.svg', url: 'https://picsum.photos/seed/m6/400/400', size: 15234, type: 'image', mimeType: 'image/svg+xml', createdAt: '2024-07-24T18:00:00Z', width: 400, height: 400 },
+];
 
 // FIX: Add mock logs to be used by the new logs API property.
 let MOCK_LOGS: LogEntry[] = [
@@ -187,14 +192,14 @@ export class ApiService {
     return collection.length > 0 ? Math.max(...collection.map(i => i.id)) + 1 : 1;
   }
   
-  private deleteManyFrom<T extends {id: number}>(collection: T[], ids: (string|number)[]): T[] {
+  private deleteManyFrom<T extends {id: any}>(collection: T[], ids: (string|number)[]): T[] {
     const idSet = new Set(ids);
     const newCollection = collection.filter(item => !idSet.has(item.id));
     this.notifyDataChange();
     return newCollection;
   }
 
-  private updateOneIn<T extends {id: number}>(collection: T[], id: number, data: Partial<T>): T {
+  private updateOneIn<T extends {id: any}>(collection: T[], id: any, data: Partial<T>): T {
     const index = collection.findIndex(i => i.id === id);
     if (index === -1) throw new Error('Item not found');
     const updatedItem = { ...collection[index], ...data };
@@ -400,6 +405,10 @@ export class ApiService {
   invoices = { 
     list: async (params?: { query?: string }): Promise<Invoice[]> => { await new Promise(res => setTimeout(res, 50)); return params?.query ? filterData(MOCK_INVOICES, params.query) : [...MOCK_INVOICES].sort((a,b) => b.id - a.id); },
     getById: async (id: number): Promise<Invoice | undefined> => { await new Promise(res => setTimeout(res, 50)); return MOCK_INVOICES.find(i => i.id === id); },
+    getPayments: async (invoiceId: number): Promise<Receipt[]> => { 
+      await new Promise(res => setTimeout(res, 200)); 
+      return MOCK_RECEIPTS.filter(r => r.invoiceId === invoiceId); 
+    },
     update: async (id: number, data: Partial<Invoice>): Promise<Invoice> => { return this.updateOneIn(MOCK_INVOICES, id, data); },
     deleteMany: async (ids: (string|number)[]): Promise<void> => { MOCK_INVOICES = this.deleteManyFrom(MOCK_INVOICES, ids); }
   };
@@ -426,7 +435,42 @@ export class ApiService {
       MOCK_PRODUCTS = this.deleteManyFrom(MOCK_PRODUCTS, ids);
     }
   };
-  media = { list: async(params?: { query?: string }): Promise<MediaItem[]> => { await new Promise(res => setTimeout(res, 50)); return params?.query ? filterData(MOCK_MEDIA, params.query) : [...MOCK_MEDIA]; } };
+  media = { 
+    list: async(params?: { query?: string }): Promise<MediaItem[]> => { await new Promise(res => setTimeout(res, 50)); return params?.query ? filterData(MOCK_MEDIA, params.query) : [...MOCK_MEDIA].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); },
+    initUpload: async (fileInfo: { name: string, type: string, size: number }): Promise<{ assetId: string, uploadUrl: string }> => {
+        console.log('Initiating upload for:', fileInfo.name);
+        await new Promise(res => setTimeout(res, 100)); // simulate network latency
+        const assetId = `temp-${Date.now()}-${Math.random()}`;
+        return { assetId, uploadUrl: 'https://mock-storage.com/upload' };
+    },
+    completeUpload: async (assetId: string, metadata: { name: string, size: number, mimeType: string, type: MediaItem['type'], alt?: string, tags?: string[] }): Promise<MediaItem> => {
+        console.log('Completing upload for assetId:', assetId, 'with metadata:', metadata);
+        await new Promise(res => setTimeout(res, 200)); // simulate backend processing
+        
+        const newId = `media-${Date.now()}`;
+        const randomSeed = Math.random().toString(36).substring(7);
+        const newItem: MediaItem = {
+          id: newId,
+          name: metadata.name,
+          url: `https://picsum.photos/seed/${randomSeed}/800/600`,
+          size: metadata.size,
+          type: metadata.type,
+          mimeType: metadata.mimeType,
+          createdAt: new Date().toISOString(),
+          width: 800,
+          height: 600,
+          alt: metadata.alt || '',
+          tags: metadata.tags || [],
+        };
+        MOCK_MEDIA.unshift(newItem); // Add to top of list
+        this.notifyDataChange();
+        return newItem;
+    },
+    update: async (id: string, data: Partial<MediaItem>): Promise<MediaItem> => { 
+      return this.updateOneIn(MOCK_MEDIA, id, data); 
+    },
+    deleteMany: async (ids: (string|number)[]): Promise<void> => { MOCK_MEDIA = this.deleteManyFrom(MOCK_MEDIA, ids); }
+  };
   quotations = { 
     list: async(params?: { query?: string }): Promise<Quotation[]> => { await new Promise(res => setTimeout(res, 50)); return params?.query ? filterData(MOCK_QUOTATIONS, params.query) : [...MOCK_QUOTATIONS].sort((a,b) => b.id - a.id); },
     update: async (id: number, data: Partial<Quotation>): Promise<Quotation> => { return this.updateOneIn(MOCK_QUOTATIONS, id, data); },
@@ -452,6 +496,18 @@ export class ApiService {
       await new Promise(res => setTimeout(res, 50)); 
       const data = params?.query ? filterContacts(MOCK_CONTACTS, params.query) : [...MOCK_CONTACTS];
       return data.sort((a,b) => a.name.localeCompare(b.name));
+    },
+    getRecentActivity: async(contact: Contact): Promise<(Invoice | PurchaseOrder)[]> => {
+        await new Promise(res => setTimeout(res, 250));
+        if (contact.type === 'Customer') {
+            return MOCK_INVOICES.filter(inv => inv.customerName === contact.name)
+              .sort((a, b) => new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime())
+              .slice(0, 3);
+        } else { // Supplier
+            return MOCK_PURCHASE_ORDERS.filter(po => po.supplierName === contact.name)
+              .sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime())
+              .slice(0, 3);
+        }
     },
     update: async (id: number, data: Partial<Contact>): Promise<Contact> => { return this.updateOneIn(MOCK_CONTACTS, id, data); },
     deleteMany: async (ids: (string|number)[]): Promise<void> => { MOCK_CONTACTS = this.deleteManyFrom(MOCK_CONTACTS, ids); }
@@ -561,7 +617,9 @@ export class ApiService {
         invoiceId: 0, // No associated invoice
         invoiceNumber: 'N/A',
         customerName: data.customer.name,
+        // FIX: Add missing 'amount' property to the new receipt object.
         amount: data.amount,
+        // FIX: The property on `data` is `paymentMethod`, not `method`.
         method: data.paymentMethod,
         paymentDate: data.paymentDate,
       };

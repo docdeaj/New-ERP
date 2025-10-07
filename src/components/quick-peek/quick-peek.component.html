@@ -67,23 +67,63 @@
       </div>
 
       <!-- Body -->
-      <div class="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+      <div class="p-6 pt-0 space-y-6 max-h-[70vh] overflow-y-auto">
         @switch (normalizedItemType()) {
           @case ('invoice') {
             @let invoice = asInvoice(item());
-             <div class="grid grid-cols-2 gap-4 text-sm">
+            <div class="space-y-4">
+              <!-- KPIs -->
+              <div class="grid grid-cols-3 gap-3 text-center">
+                <div class="bg-red-900/50 p-3 rounded-lg shadow-inner col-span-3">
+                  <p class="text-sm text-red-300">Balance Due</p>
+                  <p class="font-bold text-4xl tabular-nums tracking-tighter text-red-200">{{ invoice.balance | currency:'LKR ' }}</p>
+                </div>
+                <div class="bg-surface-inset p-2 rounded-lg shadow-inner">
+                  <p class="text-xs text-charcoal-400">Total</p>
+                  <p class="font-semibold tabular-nums text-lg">{{ invoice.amount | currency:'LKR ' }}</p>
+                </div>
+                <div class="bg-surface-inset p-2 rounded-lg shadow-inner">
+                  <p class="text-xs text-charcoal-400">Paid</p>
+                  <p class="font-semibold tabular-nums text-lg text-green-400">{{ invoice.totalPaid | currency:'LKR ' }}</p>
+                </div>
+                <div class="bg-surface-inset p-2 rounded-lg shadow-inner">
+                  <p class="text-xs text-charcoal-400">Due</p>
+                  <p class="font-semibold tabular-nums text-lg">{{ invoice.dueDate | date:'mediumDate' }}</p>
+                </div>
+              </div>
+              
+              <!-- Status & Download -->
+              <div class="flex items-center justify-between">
+                  <span [class]="'px-2.5 py-1 text-xs font-semibold rounded-full ' + getStatusColor(invoice.status)">{{ invoice.status }}</span>
+                  <button (click)="downloadPdf()" class="text-sm font-semibold text-primary hover:underline"><i class="fa-solid fa-file-arrow-down mr-1"></i>Download PDF</button>
+              </div>
+
+              <!-- Payment History -->
               <div>
-                <p class="text-charcoal-400">Balance Due</p>
-                <p class="font-semibold text-lg tabular-nums text-red-400">{{ invoice.balance | currency:'LKR ' }}</p>
-              </div>
-              <div class="text-right">
-                <p class="text-charcoal-400">Status</p>
-                <p><span [class]="'px-2.5 py-1 font-semibold rounded-full ' + getStatusColor(invoice.status)">{{ invoice.status }}</span></p>
-              </div>
-            </div>
-            <div #pdfPreviewContainer class="w-full bg-white rounded-lg shadow-inner-sm aspect-[210/297] overflow-hidden">
-              <div [style.transform]="'scale(' + previewScale() + ')'" class="origin-top-left">
-                <app-invoice-pdf [data]="invoice"></app-invoice-pdf>
+                <h4 class="text-sm font-semibold text-charcoal-300 mb-2">Payment History</h4>
+                @if (isPaymentsLoading()) {
+                  <div class="space-y-2 animate-pulse">
+                    <div class="h-10 bg-surface-inset rounded-lg"></div>
+                    <div class="h-10 bg-surface-inset rounded-lg"></div>
+                  </div>
+                } @else if (invoicePayments().length > 0) {
+                  <div class="space-y-2">
+                    @for(payment of invoicePayments(); track payment.id) {
+                      <div class="flex justify-between items-center bg-surface-inset p-2 rounded-lg text-sm">
+                        <div class="flex items-center gap-2">
+                            <span class="font-mono text-xs px-1.5 py-0.5 rounded bg-surface shadow-inner">{{ payment.receiptNumber }}</span>
+                            <span class="text-charcoal-400">{{ payment.paymentDate | date:'mediumDate' }}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <span [class]="'font-semibold text-xs px-1.5 py-0.5 rounded ' + getStatusColor(payment.method)">{{ payment.method }}</span>
+                          <span class="font-bold tabular-nums text-charcoal-200">{{ payment.amount | currency:'LKR ' }}</span>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <div class="text-center text-sm text-charcoal-500 py-4 bg-surface-inset rounded-lg">No payments recorded yet.</div>
+                }
               </div>
             </div>
           }
@@ -107,30 +147,57 @@
           }
           @case ('product') {
              @if(product(); as p) {
-                <img [src]="p.imageUrl" class="w-full h-48 object-cover rounded-lg shadow-lg" alt="Product Image"/>
-                
-                @if(p.description) {
-                  <p class="mt-4 text-sm text-charcoal-300">{{ p.description }}</p>
-                }
+                <div class="grid grid-cols-1 gap-4">
+                  <!-- Stock Summary -->
+                  <div class="grid grid-cols-3 gap-4 text-center">
+                    <div class="bg-surface-inset p-3 rounded-lg shadow-inner col-span-3">
+                      <p class="text-sm text-charcoal-400">Total Available Stock</p>
+                      <p class="font-bold text-4xl tabular-nums tracking-tighter" [class.text-red-400]="totalStock().available <= 0">{{ totalStock().available }}</p>
+                    </div>
+                    <div class="bg-surface-inset p-2 rounded-lg shadow-inner">
+                      <p class="text-xs text-charcoal-400">On Hand</p>
+                      <p class="font-semibold tabular-nums text-lg">{{ totalStock().onHand }}</p>
+                    </div>
+                    <div class="bg-surface-inset p-2 rounded-lg shadow-inner">
+                      <p class="text-xs text-charcoal-400">Committed</p>
+                      <p class="font-semibold tabular-nums text-lg">{{ totalStock().committed }}</p>
+                    </div>
+                  </div>
 
-                <div class="grid grid-cols-2 gap-4 mt-4">
-                    <div class="bg-surface-inset p-3 rounded-lg shadow-inner">
-                        <p class="text-xs text-charcoal-400">Purchase Cost</p>
-                        <p class="font-bold text-lg tabular-nums">{{ p.cost | currency:'LKR ' }}</p>
+                  <!-- Location Breakdown -->
+                  <div class="space-y-3">
+                    <h4 class="text-sm font-semibold text-charcoal-300 mt-2">Stock by Location</h4>
+                    @for(loc of stockLocations(); track loc.key) {
+                      <div class="bg-surface-inset p-3 rounded-lg shadow-inner">
+                        <div class="flex justify-between items-center">
+                          <span class="font-semibold">{{ loc.name }}</span>
+                          <span class="px-2 py-0.5 text-xs font-bold rounded-full" [class]="loc.available > 5 ? 'bg-green-900/50 text-green-300' : (loc.available > 0 ? 'bg-yellow-900/50 text-yellow-300' : 'bg-red-900/50 text-red-300')">
+                            {{ loc.available }} Available
+                          </span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-xs mt-2 text-center">
+                          <div class="bg-surface p-1 rounded">
+                            <p class="text-charcoal-400">On Hand</p>
+                            <p class="font-semibold tabular-nums text-base">{{ loc.onHand }}</p>
+                          </div>
+                          <div class="bg-surface p-1 rounded">
+                            <p class="text-charcoal-400">Committed</p>
+                            <p class="font-semibold tabular-nums text-base">{{ loc.committed }}</p>
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Financials -->
+                  <div class="grid grid-cols-3 gap-2 text-center text-sm pt-2">
+                    <div class="bg-surface-inset p-2 rounded-lg shadow-inner"><p class="text-xs text-charcoal-400">Cost</p><p class="font-bold tabular-nums">{{ p.cost | currency:'LKR ' }}</p></div>
+                    <div class="bg-surface-inset p-2 rounded-lg shadow-inner"><p class="text-xs text-charcoal-400">Price</p><p class="font-bold tabular-nums">{{ p.price | currency:'LKR ' }}</p></div>
+                    <div class="p-2 rounded-lg shadow-inner" [class]="isLoss() ? 'bg-red-900/50' : 'bg-green-900/50'">
+                      <p class="text-xs" [class]="isLoss() ? 'text-red-300' : 'text-green-300'">Margin</p>
+                      <p class="font-bold tabular-nums" [class]="isLoss() ? 'text-red-200' : 'text-green-200'">{{ profitMargin() | number:'1.0-0' }}%</p>
                     </div>
-                    <div class="bg-surface-inset p-3 rounded-lg shadow-inner">
-                        <p class="text-xs text-charcoal-400">Selling Price</p>
-                        <p class="font-bold text-lg tabular-nums">{{ p.price | currency:'LKR ' }}</p>
-                    </div>
-                </div>
-                <div [class]="'p-3 rounded-lg shadow-md ' + (isLoss() ? 'bg-red-900/50 border border-red-700/50' : 'bg-green-900/50 border border-green-700/50')">
-                    <p [class]="'text-xs ' + (isLoss() ? 'text-red-300' : 'text-green-300')">
-                        Calculated Margin
-                        @if(isLoss()) { <span class="font-bold">(LOSS)</span> }
-                    </p>
-                    <p [class]="'font-bold text-lg tabular-nums ' + (isLoss() ? 'text-red-200' : 'text-green-200')">
-                        {{ profitMargin() | number:'1.1-1' }}%
-                    </p>
+                  </div>
                 </div>
              }
           }
@@ -188,18 +255,67 @@
           }
           @case ('contact') {
             @let contact = asContact(item());
-            <div class="flex flex-col items-center text-center space-y-3">
-                <img [src]="contact.avatarUrl" alt="Avatar" class="w-24 h-24 rounded-full object-cover shadow-lg border-4 border-surface-inset">
-                <div>
-                  <p class="text-sm text-charcoal-400">{{contact.email}}</p>
-                  <p class="text-sm text-charcoal-400">{{contact.phone}}</p>
+            <div class="space-y-4">
+              <!-- Header -->
+              <div class="flex items-start gap-4">
+                <img [src]="contact.avatarUrl" alt="Avatar" class="w-16 h-16 rounded-full object-cover shadow-lg border-2 border-surface-inset">
+                <div class="flex-1">
+                  <p class="text-sm font-semibold px-2 py-0.5 rounded-full inline-block" [class]="contact.type === 'Customer' ? 'bg-blue-900/50 text-blue-300' : 'bg-purple-900/50 text-purple-300'">{{ contact.type }}</p>
+                  @if (contact.tags && contact.tags.length > 0) {
+                    <div class="flex flex-wrap gap-1 mt-1">
+                      @for(tag of contact.tags; track tag) {
+                        <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-surface-inset shadow-inner-sm">{{ tag }}</span>
+                      }
+                    </div>
+                  }
                 </div>
-                @if(contact.stats?.balance_lkr) {
-                  <div class="bg-red-900/50 p-3 rounded-lg shadow-md w-full">
-                      <p class="text-xs text-red-300">Outstanding Balance</p>
-                      <p class="font-bold text-xl tabular-nums text-red-200">{{ contact.stats.balance_lkr | currency:'LKR ' }}</p>
+              </div>
+              <!-- Contact Info -->
+              <div class="space-y-2">
+                <div class="flex items-center gap-3 bg-surface-inset p-2 rounded-lg"><i class="fa-solid fa-envelope w-4 text-center text-charcoal-400"></i><span class="text-sm text-charcoal-200">{{ contact.email }}</span></div>
+                <div class="flex items-center gap-3 bg-surface-inset p-2 rounded-lg"><i class="fa-solid fa-phone w-4 text-center text-charcoal-400"></i><span class="text-sm text-charcoal-200">{{ contact.phone }}</span></div>
+              </div>
+              <!-- Stats -->
+              <div class="grid grid-cols-2 gap-3 text-center">
+                @if (contact.type === 'Customer') {
+                  <div class="bg-surface-inset p-3 rounded-lg shadow-inner">
+                    <p class="text-xs text-charcoal-400">Total Sales</p>
+                    <p class="font-bold text-xl tabular-nums">{{ contact.stats?.total_sales_lkr | currency:'LKR ':'symbol':'1.0-0' }}</p>
+                  </div>
+                  <div class="bg-surface-inset p-3 rounded-lg shadow-inner">
+                    <p class="text-xs text-charcoal-400">Balance Due</p>
+                    <p class="font-bold text-xl tabular-nums" [class.text-red-400]="(contact.stats?.balance_lkr || 0) > 0">{{ contact.stats?.balance_lkr | currency:'LKR ':'symbol':'1.0-0' }}</p>
+                  </div>
+                } @else {
+                  <div class="bg-surface-inset p-3 rounded-lg shadow-inner col-span-2">
+                    <p class="text-xs text-charcoal-400">Total Purchases</p>
+                    <p class="font-bold text-xl tabular-nums">{{ contact.stats?.total_purchases_lkr | currency:'LKR ':'symbol':'1.0-0' }}</p>
                   </div>
                 }
+              </div>
+              <!-- Recent Activity -->
+              <div>
+                <h4 class="text-sm font-semibold text-charcoal-300 mb-2">Recent Activity</h4>
+                @if (isActivityLoading()) {
+                  <div class="space-y-2 animate-pulse">
+                    <div class="h-10 bg-surface-inset rounded-lg"></div><div class="h-10 bg-surface-inset rounded-lg"></div>
+                  </div>
+                } @else if (recentActivity().length > 0) {
+                  <div class="space-y-2">
+                    @for(activity of recentActivity(); track activity.id) {
+                      <div class="flex justify-between items-center bg-surface-inset p-2 rounded-lg text-sm">
+                        <div class="flex items-center gap-2">
+                            <span class="font-mono text-xs px-1.5 py-0.5 rounded bg-surface shadow-inner">{{ 'invoiceNumber' in activity ? activity.invoiceNumber : activity.poNumber }}</span>
+                            <span [class]="'font-semibold text-xs px-1.5 py-0.5 rounded ' + getStatusColor(activity.status)">{{ activity.status }}</span>
+                        </div>
+                        <span class="font-bold tabular-nums text-charcoal-200">{{ activity.amount | currency:'LKR ' }}</span>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <div class="text-center text-sm text-charcoal-500 py-4 bg-surface-inset rounded-lg">No recent activity.</div>
+                }
+              </div>
             </div>
           }
            @case ('receipt') {
@@ -278,16 +394,42 @@
       
       <!-- Footer Actions -->
       <div class="flex items-center p-4 space-x-2">
-        @if (normalizedItemType() === 'invoice' || normalizedItemType() === 'quotation' || normalizedItemType() === 'purchase-order') {
-          <button (click)="downloadPdf()" type="button" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl transition-all duration-150 ease-in-out">
-            <i class="fa-solid fa-file-arrow-down"></i>Download PDF
-          </button>
-        }
-        @if (isEditable()) {
-            <button (click)="onEdit()" type="button" class="aurora-button-secondary inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-4 py-2 rounded-xl transition-all duration-150 ease-in-out">
-                <i class="fa-solid fa-pen"></i>
-                <span>Edit</span>
+        @if (normalizedItemType() === 'invoice') {
+            <button (click)="onRecordPaymentForInvoice()" [disabled]="asInvoice(item()).balance <= 0" type="button" class="aurora-button-primary flex-1 inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl">
+                <i class="fa-solid fa-hand-holding-dollar"></i><span>Record Payment</span>
             </button>
+            <button (click)="onEdit()" type="button" class="aurora-button-secondary flex-1 inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-4 py-2 rounded-xl">
+                <i class="fa-solid fa-pen"></i><span>Edit</span>
+            </button>
+        } @else {
+            @if (normalizedItemType() === 'quotation' || normalizedItemType() === 'purchase-order') {
+              <button (click)="downloadPdf()" type="button" class="aurora-button-secondary inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-4 py-2 rounded-xl transition-all duration-150 ease-in-out">
+                <i class="fa-solid fa-file-arrow-down"></i>Download PDF
+              </button>
+            }
+            @if (isEditable()) {
+                <button (click)="onEdit()" type="button" class="aurora-button-secondary flex-1 inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-4 py-2 rounded-xl transition-all duration-150 ease-in-out">
+                    <i class="fa-solid fa-pen"></i>
+                    <span>Edit</span>
+                </button>
+            }
+            @if (normalizedItemType() === 'contact' && asContact(item()).type === 'Customer') {
+                <button (click)="onRecordPaymentForContact()" type="button" class="aurora-button-secondary flex-1 inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-4 py-2 rounded-xl"><i class="fa-solid fa-hand-holding-dollar"></i><span>Record Payment</span></button>
+                <button (click)="onNewInvoiceForContact()" type="button" class="aurora-button-primary flex-1 inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl"><i class="fa-solid fa-plus"></i><span>New Invoice</span></button>
+            }
+            @if (normalizedItemType() === 'contact' && asContact(item()).type === 'Supplier') {
+                <button (click)="onNewPurchaseOrderForContact()" type="button" class="aurora-button-primary flex-1 inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl"><i class="fa-solid fa-plus"></i><span>New PO</span></button>
+            }
+            @if(normalizedItemType() === 'product') {
+                <button (click)="onTransferStock()" type="button" class="aurora-button-secondary flex-1 inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-4 py-2 rounded-xl">
+                    <i class="fa-solid fa-right-left"></i>
+                    <span>Transfer</span>
+                </button>
+                <button (click)="onCreatePurchaseOrder()" type="button" class="aurora-button-primary flex-1 inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <span>Create PO</span>
+                </button>
+            }
         }
       </div>
     }
