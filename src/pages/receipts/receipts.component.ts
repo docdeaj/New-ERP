@@ -4,6 +4,7 @@ import { DataTableComponent, ColumnDefinition } from '../../components/data-tabl
 import { Receipt } from '../../models/types';
 import { ApiService } from '../../services/api.service';
 import { UiStateService } from '../../services/ui-state.service';
+import { PdfGenerationService } from '../../services/pdf.service';
 
 @Component({
   selector: 'app-receipts',
@@ -15,6 +16,7 @@ import { UiStateService } from '../../services/ui-state.service';
 export class ReceiptsComponent {
   private api = inject(ApiService);
   private uiStateService = inject(UiStateService);
+  private pdfService = inject(PdfGenerationService);
   receipts = signal<Receipt[]>([]);
   isLoading = signal(true);
 
@@ -41,25 +43,37 @@ export class ReceiptsComponent {
     this.receipts.set(data);
     this.isLoading.set(false);
   }
+  
+  openPreview(receipt: Receipt) {
+    this.uiStateService.showDocumentPreview(receipt);
+  }
 
   handleRowAction(event: { action: string, item: Receipt }) {
-    if (event.action === 'delete') {
-      this.deleteReceipts([event.item.id]);
-    } else {
-      console.log('Row Action:', event.action, 'on item:', event.item);
+    switch (event.action) {
+      case 'delete':
+        this.deleteReceipts([event.item.id]);
+        break;
+      case 'download-pdf':
+        this.pdfService.generatePdf(event.item);
+        break;
+      default:
+        console.log('Row Action:', event.action, 'on item:', event.item);
     }
   }
 
   handleBulkAction(event: { action: string, selectedIds: (string | number)[] }) {
     if (event.action === 'delete') {
       this.deleteReceipts(event.selectedIds);
+    } else if (event.action === 'export-pdf') {
+        const selected = this.receipts().filter(r => event.selectedIds.includes(r.id));
+        this.pdfService.generateBulkPdfZip(selected);
     } else {
       console.log('Bulk Action:', event.action, 'on ids:', event.selectedIds);
     }
   }
   
   openAddNewReceiptDrawer() {
-    this.uiStateService.openDrawer('new-receipt');
+    this.uiStateService.openDrawer('record-payment');
   }
 
   deleteReceipts(ids: (string | number)[]) {

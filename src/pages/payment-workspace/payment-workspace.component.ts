@@ -15,7 +15,8 @@ import { PdfGenerationService } from '../../services/pdf.service';
   imports: [CommonModule, RouterLink, PaymentFormComponent, DataTableComponent, CurrencyPipe, DatePipe],
 })
 export class PaymentWorkspaceComponent {
-  private route = inject(ActivatedRoute);
+  // FIX: Explicitly type injected service to resolve type inference issues.
+  private route: ActivatedRoute = inject(ActivatedRoute);
   private api = inject(ApiService);
   private pdfService = inject(PdfGenerationService);
 

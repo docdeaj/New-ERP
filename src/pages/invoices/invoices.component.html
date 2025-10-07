@@ -6,9 +6,9 @@
     [data]="invoices()"
     [initialSearchQuery]="initialQuery()"
     context="invoice"
-    [disableQuickPeek]="true"
     [emptyStateConfig]="emptyStateConfig"
-    (rowClicked)="previewedInvoice.set($event)"
+    [disableQuickPeek]="true"
+    (rowClicked)="openPreview($event)"
     (rowAction)="handleRowAction($event)"
     (bulkAction)="handleBulkAction($event)"
     (emptyStateAction)="handleEmptyStateAction()">
@@ -18,11 +18,3 @@
     </button>
   </app-data-table>
 </div>
-
-@if(previewedInvoice(); as invoice) {
-  <app-document-preview-modal 
-    [data]="invoice"
-    (close)="previewedInvoice.set(null)"
-    (edit)="editInvoice($event)">
-  </app-document-preview-modal>
-}

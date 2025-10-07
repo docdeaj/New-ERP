@@ -41,8 +41,10 @@
                   <app-invoice-pdf [data]="asQuotation(data())"></app-invoice-pdf>
                 }
                 @case ('Purchase Order') {
-                  <!-- NOTE: Using invoice PDF template for PO as a fallback. A specific PO template would be better. -->
                   <app-invoice-pdf [data]="asPurchaseOrder(data())"></app-invoice-pdf>
+                }
+                @case ('Receipt') {
+                  <app-invoice-pdf [data]="asReceipt(data())"></app-invoice-pdf>
                 }
               }
             </div>
@@ -54,10 +56,12 @@
         <button (click)="onDownloadPdf()" type="button" class="aurora-button-secondary inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-4 py-2 rounded-xl">
           <i class="fa-solid fa-file-arrow-down"></i>Download PDF
         </button>
-        <button (click)="onEdit()" type="button" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl">
-            <i class="fa-solid fa-pen"></i>
-            <span>Edit</span>
-        </button>
+        @if (isEditable()) {
+          <button (click)="onEdit()" type="button" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl">
+              <i class="fa-solid fa-pen"></i>
+              <span>Edit</span>
+          </button>
+        }
       </footer>
     }
   </div>

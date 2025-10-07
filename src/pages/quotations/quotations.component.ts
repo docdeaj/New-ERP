@@ -4,21 +4,21 @@ import { DataTableComponent, ColumnDefinition } from '../../components/data-tabl
 import { Quotation } from '../../models/types';
 import { ApiService } from '../../services/api.service';
 import { UiStateService } from '../../services/ui-state.service';
-import { DocumentPreviewModalComponent } from '../../components/document-preview-modal/document-preview-modal.component';
+import { PdfGenerationService } from '../../services/pdf.service';
 
 @Component({
   selector: 'app-quotations',
   templateUrl: './quotations.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, DataTableComponent, DocumentPreviewModalComponent],
+  imports: [CommonModule, DataTableComponent],
 })
 export class QuotationsComponent {
   private api = inject(ApiService);
   private uiStateService = inject(UiStateService);
+  private pdfService = inject(PdfGenerationService);
   quotations = signal<Quotation[]>([]);
   isLoading = signal(true);
-  previewedQuotation = signal<Quotation | null>(null);
 
   columns: ColumnDefinition<Quotation>[] = [
     { key: 'quotationNumber', label: 'Quotation #', type: 'string' },
@@ -43,23 +43,37 @@ export class QuotationsComponent {
     this.quotations.set(data);
     this.isLoading.set(false);
   }
+  
+  openPreview(quotation: Quotation) {
+    this.uiStateService.showDocumentPreview(quotation);
+  }
 
   handleRowAction(event: { action: string, item: Quotation }) {
-    if (event.action === 'convert-to-invoice') {
-      this.uiStateService.openDrawer('new-invoice', event.item);
-      this.api.updateQuotationStatus(event.item.id, 'Accepted');
-    } else if (event.action === 'edit') {
-      this.editQuotation(event.item);
-    } else if (event.action === 'delete') {
-      this.deleteQuotations([event.item.id]);
-    } else {
-      console.log('Row Action:', event.action, 'on item:', event.item);
+    switch (event.action) {
+      case 'convert-to-invoice':
+        this.uiStateService.openDrawer('new-invoice', event.item);
+        this.api.updateQuotationStatus(event.item.id, 'Accepted');
+        break;
+      case 'edit':
+        this.uiStateService.openDrawer('new-quotation', event.item);
+        break;
+      case 'delete':
+        this.deleteQuotations([event.item.id]);
+        break;
+      case 'download-pdf':
+        this.pdfService.generatePdf(event.item);
+        break;
+      default:
+        console.log('Row Action:', event.action, 'on item:', event.item);
     }
   }
 
   handleBulkAction(event: { action: string, selectedIds: (string | number)[] }) {
     if (event.action === 'delete') {
       this.deleteQuotations(event.selectedIds);
+    } else if (event.action === 'export-pdf') {
+        const selected = this.quotations().filter(q => event.selectedIds.includes(q.id));
+        this.pdfService.generateBulkPdfZip(selected);
     } else {
       console.log('Bulk Action:', event.action, 'on ids:', event.selectedIds);
     }
@@ -67,11 +81,6 @@ export class QuotationsComponent {
   
   openAddNewQuotationDrawer() {
     this.uiStateService.openDrawer('new-quotation');
-  }
-
-  editQuotation(quotation: Quotation) {
-    this.previewedQuotation.set(null);
-    this.uiStateService.openDrawer('new-quotation', quotation);
   }
 
   deleteQuotations(ids: (string | number)[]) {

@@ -21,6 +21,7 @@ import { ActivatedRoute } from '@angular/router';
   imports: [CommonModule],
 })
 export class PlaceholderComponent {
-  route = inject(ActivatedRoute);
+  // FIX: Explicitly type injected service to resolve type inference issues.
+  route: ActivatedRoute = inject(ActivatedRoute);
   pageTitle = this.route.snapshot.title || 'Page';
 }

@@ -1,14 +1,14 @@
 import { Component, ChangeDetectionStrategy, input, output, computed, viewChild, ElementRef, signal, effect, afterNextRender, inject } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
-import { Invoice, Quotation, PurchaseOrder, LineItem } from '../../models/types';
+import { Invoice, Quotation, PurchaseOrder, LineItem, Receipt } from '../../models/types';
 import { InvoicePdfComponent } from '../invoice-pdf/invoice-pdf.component';
 import { PdfGenerationService } from '../../services/pdf.service';
 import { UiStateService } from '../../services/ui-state.service';
 
-type PrintableDocument = Invoice | Quotation | PurchaseOrder;
+type PrintableDocument = Invoice | Quotation | PurchaseOrder | Receipt;
 
 interface NormalizedDocumentData {
-  type: 'Invoice' | 'Quotation' | 'Purchase Order';
+  type: 'Invoice' | 'Quotation' | 'Purchase Order' | 'Receipt';
   number: string;
   customerName: string; // or supplier name
   status: string;
@@ -41,13 +41,20 @@ export class DocumentPreviewModalComponent {
 
   normalizedData = computed<NormalizedDocumentData>(() => {
     const doc = this.data();
-    if ('invoiceNumber' in doc) {
+    if ('invoiceNumber' in doc && 'dueDate' in doc) {
       return { type: 'Invoice', number: doc.invoiceNumber, customerName: doc.customerName, status: doc.status, balance: doc.balance };
     } else if ('quotationNumber' in doc) {
       return { type: 'Quotation', number: doc.quotationNumber, customerName: doc.customerName, status: doc.status };
-    } else { // PurchaseOrder
+    } else if ('poNumber' in doc) { // PurchaseOrder
       return { type: 'Purchase Order', number: doc.poNumber, customerName: doc.supplierName, status: doc.status };
+    } else { // Receipt
+      return { type: 'Receipt', number: doc.receiptNumber, customerName: doc.customerName, status: 'Paid' };
     }
+  });
+
+  isEditable = computed(() => {
+    const type = this.normalizedData().type;
+    return type !== 'Receipt';
   });
 
   calculateScale() {
@@ -73,6 +80,7 @@ export class DocumentPreviewModalComponent {
   asInvoice(item: any): Invoice { return item as Invoice; }
   asQuotation(item: any): Quotation { return item as Quotation; }
   asPurchaseOrder(item: any): PurchaseOrder { return item as PurchaseOrder; }
+  asReceipt(item: any): Receipt { return item as Receipt; }
   
   getStatusColor(status: string): string {
     switch (status?.toLowerCase()) {

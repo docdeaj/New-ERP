@@ -224,7 +224,7 @@
             <app-data-table
                 title="Cheque Register"
                 [description]="chequeRegisterDescription()"
-                context="cheque-register"
+                context="cheque"
                 [columns]="chequeRegisterColumns"
                 [data]="chequeRegisterData()"
                 (rowAction)="handleRowAction($event, 'cheque-register')">
@@ -234,7 +234,7 @@
             <app-data-table
                 title="Recurring Forecast"
                 [description]="recurringForecastDescription()"
-                context="recurring-forecast"
+                context="recurring-expense"
                 [columns]="recurringForecastColumns"
                 [data]="recurringForecastData()"
                 (rowAction)="handleRowAction($event, 'recurring-forecast')">
@@ -247,6 +247,7 @@
                 context="tax-summary"
                 [columns]="taxSummaryColumns"
                 [data]="taxSummaryData()"
+                [disableQuickPeek]="true"
                 (rowAction)="handleRowAction($event, 'tax-summary')">
             </app-data-table>
         </div>

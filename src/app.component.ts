@@ -5,8 +5,12 @@ import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { TopbarComponent } from './components/topbar/topbar.component';
 import { UniversalSearchComponent } from './components/universal-search/universal-search.component';
 import { UniversalAddDrawerComponent } from './components/universal-add-drawer/universal-add-drawer.component';
-import { UiStateService } from './services/ui-state.service';
+import { UiStateService, DrawerContext } from './services/ui-state.service';
 import { ConfirmationModalComponent } from './components/confirmation-modal/confirmation-modal.component';
+import { DocumentPreviewModalComponent } from './components/document-preview-modal/document-preview-modal.component';
+import { Invoice, Quotation, PurchaseOrder, Receipt } from './models/types';
+
+type PrintableDocument = Invoice | Quotation | PurchaseOrder | Receipt;
 
 @Component({
   selector: 'app-root',
@@ -21,6 +25,7 @@ import { ConfirmationModalComponent } from './components/confirmation-modal/conf
     UniversalSearchComponent,
     UniversalAddDrawerComponent,
     ConfirmationModalComponent,
+    DocumentPreviewModalComponent,
   ],
   host: {
     '(window:keydown)': 'handleKeyboardEvent($event)',
@@ -33,12 +38,14 @@ export class AppComponent {
   isDrawerOpen = this.uiStateService.isDrawerOpen;
   drawerContext = this.uiStateService.drawerContext;
   confirmationState = this.uiStateService.confirmationState;
+  documentPreviewState = this.uiStateService.documentPreviewState;
+  progressState = this.uiStateService.progressState;
   
   mainContentMargin = computed(() => this.isSidebarCollapsed() ? 'ml-[calc(5rem+20px)]' : 'ml-[calc(16rem+20px)]');
 
   constructor() {
     effect(() => {
-      if (this.isSearchOpen() || this.isDrawerOpen() || this.confirmationState()) {
+      if (this.isSearchOpen() || this.isDrawerOpen() || this.confirmationState() || this.documentPreviewState()) {
         document.body.style.overflow = 'hidden';
       } else {
         document.body.style.overflow = 'auto';
@@ -69,12 +76,45 @@ export class AppComponent {
   onCancel() {
     this.uiStateService.hideConfirmation();
   }
+  
+  onCloseDocumentPreview() {
+    this.uiStateService.hideDocumentPreview();
+  }
+  
+  onEditDocument(doc: PrintableDocument) {
+    this.uiStateService.hideDocumentPreview();
+    let context: DrawerContext | null = null;
+
+    if ('invoiceNumber' in doc && 'dueDate' in doc) {
+      context = 'new-invoice';
+    } else if ('quotationNumber' in doc) {
+      context = 'new-quotation';
+    } else if ('poNumber' in doc) {
+      context = 'new-po';
+    } else if ('receiptNumber' in doc) {
+      // Per spec, receipts are not editable.
+      console.log('Editing receipts is not supported.');
+      return; 
+    }
+    
+    if (context) {
+      this.uiStateService.openDrawer(context, doc);
+    }
+  }
 
   handleKeyboardEvent(event: KeyboardEvent) {
     const target = event.target as HTMLElement;
     const isTypingInInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable;
 
     if (event.key === 'Escape') {
+      if (this.progressState()?.cancellable) {
+        this.uiStateService.cancelProgress();
+        return;
+      }
+      if (this.documentPreviewState()) {
+        this.onCloseDocumentPreview();
+        return;
+      }
       if (this.confirmationState()) {
         this.onCancel();
         return;

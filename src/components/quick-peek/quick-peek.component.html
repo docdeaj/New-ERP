@@ -17,7 +17,7 @@
               </h3>
               <p class="text-sm text-charcoal-400">{{ asInvoice(item()).customerName }}</p>
             }
-             @case ('quotation') {
+            @case ('quotation') {
               <h3 class="text-xl font-semibold text-charcoal-100">
                 Quotation {{ asQuotation(item()).quotationNumber }}
               </h3>
@@ -26,6 +26,37 @@
             @case ('product') {
               <h3 class="text-xl font-semibold text-charcoal-100">{{ product()?.name }}</h3>
               <p class="text-sm text-charcoal-400 font-mono">SKU: {{ product()?.sku }}</p>
+            }
+            @case ('expense') {
+              @let expense = asExpense(item());
+              <h3 class="text-xl font-semibold text-charcoal-100">
+                Expense: {{ expense.category }}
+              </h3>
+              <p class="text-sm text-charcoal-400">{{ expense.vendor }}</p>
+            }
+            @case ('purchase-order') {
+                <h3 class="text-xl font-semibold text-charcoal-100">PO {{ asPurchaseOrder(item()).poNumber }}</h3>
+                <p class="text-sm text-charcoal-400">{{ asPurchaseOrder(item()).supplierName }}</p>
+            }
+            @case ('contact') {
+                <h3 class="text-xl font-semibold text-charcoal-100">{{ asContact(item()).name }}</h3>
+                <p class="text-sm text-charcoal-400">{{ asContact(item()).type }}</p>
+            }
+            @case ('receipt') {
+                <h3 class="text-xl font-semibold text-charcoal-100">{{ asReceipt(item()).receiptNumber }}</h3>
+                <p class="text-sm text-charcoal-400">{{ asReceipt(item()).customerName }}</p>
+            }
+            @case ('cheque') {
+                <h3 class="text-xl font-semibold text-charcoal-100">Cheque {{ asCheque(item()).chequeNumber }}</h3>
+                <p class="text-sm text-charcoal-400">{{ asCheque(item()).bank }}</p>
+            }
+            @case ('ar-aging') {
+                <h3 class="text-xl font-semibold text-charcoal-100">A/R for {{ asArAgingRow(item()).customerName }}</h3>
+                <p class="text-sm text-charcoal-400">Aging Report Summary</p>
+            }
+            @case ('ap-aging') {
+                <h3 class="text-xl font-semibold text-charcoal-100">A/P for {{ asApAgingRow(item()).supplierName }}</h3>
+                <p class="text-sm text-charcoal-400">Aging Report Summary</p>
             }
           }
         </div>
@@ -36,7 +67,7 @@
       </div>
 
       <!-- Body -->
-      <div class="p-6 space-y-6">
+      <div class="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
         @switch (normalizedItemType()) {
           @case ('invoice') {
             @let invoice = asInvoice(item());
@@ -103,6 +134,142 @@
                 </div>
              }
           }
+          @case ('expense') {
+            @let expense = asExpense(item());
+            <div class="space-y-4">
+              <div class="bg-surface-inset p-4 rounded-lg shadow-inner text-center">
+                <p class="text-xs text-charcoal-400">Amount</p>
+                <p class="font-bold text-3xl tabular-nums text-red-400">{{ expense.amount | currency:'LKR ' }}</p>
+              </div>
+              <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p class="text-charcoal-400">Date</p>
+                  <p class="font-semibold">{{ 'date' in expense ? (expense.date | date:'mediumDate') : (expense.nextDueDate | date:'mediumDate') }}</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-charcoal-400">Status</p>
+                  <p><span [class]="'px-2.5 py-1 font-semibold rounded-full ' + getStatusColor('status' in expense ? expense.status : expense.cadence)">{{ 'status' in expense ? expense.status : expense.cadence }}</span></p>
+                </div>
+              </div>
+              @if('notes' in expense && expense.notes) {
+                <div>
+                  <p class="text-sm font-semibold text-charcoal-300 mb-1">Notes</p>
+                  <p class="text-sm p-3 bg-surface-inset rounded-lg shadow-inner text-charcoal-300 whitespace-pre-wrap">{{ expense.notes }}</p>
+                </div>
+              }
+              @if(item().attachmentUrl) {
+                <div>
+                  <p class="text-sm font-semibold text-charcoal-300 mb-1">Attachment</p>
+                  <img [src]="item().attachmentUrl" alt="Attachment" class="w-full rounded-lg shadow-md max-h-48 object-cover">
+                </div>
+              }
+            </div>
+          }
+           @case ('purchase-order') {
+            @let po = asPurchaseOrder(item());
+            <div class="space-y-4">
+              <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p class="text-charcoal-400">Total Amount</p>
+                  <p class="font-semibold text-lg tabular-nums text-primary-400">{{ po.amount | currency:'LKR ' }}</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-charcoal-400">Status</p>
+                  <p><span [class]="'px-2.5 py-1 font-semibold rounded-full ' + getStatusColor(po.status)">{{ po.status }}</span></p>
+                </div>
+              </div>
+              <p class="text-xs text-charcoal-400">Expected: {{po.expectedDate | date:'mediumDate'}}</p>
+              <div #pdfPreviewContainer class="w-full bg-white rounded-lg shadow-inner-sm aspect-[210/297] overflow-hidden">
+                <div [style.transform]="'scale(' + previewScale() + ')'" class="origin-top-left">
+                  <app-invoice-pdf [data]="po"></app-invoice-pdf>
+                </div>
+              </div>
+            </div>
+          }
+          @case ('contact') {
+            @let contact = asContact(item());
+            <div class="flex flex-col items-center text-center space-y-3">
+                <img [src]="contact.avatarUrl" alt="Avatar" class="w-24 h-24 rounded-full object-cover shadow-lg border-4 border-surface-inset">
+                <div>
+                  <p class="text-sm text-charcoal-400">{{contact.email}}</p>
+                  <p class="text-sm text-charcoal-400">{{contact.phone}}</p>
+                </div>
+                @if(contact.stats?.balance_lkr) {
+                  <div class="bg-red-900/50 p-3 rounded-lg shadow-md w-full">
+                      <p class="text-xs text-red-300">Outstanding Balance</p>
+                      <p class="font-bold text-xl tabular-nums text-red-200">{{ contact.stats.balance_lkr | currency:'LKR ' }}</p>
+                  </div>
+                }
+            </div>
+          }
+           @case ('receipt') {
+            @let receipt = asReceipt(item());
+            <div class="space-y-4">
+              <div class="bg-surface-inset p-4 rounded-lg shadow-inner text-center">
+                <p class="text-xs text-charcoal-400">Amount Paid</p>
+                <p class="font-bold text-3xl tabular-nums text-green-400">{{ receipt.amount | currency:'LKR ' }}</p>
+              </div>
+              <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p class="text-charcoal-400">Payment Date</p>
+                  <p class="font-semibold">{{ receipt.paymentDate | date:'mediumDate' }}</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-charcoal-400">Method</p>
+                  <p><span [class]="'px-2.5 py-1 font-semibold rounded-full ' + getStatusColor(receipt.method)">{{ receipt.method }}</span></p>
+                </div>
+              </div>
+              <div>
+                  <p class="text-charcoal-400 text-sm">Applied to Invoice</p>
+                  <p class="font-semibold">{{ receipt.invoiceNumber }}</p>
+              </div>
+            </div>
+          }
+          @case ('cheque') {
+            @let cheque = asCheque(item());
+            <div class="space-y-4">
+              <div class="bg-surface-inset p-4 rounded-lg shadow-inner text-center">
+                <p class="text-xs text-charcoal-400">Amount</p>
+                <p class="font-bold text-3xl tabular-nums text-primary-400">{{ cheque.amount | currency:'LKR ' }}</p>
+              </div>
+              <div class="grid grid-cols-2 gap-4 text-sm">
+                <div><p class="text-charcoal-400">Payee (From)</p><p class="font-semibold">{{ cheque.payee }}</p></div>
+                <div class="text-right"><p class="text-charcoal-400">Payer (To)</p><p class="font-semibold">{{ cheque.payer }}</p></div>
+                <div><p class="text-charcoal-400">Cheque Date</p><p class="font-semibold">{{ cheque.chequeDate | date:'mediumDate' }}</p></div>
+                <div class="text-right"><p class="text-charcoal-400">Status</p><p><span [class]="'px-2.5 py-1 font-semibold rounded-full ' + getStatusColor(cheque.status)">{{ cheque.status }}</span></p></div>
+              </div>
+            </div>
+          }
+           @case ('ar-aging') {
+            @let row = asArAgingRow(item());
+            <div class="space-y-3">
+              <div class="bg-surface-inset p-4 rounded-lg shadow-inner text-center">
+                <p class="text-xs text-charcoal-400">Total Due</p>
+                <p class="font-bold text-3xl tabular-nums text-red-400">{{ row.total | currency:'LKR ' }}</p>
+              </div>
+              <div class="grid grid-cols-2 gap-3 text-sm">
+                <div class="bg-surface p-2 rounded-md shadow-sm"><p class="text-charcoal-400">0-30 Days</p><p class="font-semibold tabular-nums">{{ row.bucket_0_30 | currency:'LKR '}}</p></div>
+                <div class="bg-surface p-2 rounded-md shadow-sm"><p class="text-charcoal-400">31-60 Days</p><p class="font-semibold tabular-nums">{{ row.bucket_31_60 | currency:'LKR '}}</p></div>
+                <div class="bg-surface p-2 rounded-md shadow-sm"><p class="text-charcoal-400">61-90 Days</p><p class="font-semibold tabular-nums">{{ row.bucket_61_90 | currency:'LKR '}}</p></div>
+                <div class="bg-surface p-2 rounded-md shadow-sm"><p class="text-charcoal-400">90+ Days</p><p class="font-semibold tabular-nums">{{ row.bucket_90_plus | currency:'LKR '}}</p></div>
+              </div>
+            </div>
+          }
+           @case ('ap-aging') {
+            @let row = asApAgingRow(item());
+            <div class="space-y-3">
+              <div class="bg-surface-inset p-4 rounded-lg shadow-inner text-center">
+                <p class="text-xs text-charcoal-400">Total Payable</p>
+                <p class="font-bold text-3xl tabular-nums text-yellow-400">{{ row.total | currency:'LKR ' }}</p>
+              </div>
+              <div class="grid grid-cols-2 gap-3 text-sm">
+                <div class="bg-surface p-2 rounded-md shadow-sm"><p class="text-charcoal-400">0-30 Days</p><p class="font-semibold tabular-nums">{{ row.bucket_0_30 | currency:'LKR '}}</p></div>
+                <div class="bg-surface p-2 rounded-md shadow-sm"><p class="text-charcoal-400">31-60 Days</p><p class="font-semibold tabular-nums">{{ row.bucket_31_60 | currency:'LKR '}}</p></div>
+                <div class="bg-surface p-2 rounded-md shadow-sm"><p class="text-charcoal-400">61-90 Days</p><p class="font-semibold tabular-nums">{{ row.bucket_61_90 | currency:'LKR '}}</p></div>
+                <div class="bg-surface p-2 rounded-md shadow-sm"><p class="text-charcoal-400">90+ Days</p><p class="font-semibold tabular-nums">{{ row.bucket_90_plus | currency:'LKR '}}</p></div>
+              </div>
+            </div>
+          }
           @default {
             <p>No preview available for this item type.</p>
           }
@@ -111,7 +278,7 @@
       
       <!-- Footer Actions -->
       <div class="flex items-center p-4 space-x-2">
-        @if (normalizedItemType() === 'invoice' || normalizedItemType() === 'quotation') {
+        @if (normalizedItemType() === 'invoice' || normalizedItemType() === 'quotation' || normalizedItemType() === 'purchase-order') {
           <button (click)="downloadPdf()" type="button" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl transition-all duration-150 ease-in-out">
             <i class="fa-solid fa-file-arrow-down"></i>Download PDF
           </button>

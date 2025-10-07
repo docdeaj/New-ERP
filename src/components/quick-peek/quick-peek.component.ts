@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, input, output, computed, inject, viewChild, ElementRef, signal, effect } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
-import { Invoice, Product, Quotation } from '../../models/types';
+import { Invoice, Product, Quotation, Expense, PurchaseOrder, Contact, Receipt, Cheque, ArAgingRow, ApAgingRow, RecurringExpense } from '../../models/types';
 import { InvoicePdfComponent } from '../invoice-pdf/invoice-pdf.component';
 import { PdfGenerationService } from '../../services/pdf.service';
 import { UiStateService, DrawerContext } from '../../services/ui-state.service';
@@ -27,10 +27,15 @@ export class QuickPeekComponent {
   // with the @switch fall-through syntax.
   normalizedItemType = computed(() => {
     const type = this.itemType();
-    // Consolidate 'inventory' and 'product' types for display purposes
     if (type === 'inventory' || type === 'product') return 'product';
-    if (type === 'recurring-expense') return 'expense';
+    if (type === 'recurring-expense' || type === 'recurring-forecast') return 'expense';
     if (type === 'quotation') return 'quotation';
+    if (type === 'purchase-order') return 'purchase-order';
+    if (type === 'contact') return 'contact';
+    if (type === 'receipt' || type === 'receipt-history') return 'receipt';
+    if (type === 'cheque' || type === 'cheque-register') return 'cheque';
+    if (type === 'ar-aging') return 'ar-aging';
+    if (type === 'ap-aging') return 'ap-aging';
     return type;
   });
 
@@ -66,7 +71,7 @@ export class QuickPeekComponent {
         const item = this.item();
         const type = this.normalizedItemType();
         // Using a timeout to ensure the view is rendered before we measure it.
-        if (item && (type === 'invoice' || type === 'quotation')) {
+        if (item && (type === 'invoice' || type === 'quotation' || type === 'purchase-order')) {
             setTimeout(() => this.calculatePdfScale(), 50);
         }
     });
@@ -110,30 +115,29 @@ export class QuickPeekComponent {
 
   downloadPdf() {
     const type = this.normalizedItemType();
-    if (type === 'invoice' || type === 'quotation') {
+    if (type === 'invoice' || type === 'quotation' || type === 'purchase-order') {
       this.pdfService.generatePdf(this.item());
     }
   }
 
-  asInvoice(item: any): Invoice {
-    return item as Invoice;
-  }
-
-  asQuotation(item: any): Quotation {
-    return item as Quotation;
-  }
-
-  asProduct(item: any): Product {
-    return item as Product;
-  }
+  asInvoice(item: any): Invoice { return item as Invoice; }
+  asQuotation(item: any): Quotation { return item as Quotation; }
+  asProduct(item: any): Product { return item as Product; }
+  asExpense(item: any): Expense | RecurringExpense { return item as Expense | RecurringExpense; }
+  asPurchaseOrder(item: any): PurchaseOrder { return item as PurchaseOrder; }
+  asContact(item: any): Contact { return item as Contact; }
+  asReceipt(item: any): Receipt { return item as Receipt; }
+  asCheque(item: any): Cheque { return item as Cheque; }
+  asArAgingRow(item: any): ArAgingRow { return item as ArAgingRow; }
+  asApAgingRow(item: any): ApAgingRow { return item as ApAgingRow; }
 
   getStatusColor(status: string): string {
     switch (status?.toLowerCase()) {
-      case 'paid': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-      case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-      case 'overdue': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-      case 'draft': return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+      case 'paid': case 'received': case 'cleared': case 'accepted': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+      case 'pending': case 'ordered': case 'sent': case 'monthly': case 'yearly': case 'deposited': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+      case 'overdue': case 'bounced': case 'cancelled': case 'declined': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+      case 'draft': case 'partial': return 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+      default: return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
     }
   }
 }

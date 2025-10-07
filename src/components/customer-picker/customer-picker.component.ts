@@ -29,7 +29,8 @@ export class CustomerPickerComponent {
 
   // --- State Signals ---
   private api = inject(ApiService);
-  private fb = inject(FormBuilder);
+  // FIX: Explicitly type injected service to resolve type inference issues.
+  private fb: FormBuilder = inject(FormBuilder);
   
   query = signal('');
   isDropdownOpen = signal(false);

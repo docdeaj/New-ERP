@@ -21,7 +21,8 @@ export class StockTransferModalComponent {
   close = output<void>();
   confirmTransfer = output<{ from: LocationKey, to: LocationKey, quantity: number | 'All' }>();
 
-  private fb = inject(FormBuilder);
+  // FIX: Explicitly type injected service to resolve type inference issues.
+  private fb: FormBuilder = inject(FormBuilder);
   
   locations: { key: LocationKey, name: string }[] = [
     { key: 'mainWarehouse', name: 'Main Warehouse' },

@@ -1,4 +1,5 @@
 
+
 import { Component, ChangeDetectionStrategy, input, output, computed, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormArray, FormGroup } from '@angular/forms';
@@ -22,7 +23,8 @@ export class UniversalAddDrawerComponent {
   context = input.required<DrawerContext | null>();
   close = output<void>();
 
-  private fb = inject(FormBuilder);
+  // FIX: Explicitly type injected service to resolve type inference issues.
+  private fb: FormBuilder = inject(FormBuilder);
   private api = inject(ApiService);
   private uiState = inject(UiStateService);
   private geminiService = inject(GeminiService);
@@ -137,12 +139,15 @@ export class UniversalAddDrawerComponent {
     }
 
     group.get('productId')?.valueChanges.subscribe(id => {
-      const product = this.products().find(p => p.id === +id);
-      if (product) {
-        group.patchValue({ 
-          unitPrice: product.price,
-          productName: product.name,
-        }, { emitEvent: false });
+      // FIX: The value of 'productId' can be null, causing a strict null check error. Add a guard to ensure 'id' is truthy before use.
+      if (id) {
+        const product = this.products().find(p => p.id === +id);
+        if (product) {
+          group.patchValue({ 
+            unitPrice: product.price,
+            productName: product.name,
+          }, { emitEvent: false });
+        }
       }
     });
 

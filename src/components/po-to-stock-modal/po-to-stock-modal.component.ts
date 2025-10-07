@@ -20,7 +20,8 @@ export class PoToStockModalComponent {
   });
 
   totalItems = computed(() => {
-    return this.purchaseOrder().items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+    // FIX: Changed 'items' to 'lineItems' to match the PurchaseOrder type definition.
+    return this.purchaseOrder().lineItems?.reduce((sum, item) => sum + item.quantity, 0) || 0;
   });
 
   onClose() {

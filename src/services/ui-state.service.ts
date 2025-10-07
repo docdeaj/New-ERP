@@ -1,4 +1,5 @@
 import { Injectable, signal } from '@angular/core';
+import { Invoice, Quotation, PurchaseOrder, Receipt } from '../models/types';
 
 export type DrawerContext = 
   | 'new-invoice' 
@@ -12,6 +13,8 @@ export type DrawerContext =
   | 'new-product'
   | 'new-cheque'
   | 'new-recurring-expense';
+
+type PrintableDocument = Invoice | Quotation | PurchaseOrder | Receipt;
 
 @Injectable({
   providedIn: 'root'
@@ -34,6 +37,19 @@ export class UiStateService {
     message: string;
     onConfirm: () => void;
   } | null>(null);
+  
+  // Document Preview Modal State
+  documentPreviewState = signal<{ document: PrintableDocument } | null>(null);
+
+  // Progress Indicator State
+  progressState = signal<{
+    title: string;
+    progress: number;
+    total: number;
+    cancellable: boolean;
+    isCancelled: boolean;
+  } | null>(null);
+
 
   openDrawer(context: DrawerContext, data: any = null) {
     this.drawerContext.set(context);
@@ -56,5 +72,29 @@ export class UiStateService {
 
   hideConfirmation() {
     this.confirmationState.set(null);
+  }
+
+  showDocumentPreview(document: PrintableDocument) {
+    this.documentPreviewState.set({ document });
+  }
+
+  hideDocumentPreview() {
+    this.documentPreviewState.set(null);
+  }
+
+  showProgress(title: string, total: number, cancellable: boolean = false) {
+    this.progressState.set({ title, progress: 0, total, cancellable, isCancelled: false });
+  }
+
+  updateProgress(progress: number) {
+    this.progressState.update(state => state ? { ...state, progress } : null);
+  }
+  
+  hideProgress() {
+    this.progressState.set(null);
+  }
+  
+  cancelProgress() {
+    this.progressState.update(state => state ? { ...state, isCancelled: true } : null);
   }
 }

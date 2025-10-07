@@ -5,24 +5,24 @@ import { PurchaseOrder } from '../../models/types';
 import { ApiService } from '../../services/api.service';
 import { UiStateService } from '../../services/ui-state.service';
 import { PoToStockModalComponent } from '../../components/po-to-stock-modal/po-to-stock-modal.component';
-import { DocumentPreviewModalComponent } from '../../components/document-preview-modal/document-preview-modal.component';
+import { PdfGenerationService } from '../../services/pdf.service';
 
 @Component({
   selector: 'app-purchase-orders',
   templateUrl: './purchase-orders.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, DataTableComponent, PoToStockModalComponent, DocumentPreviewModalComponent],
+  imports: [CommonModule, DataTableComponent, PoToStockModalComponent],
 })
 export class PurchaseOrdersComponent {
   private api = inject(ApiService);
   private uiStateService = inject(UiStateService);
+  private pdfService = inject(PdfGenerationService);
   purchaseOrders = signal<PurchaseOrder[]>([]);
   isLoading = signal(true);
   
   isConversionModalOpen = signal(false);
   selectedPoForConversion = signal<PurchaseOrder | null>(null);
-  previewedPO = signal<PurchaseOrder | null>(null);
 
   columns: ColumnDefinition<PurchaseOrder>[] = [
     { key: 'poNumber', label: 'PO #', type: 'string' },
@@ -47,22 +47,32 @@ export class PurchaseOrdersComponent {
     this.purchaseOrders.set(data);
     this.isLoading.set(false);
   }
+  
+  openPreview(po: PurchaseOrder) {
+    this.uiStateService.showDocumentPreview(po);
+  }
 
   handleRowAction(event: { action: string, item: PurchaseOrder }) {
-    if (event.action === 'convert-to-stock') {
-      if (event.item.status === 'Ordered') {
-        this.selectedPoForConversion.set(event.item);
-        this.isConversionModalOpen.set(true);
-      } else {
-        // In a real app, you might show a toast message
-        console.warn('This PO has already been received or cancelled.');
-      }
-    } else if (event.action === 'edit') {
-      this.editPurchaseOrder(event.item);
-    } else if (event.action === 'delete') {
-      this.deletePurchaseOrders([event.item.id]);
-    } else {
-      console.log('Row Action:', event.action, 'on item:', event.item);
+    switch (event.action) {
+      case 'convert-to-stock':
+        if (event.item.status === 'Ordered') {
+          this.selectedPoForConversion.set(event.item);
+          this.isConversionModalOpen.set(true);
+        } else {
+          console.warn('This PO has already been received or cancelled.');
+        }
+        break;
+      case 'edit':
+        this.uiStateService.openDrawer('new-po', event.item);
+        break;
+      case 'delete':
+        this.deletePurchaseOrders([event.item.id]);
+        break;
+      case 'download-pdf':
+        this.pdfService.generatePdf(event.item);
+        break;
+      default:
+        console.log('Row Action:', event.action, 'on item:', event.item);
     }
   }
   
@@ -74,6 +84,9 @@ export class PurchaseOrdersComponent {
   handleBulkAction(event: { action: string, selectedIds: (string | number)[] }) {
     if (event.action === 'delete') {
       this.deletePurchaseOrders(event.selectedIds);
+    } else if (event.action === 'export-pdf') {
+        const selected = this.purchaseOrders().filter(po => event.selectedIds.includes(po.id));
+        this.pdfService.generateBulkPdfZip(selected);
     } else {
       console.log('Bulk Action:', event.action, 'on ids:', event.selectedIds);
     }
@@ -86,11 +99,6 @@ export class PurchaseOrdersComponent {
   closeConversionModal() {
     this.isConversionModalOpen.set(false);
     this.selectedPoForConversion.set(null);
-  }
-
-  editPurchaseOrder(po: PurchaseOrder) {
-    this.previewedPO.set(null);
-    this.uiStateService.openDrawer('new-po', po);
   }
 
   deletePurchaseOrders(ids: (string | number)[]) {

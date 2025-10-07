@@ -6,26 +6,26 @@ import { Invoice } from '../../models/types';
 import { ApiService } from '../../services/api.service';
 import { UiStateService } from '../../services/ui-state.service';
 import { PdfGenerationService } from '../../services/pdf.service';
-import { DocumentPreviewModalComponent } from '../../components/document-preview-modal/document-preview-modal.component';
 
 @Component({
   selector: 'app-invoices',
   templateUrl: './invoices.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, DataTableComponent, DocumentPreviewModalComponent],
+  imports: [CommonModule, DataTableComponent],
 })
 export class InvoicesComponent {
   
   private api = inject(ApiService);
   private uiStateService = inject(UiStateService);
-  private router = inject(Router);
-  private route = inject(ActivatedRoute);
+  // FIX: Explicitly type injected services to resolve type inference issues.
+  private router: Router = inject(Router);
+  // FIX: Explicitly type injected services to resolve type inference issues.
+  private route: ActivatedRoute = inject(ActivatedRoute);
   private pdfService = inject(PdfGenerationService);
   invoices = signal<Invoice[]>([]);
   isLoading = signal(true);
   initialQuery = signal<string | null>(null);
-  previewedInvoice = signal<Invoice | null>(null);
 
   columns: ColumnDefinition<Invoice>[] = [
     { key: 'invoiceNumber', label: 'Invoice #', type: 'string' },
@@ -69,7 +69,7 @@ export class InvoicesComponent {
         this.pdfService.generatePdf(event.item);
         break;
       case 'edit':
-        this.editInvoice(event.item);
+        this.uiStateService.openDrawer('new-invoice', event.item);
         break;
       case 'delete':
         this.deleteInvoices([event.item.id]);
@@ -82,9 +82,16 @@ export class InvoicesComponent {
   handleBulkAction(event: { action: string, selectedIds: (string | number)[] }) {
     if (event.action === 'delete') {
       this.deleteInvoices(event.selectedIds);
+    } else if (event.action === 'export-pdf') {
+        const selectedInvoices = this.invoices().filter(inv => event.selectedIds.includes(inv.id));
+        this.pdfService.generateBulkPdfZip(selectedInvoices);
     } else {
       console.log('Bulk Action:', event.action, 'on ids:', event.selectedIds);
     }
+  }
+  
+  openPreview(invoice: Invoice) {
+    this.uiStateService.showDocumentPreview(invoice);
   }
   
   openAddNewInvoiceDrawer() {
@@ -93,11 +100,6 @@ export class InvoicesComponent {
 
   handleEmptyStateAction() {
     this.openAddNewInvoiceDrawer();
-  }
-
-  editInvoice(invoice: Invoice) {
-    this.previewedInvoice.set(null); // Close preview if open
-    this.uiStateService.openDrawer('new-invoice', invoice);
   }
 
   deleteInvoices(ids: (string | number)[]) {

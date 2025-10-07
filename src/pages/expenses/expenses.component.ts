@@ -17,7 +17,8 @@ export class ExpensesComponent {
   
   private api = inject(ApiService);
   private uiStateService = inject(UiStateService);
-  private route = inject(ActivatedRoute);
+  // FIX: Explicitly type injected service to resolve type inference issues.
+  private route: ActivatedRoute = inject(ActivatedRoute);
   expenses = signal<Expense[]>([]);
   isLoading = signal(true);
   initialQuery = signal<string | null>(null);

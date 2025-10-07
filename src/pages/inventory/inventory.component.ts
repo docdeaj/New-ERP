@@ -23,7 +23,8 @@ interface DisplayInventoryItem extends InventoryItem {
 export class InventoryComponent {
   private api = inject(ApiService);
   private uiStateService = inject(UiStateService);
-  private route = inject(ActivatedRoute);
+  // FIX: Explicitly type injected service to resolve type inference issues.
+  private route: ActivatedRoute = inject(ActivatedRoute);
   inventory = signal<DisplayInventoryItem[]>([]);
   isLoading = signal(true);
   isTransferModalOpen = signal(false);

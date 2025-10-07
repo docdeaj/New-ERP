@@ -106,7 +106,7 @@ export class DataTableComponent<T extends { id: any, amount?: number }> {
   // Contextual Math
   selectionContextualSum = computed(() => {
     const context = this.context();
-    if (context !== 'invoice' && context !== 'expense' && context !== 'quotation' && context !== 'purchase-order') {
+    if (context !== 'invoice' && context !== 'expense' && context !== 'quotation' && context !== 'purchase-order' && context !== 'receipt') {
       return 0;
     }
     const ids = this.selectedIds();
@@ -128,7 +128,14 @@ export class DataTableComponent<T extends { id: any, amount?: number }> {
       case 'invoice':
          return [
           { key: 'mark-paid', label: 'Mark as Paid', icon: 'fa-solid fa-check-double' },
-          { key: 'export-pdf', label: 'Export PDF', icon: 'fa-solid fa-file-pdf' },
+          { key: 'export-pdf', label: 'Export PDFs', icon: 'fa-solid fa-file-pdf' },
+          { key: 'delete', label: 'Delete', icon: 'fa-solid fa-trash' }
+        ];
+      case 'quotation':
+      case 'purchase-order':
+      case 'receipt':
+        return [
+          { key: 'export-pdf', label: 'Export PDFs', icon: 'fa-solid fa-file-pdf' },
           { key: 'delete', label: 'Delete', icon: 'fa-solid fa-trash' }
         ];
       default:
@@ -151,13 +158,20 @@ export class DataTableComponent<T extends { id: any, amount?: number }> {
       case 'purchase-order':
         return [
            { key: 'convert-to-stock', label: 'Convert to Stock', icon: 'fa-solid fa-boxes-stacked' },
+           { key: 'download-pdf', label: 'Download PDF', icon: 'fa-solid fa-file-arrow-down' },
            { key: 'edit', label: 'Edit', icon: 'fa-solid fa-pen' },
            { key: 'delete', label: 'Delete', icon: 'fa-solid fa-trash' },
         ];
       case 'quotation':
         return [
            { key: 'convert-to-invoice', label: 'Convert to Invoice', icon: 'fa-solid fa-file-invoice' },
+           { key: 'download-pdf', label: 'Download PDF', icon: 'fa-solid fa-file-arrow-down' },
            { key: 'edit', label: 'Edit', icon: 'fa-solid fa-pen' },
+           { key: 'delete', label: 'Delete', icon: 'fa-solid fa-trash' },
+        ];
+      case 'receipt':
+        return [
+           { key: 'download-pdf', label: 'Download PDF', icon: 'fa-solid fa-file-arrow-down' },
            { key: 'delete', label: 'Delete', icon: 'fa-solid fa-trash' },
         ];
        case 'ar-aging':

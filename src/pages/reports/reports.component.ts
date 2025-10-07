@@ -16,7 +16,8 @@ import { DataTableComponent, ColumnDefinition } from '../../components/data-tabl
 })
 export class ReportsComponent implements OnInit {
   private api = inject(ApiService);
-  private router = inject(Router);
+  // FIX: Explicitly type injected service to resolve type inference issues.
+  private router: Router = inject(Router);
 
   isLoading = signal(true);
   
