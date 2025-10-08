@@ -399,6 +399,33 @@ export interface TaxSummaryRow {
   net_tax_due: number;
 }
 
+export interface CashFlowStatementRow {
+    category: 'Operating' | 'Investing' | 'Financing' | 'Summary';
+    isHeader: boolean;
+    isTotal: boolean;
+    items: {
+        label: string;
+        amount: number;
+        isSubtotal?: boolean;
+    }[];
+}
+
+export interface TrialBalanceRow {
+    account: string;
+    debit: number;
+    credit: number;
+}
+
+export interface GeneralLedgerEntry {
+    date: string;
+    account: string;
+    description: string;
+    debit: number;
+    credit: number;
+    balance: number;
+}
+
+
 export interface ReportView {
   id: string;
   name: string;

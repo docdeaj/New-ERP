@@ -2,13 +2,14 @@ import { Component, ChangeDetectionStrategy, output, inject, signal, OnInit } fr
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 import { MediaItem } from '../../models/types';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
 
 @Component({
   selector: 'app-mini-media-browser',
   templateUrl: './mini-media-browser.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, CdkTrapFocus],
 })
 export class MiniMediaBrowserComponent implements OnInit {
   close = output<void>();

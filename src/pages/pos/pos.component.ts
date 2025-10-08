@@ -1,5 +1,3 @@
-
-
 import { Component, ChangeDetectionStrategy, inject, signal, computed, afterNextRender, viewChild, ElementRef, effect } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,6 +6,7 @@ import { Product, CartItem, ReceiptPaymentMethod, LineItem, Contact } from '../.
 import { CheckoutModalComponent } from '../../components/checkout-modal/checkout-modal.component';
 import { CustomerPickerComponent } from '../../components/customer-picker/customer-picker.component';
 import { AnalyticsService } from '../../services/analytics.service';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
 
 type SortOption = 'Popular' | 'Name A-Z' | 'Price High-Low' | 'Price Low-High';
 
@@ -16,7 +15,7 @@ type SortOption = 'Popular' | 'Name A-Z' | 'Price High-Low' | 'Price Low-High';
   templateUrl: './pos.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, FormsModule, CheckoutModalComponent, CurrencyPipe, CustomerPickerComponent],
+  imports: [CommonModule, FormsModule, CheckoutModalComponent, CurrencyPipe, CustomerPickerComponent, CdkTrapFocus],
   host: {
     '(window:keydown)': 'handleKeyboardEvent($event)',
     '(document:click)': 'onDocumentClick($event)',

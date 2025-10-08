@@ -176,7 +176,7 @@
              <div class="grid grid-cols-3 gap-2 text-center text-sm">
                 <div class="bg-surface-raised p-2 rounded-lg shadow-md"><p class="text-xs text-charcoal-400">Cost</p><p class="font-bold tabular-nums">{{ (p.cost_lkr / 100) | currency:'LKR ' }}</p></div>
                 <div class="bg-surface-raised p-2 rounded-lg shadow-md"><p class="text-xs text-charcoal-400">Price</p><p class="font-bold tabular-nums">{{ (p.price_lkr / 100) | currency:'LKR ' }}</p></div>
-                <div class="bg-surface-raised p-2 rounded-lg shadow-md"><p class="text-xs text-charcoal-400">Margin</p><p class="font-bold tabular-nums">{{ ((p.price_lkr - p.cost_lkr) / p.price_lkr) * 100 | number:'1.0-0' }}%</p></div>
+                <div class="bg-surface-raised p-2 rounded-lg shadow-md"><p class="text-xs text-charcoal-400">Margin</p><p class="font-bold tabular-nums">{{ ((p.price_lkr - p.cost_lkr) / p.price_lkr) | percent:'1.0-0' }}</p></div>
              </div>
           }
           @case ('recurring') {

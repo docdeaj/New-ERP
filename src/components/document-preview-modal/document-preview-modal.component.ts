@@ -5,6 +5,7 @@ import { InvoicePdfComponent } from '../invoice-pdf/invoice-pdf.component';
 import { PdfGenerationService } from '../../services/pdf.service';
 import { UiStateService } from '../../services/ui-state.service';
 import { DocumentSkeletonComponent } from '../document-skeleton/document-skeleton.component';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
 
 type PrintableDocument = Invoice | Quotation | PurchaseOrder | Receipt;
 
@@ -19,7 +20,7 @@ interface NormalizedDocumentData {
 @Component({
   selector: 'app-document-preview-modal',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, DatePipe, InvoicePdfComponent, DocumentSkeletonComponent],
+  imports: [CommonModule, CurrencyPipe, DatePipe, InvoicePdfComponent, DocumentSkeletonComponent, CdkTrapFocus],
   templateUrl: './document-preview-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

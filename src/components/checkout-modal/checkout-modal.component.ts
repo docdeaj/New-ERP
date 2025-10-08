@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { PaymentFormComponent } from '../payment-form/payment-form.component';
 import { ReceiptPaymentMethod, Contact } from '../../models/types';
 import { CustomerPickerComponent } from '../customer-picker/customer-picker.component';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
 
 @Component({
   selector: 'app-checkout-modal',
   templateUrl: './checkout-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, PaymentFormComponent, CustomerPickerComponent],
+  imports: [CommonModule, PaymentFormComponent, CustomerPickerComponent, CdkTrapFocus],
 })
 export class CheckoutModalComponent {
   total = input.required<number>();

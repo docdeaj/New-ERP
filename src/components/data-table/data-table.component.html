@@ -137,7 +137,7 @@
                       </div>
                     }
                     @case ('currency') {
-                      <span class="tabular-nums">{{ (item[col.key] as number / 100) | currency:'LKR ' }}</span>
+                      <span class="tabular-nums">{{ (item[col.key] / 100) | currency:'LKR ' }}</span>
                     }
                     @case ('date') {
                       <span>{{ item[col.key] | date:'mediumDate' }}</span>

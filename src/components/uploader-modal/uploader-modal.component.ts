@@ -3,6 +3,7 @@ import { CommonModule, formatNumber } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormArray, FormGroup } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { GeminiService } from '../../services/gemini.service';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
 
 interface UploadFile {
   file: File;
@@ -15,7 +16,7 @@ interface UploadFile {
 @Component({
   selector: 'app-uploader-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, CdkTrapFocus],
   templateUrl: './uploader-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

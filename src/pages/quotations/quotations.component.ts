@@ -79,6 +79,8 @@ export class QuotationsComponent {
     if (event.action === 'delete') {
       this.deleteQuotations(event.selectedIds);
     } else if (event.action === 'export-pdf') {
+        // This correctly filters the full list of quotations to get the selected items
+        // and passes them to the PDF service, which handles generation, progress UI, and download.
         const selected = this.quotations().filter(q => event.selectedIds.includes(q.id));
         this.pdfService.generateBulkPdfZip(selected);
     } else {

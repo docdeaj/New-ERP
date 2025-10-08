@@ -101,6 +101,8 @@ export class PurchaseOrdersComponent {
     if (event.action === 'delete') {
       this.deletePurchaseOrders(event.selectedIds);
     } else if (event.action === 'export-pdf') {
+        // This correctly filters the full list of POs to get the selected items
+        // and passes them to the PDF service, which handles generation, progress UI, and download.
         const selected = this.purchaseOrders().filter(po => event.selectedIds.includes(po.id));
         this.pdfService.generateBulkPdfZip(selected);
     } else {

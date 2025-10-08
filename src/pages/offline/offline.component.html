@@ -6,12 +6,12 @@
       </div>
       <h1 class="text-4xl font-bold text-brand-text mb-2">You're Offline</h1>
       <h2 class="text-xl font-semibold text-brand-text mb-4">No Internet Connection</h2>
-      <p class="text-charcoal-400 mb-8">
-        Please check your network connection and try again. Some features may be unavailable until you're back online.
+      <p class="text-charcoal-400 mb-6">
+        Please check your network connection. We will attempt to reconnect automatically in {{ countdown() }} seconds.
       </p>
       <button (click)="retryConnection()" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-6 py-3 rounded-xl">
         <i class="fa-solid fa-redo"></i>
-        <span>Retry Connection</span>
+        <span>Retry Connection Now</span>
       </button>
     </div>
   </div>

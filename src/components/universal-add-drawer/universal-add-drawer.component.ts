@@ -1,3 +1,4 @@
+
 import { Component, ChangeDetectionStrategy, input, output, computed, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormArray, FormGroup } from '@angular/forms';
@@ -195,6 +196,20 @@ export class UniversalAddDrawerComponent {
         productId: product.id,
         productName: product.name,
         unitPrice: product.price_lkr,
+      });
+    }
+  }
+
+  onProductClear(index: number) {
+    const items = this.itemsFormArray;
+    if (items) {
+      const lineItem = items.at(index);
+      lineItem.patchValue({
+        productId: null,
+        productName: '',
+        unitPrice: 0,
+        quantity: 1,
+        lineDiscount: 0
       });
     }
   }

@@ -3,7 +3,7 @@
   <div class="aurora-backdrop absolute inset-0 animate-[fade-in_180ms_ease-in-out]" (click)="onClose()"></div>
 
   <!-- Modal Content -->
-  <div class="relative w-auto max-w-[92vw] max-h-[92vh] bg-surface/90 backdrop-blur-xl rounded-2xl shadow-2xl flex flex-col animate-[slide-down_180ms_cubic-bezier(0.2,0.8,0.2,1)]"
+  <div cdkTrapFocus class="relative w-auto max-w-[92vw] max-h-[92vh] bg-surface/90 backdrop-blur-xl rounded-2xl shadow-2xl flex flex-col animate-[slide-down_180ms_cubic-bezier(0.2,0.8,0.2,1)]"
        role="dialog" aria-modal="true" (window:resize)="calculateScale()">
     
     @if (normalizedData(); as normData) {

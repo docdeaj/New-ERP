@@ -84,6 +84,8 @@ export class InvoicesComponent {
     if (event.action === 'delete') {
       this.deleteInvoices(event.selectedIds);
     } else if (event.action === 'export-pdf') {
+        // This correctly filters the full list of invoices to get the selected items
+        // and passes them to the PDF service, which handles generation, progress UI, and download.
         const selectedInvoices = this.invoices().filter(inv => event.selectedIds.includes(inv.id));
         this.pdfService.generateBulkPdfZip(selectedInvoices);
     } else {

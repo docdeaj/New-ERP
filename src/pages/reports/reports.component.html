@@ -23,7 +23,7 @@
             <p class="text-charcoal-400 mb-6">Summarizes revenues, costs, and expenses incurred during a specific period.</p>
           </div>
           <div class="flex items-center gap-2">
-             <button (click)="exportReport('csv', 'pnl', pnlData(), [])" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-csv text-green-400"></i>CSV</button>
+             <button (click)="exportReport('csv', 'pnl', pnlData(), undefined)" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-csv text-green-400"></i>CSV</button>
              <button (click)="exportReport('pdf', 'pnl', [], [])" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-pdf text-red-400"></i>PDF</button>
           </div>
        </div>
@@ -66,7 +66,7 @@
           <p class="text-charcoal-400 mb-6">A snapshot of your company’s assets, liabilities, and equity.</p>
         </div>
         <div class="flex items-center gap-2">
-          <button (click)="exportReport('csv', 'balance-sheet', balanceSheetData(), [])" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-csv text-green-400"></i>CSV</button>
+          <button (click)="exportReport('csv', 'balance-sheet', balanceSheetData(), undefined)" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-csv text-green-400"></i>CSV</button>
           <button (click)="exportReport('pdf', 'balance-sheet', [], [])" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-pdf text-red-400"></i>PDF</button>
         </div>
       </div>
@@ -99,6 +99,113 @@
       }
     </div>
   </section>
+
+  <!-- Cash Flow Statement -->
+  <section id="cash-flow-report">
+    <div class="bg-surface rounded-2xl shadow-lg p-6">
+       <div class="flex justify-between items-start">
+          <div>
+            <h3 class="text-xl font-bold text-brand-text mb-1">Cash Flow Statement</h3>
+            <p class="text-charcoal-400 mb-6">Shows how cash moves in and out of your business.</p>
+          </div>
+          <div class="flex items-center gap-2">
+             <button (click)="exportReport('csv', 'cash-flow', cashflowData(), undefined)" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-csv text-green-400"></i>CSV</button>
+             <button (click)="exportReport('pdf', 'cash-flow', [], [])" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-pdf text-red-400"></i>PDF</button>
+          </div>
+       </div>
+       @if(isCashflowLoading()) {
+          <div class="h-64 bg-surface-raised rounded-lg animate-pulse"></div>
+       } @else {
+          <div class="bg-surface-inset p-4 rounded-lg max-w-3xl mx-auto">
+            @for(row of cashflowData(); track row.category) {
+              @if(row.isHeader) {
+                <h4 class="text-lg font-semibold mt-4 mb-2 border-b border-charcoal-700 pb-1">{{ row.category }}</h4>
+              }
+              @if(!row.isHeader && !row.isTotal) {
+                 @for(item of row.items; track item.label) {
+                   <div class="flex justify-between py-1.5 px-2 text-sm">
+                      <span class="text-charcoal-300">{{ item.label }}</span>
+                      <span class="font-mono tabular-nums">{{ (item.amount / 100) | currency:'LKR ' }}</span>
+                   </div>
+                 }
+              }
+              @if(row.isTotal) {
+                 @for(item of row.items; track item.label) {
+                  <div class="flex justify-between py-2 px-2 font-bold border-t-2 mt-1 border-charcoal-600">
+                      <span>{{ item.label }}</span>
+                      <span class="font-mono tabular-nums">{{ (item.amount / 100) | currency:'LKR ' }}</span>
+                  </div>
+                 }
+              }
+            }
+          </div>
+       }
+    </div>
+  </section>
+  
+  <!-- Trial Balance -->
+  <section id="trial-balance-report">
+    <div class="bg-surface rounded-2xl shadow-lg p-6">
+       <div class="flex justify-between items-start">
+          <div>
+            <h3 class="text-xl font-bold text-brand-text mb-1">Trial Balance</h3>
+            <p class="text-charcoal-400 mb-6">A list of all accounts and their debit or credit balances.</p>
+          </div>
+          <div class="flex items-center gap-2">
+             <button (click)="exportReport('csv', 'trial-balance', trialBalanceData(), [{key:'account', label:'Account', type:'string'}, {key:'debit', label:'Debit', type:'currency'}, {key:'credit', label:'Credit', type:'currency'}])" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-csv text-green-400"></i>CSV</button>
+             <button (click)="exportReport('pdf', 'trial-balance', [], [])" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-pdf text-red-400"></i>PDF</button>
+          </div>
+       </div>
+       @if(isTrialBalanceLoading()) {
+          <div class="h-64 bg-surface-raised rounded-lg animate-pulse"></div>
+       } @else {
+          <div class="bg-surface-inset p-4 rounded-lg max-w-3xl mx-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b-2 border-charcoal-600">
+                        <th class="text-left p-2 font-semibold">Account</th>
+                        <th class="text-right p-2 font-semibold">Debit</th>
+                        <th class="text-right p-2 font-semibold">Credit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for(row of trialBalanceData(); track row.account) {
+                        <tr class="border-b border-charcoal-700/50">
+                            <td class="p-2 text-charcoal-200">{{row.account}}</td>
+                            <td class="p-2 text-right font-mono tabular-nums">{{ (row.debit / 100) | currency:'LKR ' }}</td>
+                            <td class="p-2 text-right font-mono tabular-nums">{{ (row.credit / 100) | currency:'LKR ' }}</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot class="font-bold">
+                    <tr class="border-t-2 border-charcoal-500">
+                        <td class="p-2">Total</td>
+                        <td class="p-2 text-right font-mono tabular-nums">{{ (trialBalanceData().reduce((a,b) => a + b.debit, 0) / 100) | currency:'LKR ' }}</td>
+                        <td class="p-2 text-right font-mono tabular-nums">{{ (trialBalanceData().reduce((a,b) => a + b.credit, 0) / 100) | currency:'LKR ' }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+          </div>
+       }
+    </div>
+  </section>
+  
+  <!-- General Ledger -->
+  <section id="general-ledger-report">
+    <app-data-table
+      [isLoading]="isGeneralLedgerLoading()"
+      title="General Ledger"
+      description="A complete record of all financial transactions for a period."
+      [columns]="generalLedgerColumns"
+      [data]="generalLedgerData()"
+      context="general-ledger">
+      <div table-tools class="flex items-center gap-2">
+        <button (click)="exportReport('csv', 'general-ledger', generalLedgerData(), generalLedgerColumns)" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-csv text-green-400"></i>CSV</button>
+        <button (click)="exportReport('pdf', 'general-ledger', [], [])" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-pdf text-red-400"></i>PDF</button>
+      </div>
+    </app-data-table>
+  </section>
+
 
   <!-- Financial Reports -->
   <section id="tax-summary-report">

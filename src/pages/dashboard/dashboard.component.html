@@ -147,16 +147,20 @@
                     </div>
                 </div>
                 <!-- Middle column: Expenses & Net -->
-                 <div class="space-y-3">
-                    <p class="font-semibold text-charcoal-300">Expenses</p>
-                    <div class="p-3 bg-red-900/50 rounded-lg h-24 flex flex-col justify-center">
-                        <p class="text-xs text-red-300">Total Expenses</p>
-                        <p class="font-bold text-xl tabular-nums text-red-200">{{ (cashflow.expenses.value / 100) | currency:'LKR ':'symbol':'1.0-0' }}</p>
+                 <div class="flex flex-col gap-3">
+                    <div class="p-3 bg-red-900/50 rounded-lg flex flex-col justify-center flex-1">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-arrow-down-long text-red-300"></i>
+                            <p class="text-sm font-semibold text-red-300">Expenses</p>
+                        </div>
+                        <p class="font-bold text-2xl tabular-nums text-red-200 mt-1">{{ (cashflow.expenses.value / 100) | currency:'LKR ':'symbol':'1.0-0' }}</p>
                     </div>
-                    <p class="font-semibold text-charcoal-300 pt-3">Net</p>
-                    <div class="p-3 bg-green-900/50 rounded-lg h-24 flex flex-col justify-center">
-                        <p class="text-xs text-green-300">Net Cashflow</p>
-                        <p class="font-bold text-xl tabular-nums text-green-200">{{ (cashflow.net.value / 100) | currency:'LKR ':'symbol':'1.0-0' }}</p>
+                    <div class="p-3 bg-green-900/50 rounded-lg flex flex-col justify-center flex-1">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-scale-balanced text-green-300"></i>
+                            <p class="text-sm font-semibold text-green-300">Net Cashflow</p>
+                        </div>
+                        <p class="font-bold text-2xl tabular-nums text-green-200 mt-1">{{ (cashflow.net.value / 100) | currency:'LKR ':'symbol':'1.0-0' }}</p>
                     </div>
                 </div>
                 <!-- Right column: Chart -->

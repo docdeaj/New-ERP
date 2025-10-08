@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import {
-  Invoice, Product, Contact, Kpi, InventoryItem, Quotation, Receipt, Cheque, PurchaseOrder, MediaItem, Expense, ReceiptPaymentMethod, LineItem, RecurringExpense, LocationKey, ReportSummary, SalesTrend, TopProductReport, ArAgingRow, ApAgingRow, PnlRow, InventoryValuationRow, InventorySnapshot, RecurringForecastRow, TaxSummaryRow, ReportView, ReportQuery, ReportResult, ReportSchema, LogEntry, LogSeverity, CashflowSnapshot, QuotationStatus, ContactType, SalesByCustomerRow, StockOnHandRow, SalesByProductRow, BalanceSheetRow, PurchasesBySupplierRow
+  Invoice, Product, Contact, Kpi, InventoryItem, Quotation, Receipt, Cheque, PurchaseOrder, MediaItem, Expense, ReceiptPaymentMethod, LineItem, RecurringExpense, LocationKey, ReportSummary, SalesTrend, TopProductReport, ArAgingRow, ApAgingRow, PnlRow, InventoryValuationRow, InventorySnapshot, RecurringForecastRow, TaxSummaryRow, ReportView, ReportQuery, ReportResult, ReportSchema, LogEntry, LogSeverity, CashflowSnapshot, QuotationStatus, ContactType, SalesByCustomerRow, StockOnHandRow, SalesByProductRow, BalanceSheetRow, PurchasesBySupplierRow, CashFlowStatementRow, TrialBalanceRow, GeneralLedgerEntry
 } from '../models/types';
 import {
   SEED_PRODUCTS, SEED_CONTACTS, SEED_INVOICES, SEED_EXPENSES, SEED_QUOTATIONS, SEED_PURCHASE_ORDERS, SEED_RECEIPTS, SEED_MEDIA
@@ -355,6 +355,42 @@ export class ApiService {
             net_tax_due: taxCollected - taxPaid
         }];
     },
+    getCashFlowStatement: async (): Promise<CashFlowStatementRow[]> => {
+        await this.delay(600);
+        const cashFromSales = this._receipts().reduce((sum, r) => sum + r.amount_lkr, 0);
+        const cashPaidForExpenses = this._expenses().reduce((sum, e) => sum + e.amount_lkr + (e.tax_lkr || 0), 0);
+        const netCashFromOps = cashFromSales - cashPaidForExpenses;
+        
+        return [
+            { category: 'Operating', isHeader: true, isTotal: false, items: [] },
+            { category: 'Operating', isHeader: false, isTotal: false, items: [{ label: 'Cash from Customers', amount: cashFromSales }] },
+            { category: 'Operating', isHeader: false, isTotal: false, items: [{ label: 'Cash paid to Suppliers/Employees', amount: -cashPaidForExpenses }] },
+            { category: 'Operating', isHeader: false, isTotal: true, items: [{ label: 'Net Cash from Operations', amount: netCashFromOps, isSubtotal: true }] },
+            { category: 'Summary', isHeader: true, isTotal: false, items: [] },
+            { category: 'Summary', isHeader: false, isTotal: true, items: [{ label: 'Net Increase in Cash', amount: netCashFromOps, isSubtotal: true }] },
+        ];
+    },
+    getTrialBalance: async (): Promise<TrialBalanceRow[]> => {
+        await this.delay(500);
+        const totalDebits = 150000000;
+        return [
+            { account: 'Cash', debit: 50000000, credit: 0 },
+            { account: 'Accounts Receivable', debit: 4400000, credit: 0 },
+            { account: 'Inventory', debit: 95600000, credit: 0 },
+            { account: 'Accounts Payable', debit: 0, credit: 1250000 },
+            { account: 'Sales Revenue', debit: 0, credit: 5555000 },
+            { account: 'Retained Earnings', debit: 0, credit: 147600000 },
+            { account: 'Expenses', debit: 16500000, credit: 0 },
+        ];
+    },
+    getGeneralLedger: async (): Promise<GeneralLedgerEntry[]> => {
+        await this.delay(700);
+        return [
+            { date: new Date().toISOString(), account: 'Cash', description: 'Initial Balance', debit: 50000000, credit: 0, balance: 50000000 },
+            { date: new Date().toISOString(), account: 'Accounts Receivable', description: 'Sale to J. Smith', debit: 1980000, credit: 0, balance: 1980000 },
+            { date: new Date().toISOString(), account: 'Cash', description: 'Payment from J. Smith', debit: 0, credit: 1980000, balance: 48020000 },
+        ];
+    },
     // Add other report methods if needed
     getSummary: (): Promise<ReportSummary> => Promise.resolve({} as ReportSummary),
     getSalesTrend: (): Promise<SalesTrend> => Promise.resolve({} as SalesTrend),
@@ -484,6 +520,22 @@ export class ApiService {
         // Mock for live tail
         return {} as LogEntry;
     }
+  };
+  
+  weather = {
+      getWeather: async (city: string = 'Colombo'): Promise<any> => {
+          await this.delay(300);
+          return {
+              temperature: 29,
+              condition: 'Sunny',
+              icon: 'fa-solid fa-sun',
+              high: 31,
+              low: 26,
+              humidity: 78,
+              windSpeed: 12,
+              location: city,
+          };
+      }
   };
   
   // --- Authoritative Actions ---

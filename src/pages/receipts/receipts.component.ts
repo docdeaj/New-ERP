@@ -68,8 +68,10 @@ export class ReceiptsComponent {
     if (event.action === 'delete') {
       this.deleteReceipts(event.selectedIds);
     } else if (event.action === 'export-pdf') {
-        const selected = this.receipts().filter(r => event.selectedIds.includes(r.id));
-        this.pdfService.generateBulkPdfZip(selected);
+      const selectedReceipts = this.receipts().filter(r => event.selectedIds.includes(r.id));
+      if (selectedReceipts.length > 0) {
+        this.pdfService.generateBulkPdfZip(selectedReceipts);
+      }
     } else {
       console.log('Bulk Action:', event.action, 'on ids:', event.selectedIds);
     }

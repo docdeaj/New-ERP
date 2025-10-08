@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, inject, signal, OnInit, computed } 
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
-import { ReportView, ArAgingRow, ApAgingRow, PnlRow, InventoryValuationRow, SalesByCustomerRow, StockOnHandRow, SalesByProductRow, TaxSummaryRow, BalanceSheetRow, PurchasesBySupplierRow } from '../../models/types';
+import { ReportView, ArAgingRow, ApAgingRow, PnlRow, InventoryValuationRow, SalesByCustomerRow, StockOnHandRow, SalesByProductRow, TaxSummaryRow, BalanceSheetRow, PurchasesBySupplierRow, CashFlowStatementRow, TrialBalanceRow, GeneralLedgerEntry } from '../../models/types';
 import { UiStateService } from '../../services/ui-state.service';
 import { DataTableComponent, ColumnDefinition } from '../../components/data-table/data-table.component';
 import { PdfGenerationService } from '../../services/pdf.service';
@@ -38,6 +38,9 @@ export class ReportsComponent implements OnInit {
   salesByProductData = signal<SalesByProductRow[]>([]);
   stockOnHandData = signal<StockOnHandRow[]>([]);
   taxSummaryData = signal<TaxSummaryRow[]>([]);
+  cashflowData = signal<CashFlowStatementRow[]>([]);
+  trialBalanceData = signal<TrialBalanceRow[]>([]);
+  generalLedgerData = signal<GeneralLedgerEntry[]>([]);
   
   // Loading State Signals
   isArAgingLoading = signal(true);
@@ -50,12 +53,18 @@ export class ReportsComponent implements OnInit {
   isSalesByProductLoading = signal(true);
   isStockOnHandLoading = signal(true);
   isTaxSummaryLoading = signal(true);
+  isCashflowLoading = signal(true);
+  isTrialBalanceLoading = signal(true);
+  isGeneralLedgerLoading = signal(true);
 
   activeTimeRange = signal<'this-month' | 'last-month' | 'this-quarter' | 'year-to-date'>('this-month');
 
   reportTemplates: ReportTemplate[] = [
     { id: 'pnl', name: 'Profit & Loss', description: 'Summarizes revenues, costs, and expenses incurred during a specific period.', category: 'financials' },
     { id: 'balance-sheet', name: 'Balance Sheet', description: 'Provides a snapshot of your company’s assets, liabilities, and equity.', category: 'financials' },
+    { id: 'cash-flow', name: 'Cash Flow Statement', description: 'Shows how cash moves in and out of your business.', category: 'financials' },
+    { id: 'trial-balance', name: 'Trial Balance', description: 'A list of all accounts and their debit or credit balances.', category: 'financials' },
+    { id: 'general-ledger', name: 'General Ledger', description: 'A complete record of all financial transactions.', category: 'financials' },
     { id: 'tax-summary', name: 'Sales Tax Summary', description: 'Summarizes tax collected from sales and paid on purchases.', category: 'financials' },
     { id: 'ar-aging', name: 'A/R Aging Summary', description: 'Lists unpaid customer invoices and how long they have been outstanding.', category: 'financials' },
     { id: 'ap-aging', name: 'A/P Aging Summary', description: 'Lists unpaid bills to suppliers and how long they have been outstanding.', category: 'financials' },
@@ -134,6 +143,15 @@ export class ReportsComponent implements OnInit {
       { key: 'tax_collected', label: 'Tax Collected', type: 'currency' },
       { key: 'net_tax_due', label: 'Net Tax Due', type: 'currency' },
   ];
+
+  generalLedgerColumns: ColumnDefinition<GeneralLedgerEntry>[] = [
+    { key: 'date', label: 'Date', type: 'date' },
+    { key: 'account', label: 'Account', type: 'string' },
+    { key: 'description', label: 'Description', type: 'string' },
+    { key: 'debit', label: 'Debit', type: 'currency' },
+    { key: 'credit', label: 'Credit', type: 'currency' },
+    { key: 'balance', label: 'Balance', type: 'currency' },
+  ];
   
   constructor() {}
 
@@ -152,6 +170,9 @@ export class ReportsComponent implements OnInit {
     this.loadSalesByProductData();
     this.loadStockOnHandData();
     this.loadTaxSummaryData();
+    this.loadCashflowData();
+    this.loadTrialBalanceData();
+    this.loadGeneralLedgerData();
   }
 
   async loadArAgingData() { this.isArAgingLoading.set(true); this.arAgingData.set(await this.api.reports.getArAging()); this.isArAgingLoading.set(false); }
@@ -164,9 +185,11 @@ export class ReportsComponent implements OnInit {
   async loadSalesByProductData() { this.isSalesByProductLoading.set(true); this.salesByProductData.set(await this.api.reports.getSalesByProduct()); this.isSalesByProductLoading.set(false); }
   async loadStockOnHandData() { this.isStockOnHandLoading.set(true); this.stockOnHandData.set(await this.api.reports.getStockOnHand()); this.isStockOnHandLoading.set(false); }
   async loadTaxSummaryData() { this.isTaxSummaryLoading.set(true); this.taxSummaryData.set(await this.api.reports.getTaxSummary()); this.isTaxSummaryLoading.set(false); }
+  async loadCashflowData() { this.isCashflowLoading.set(true); this.cashflowData.set(await this.api.reports.getCashFlowStatement()); this.isCashflowLoading.set(false); }
+  async loadTrialBalanceData() { this.isTrialBalanceLoading.set(true); this.trialBalanceData.set(await this.api.reports.getTrialBalance()); this.isTrialBalanceLoading.set(false); }
+  async loadGeneralLedgerData() { this.isGeneralLedgerLoading.set(true); this.generalLedgerData.set(await this.api.reports.getGeneralLedger()); this.isGeneralLedgerLoading.set(false); }
 
-
-  exportReport(format: 'pdf' | 'csv', reportId: string, data: any[], columns: ColumnDefinition<any>[]) {
+  exportReport(format: 'pdf' | 'csv', reportId: string, data: any[], columns?: ColumnDefinition<any>[]) {
     const reportName = this.reportTemplates.find(r => r.id === reportId)?.name || 'Report';
     
     if (format === 'csv') {
@@ -179,8 +202,28 @@ export class ReportsComponent implements OnInit {
     }
   }
 
-  private exportAsCsv(dataToExport: any[], columns: ColumnDefinition<any>[], filename: string) {
+  private exportAsCsv(dataToExport: any[], columns: ColumnDefinition<any>[] | undefined, filename: string) {
     if (dataToExport.length === 0) return;
+
+    // Handle structured financial statements (P&L, Balance Sheet, etc.)
+    if (!columns) {
+        let csvContent = '';
+        dataToExport.forEach(row => {
+            if (row.isHeader) {
+                csvContent += `"${row.category}"\r\n`;
+            } else if (row.isTotal) {
+                row.items.forEach((item: any) => {
+                     csvContent += `"${item.label}",${(item.amount / 100).toFixed(2)}\r\n`;
+                });
+            } else {
+                 row.items.forEach((item: any) => {
+                     csvContent += `"${item.label}",${(item.amount / 100).toFixed(2)}\r\n`;
+                });
+            }
+        });
+        this.downloadCsv(csvContent, filename);
+        return;
+    }
 
     const headers = columns.map(c => c.label).join(',');
     const rows = dataToExport.map(item => {
@@ -198,7 +241,11 @@ export class ReportsComponent implements OnInit {
     }).join('\r\n');
 
     const csvContent = `${headers}\r\n${rows}`;
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    this.downloadCsv(csvContent, filename);
+  }
+
+  private downloadCsv(content: string, filename: string) {
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);

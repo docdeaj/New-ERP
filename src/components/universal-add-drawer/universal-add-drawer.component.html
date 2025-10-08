@@ -1,3 +1,4 @@
+
 <div class="fixed inset-0 z-40">
   <!-- Backdrop -->
   <div class="aurora-backdrop absolute inset-0 animate-[fade-in_180ms_ease-in-out]" (click)="onClose()"></div>
@@ -50,7 +51,8 @@
                         <label class="block text-xs font-medium text-charcoal-300">Product</label>
                          <app-product-picker 
                            [value]="item.value.productId"
-                           (onSelect)="onProductSelect($event, i)">
+                           (onSelect)="onProductSelect($event, i)"
+                           (onClear)="onProductClear(i)">
                          </app-product-picker>
                       </div>
                       <!-- Qty -->

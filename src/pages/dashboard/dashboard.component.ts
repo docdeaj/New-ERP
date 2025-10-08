@@ -80,14 +80,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   async loadDashboardData() {
-    const [kpis, products, chartData, salesTrendData, expensesTrendData, arApData, cashflow] = await Promise.all([
+    const [kpis, products, chartData, salesTrendData, expensesTrendData, arApData, cashflow, weatherData] = await Promise.all([
       this.api.dashboard.getKpis(),
       this.api.dashboard.getTopSellingProducts(),
       this.api.dashboard.getSalesComparisonData(),
       this.api.dashboard.getKpiTrend('sales'),
       this.api.dashboard.getKpiTrend('expenses'),
       this.api.dashboard.getArApSummary(),
-      this.api.dashboard.getCashflowSnapshot()
+      this.api.dashboard.getCashflowSnapshot(),
+      this.api.weather.getWeather()
     ]);
     this.salesKpi.set(kpis.sales);
     this.expensesKpi.set(kpis.expenses);
@@ -97,19 +98,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.expensesTrend.set(expensesTrendData);
     this.arApSummary.set(arApData);
     this.cashflowSnapshot.set(cashflow);
-    
-    const weatherData = {
-      temperature: 28,
-      condition: 'Partly Cloudy',
-      icon: 'fa-solid fa-cloud-sun',
-      high: 30,
-      low: 25,
-      humidity: 75,
-      rainChance: 20,
-      windSpeed: 10,
-      location: 'Colombo',
-    };
     this.weatherDetails.set(weatherData);
+    
     this.analytics.emitEvent('weather_load', { location: weatherData.location, temp: weatherData.temperature });
   }
   

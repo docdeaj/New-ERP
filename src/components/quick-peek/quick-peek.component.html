@@ -195,7 +195,7 @@
                     <div class="bg-surface-inset p-2 rounded-lg shadow-inner"><p class="text-xs text-charcoal-400">Price</p><p class="font-bold tabular-nums">{{ (p.price_lkr / 100) | currency:'LKR ' }}</p></div>
                     <div class="p-2 rounded-lg shadow-inner" [class]="isLoss() ? 'bg-red-900/50' : 'bg-green-900/50'">
                       <p class="text-xs" [class]="isLoss() ? 'text-red-300' : 'text-green-300'">Margin</p>
-                      <p class="font-bold tabular-nums" [class]="isLoss() ? 'text-red-200' : 'text-green-200'">{{ profitMargin() | number:'1.0-0' }}%</p>
+                      <p class="font-bold tabular-nums" [class]="isLoss() ? 'text-red-200' : 'text-green-200'">{{ (p.price_lkr - p.cost_lkr) / p.price_lkr | percent:'1.0-0' }}</p>
                     </div>
                   </div>
                 </div>
@@ -399,7 +399,7 @@
               </button>
             }
             @if (isEditable()) {
-                <button (click)="onEdit()" type="button" class="aurora-button-secondary flex-1 inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-4 py-2 rounded-xl transition-all duration-150 ease-in-out">
+                <button (click)="onEdit()" type="button" class="aurora-button-primary flex-1 inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl transition-all duration-150 ease-in-out">
                     <i class="fa-solid fa-pen"></i>
                     <span>Edit</span>
                 </button>

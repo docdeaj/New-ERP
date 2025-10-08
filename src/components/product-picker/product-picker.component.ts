@@ -1,9 +1,10 @@
 
+
 import { Component, ChangeDetectionStrategy, input, output, signal, computed, inject, effect, ElementRef, viewChild } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
-import { Product } from '../../models/types';
+import { Product, LocationKey } from '../../models/types';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { HighlightPipe } from '../../pipes/highlight.pipe';
 
@@ -20,6 +21,7 @@ import { HighlightPipe } from '../../pipes/highlight.pipe';
 export class ProductPickerComponent {
   value = input<string | null>(null); // Expecting product ID
   onSelect = output<Product>();
+  onClear = output<void>();
 
   private api = inject(ApiService);
   
@@ -42,7 +44,6 @@ export class ProductPickerComponent {
     effect(() => {
         const selectedId = this.value();
         if (selectedId && this.allProducts().length > 0) {
-            // FIX: Compare string IDs
             const product = this.allProducts().find(p => p.id === selectedId);
             this.selectedProduct.set(product || null);
         } else {
@@ -127,14 +128,19 @@ export class ProductPickerComponent {
   clearSelection(event: MouseEvent) {
     event.stopPropagation();
     this.selectedProduct.set(null);
-    this.onSelect.emit(undefined); // Notify parent of clearing
+    this.onClear.emit(); // Notify parent of clearing
     this.openDropdown();
   }
 
   getAvailableStock(product: Product): number {
-    // FIX: Correctly calculate stock from onHand and committed location maps.
-    const onHand = Object.values(product.onHand).reduce((a, b) => a + b, 0);
-    const committed = Object.values(product.committed).reduce((a, b) => a + b, 0);
-    return onHand - committed;
+    // Available stock is the sum of (onHand - committed) for each location.
+    const locations: LocationKey[] = ['mainWarehouse', 'downtownStore', 'online'];
+    let availableStock = 0;
+    for (const loc of locations) {
+      const onHand = product.onHand[loc] || 0;
+      const committed = product.committed[loc] || 0;
+      availableStock += (onHand - committed);
+    }
+    return availableStock;
   }
 }
