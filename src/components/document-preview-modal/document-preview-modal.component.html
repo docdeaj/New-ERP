@@ -39,13 +39,13 @@
             @if(normData.type === 'Invoice') {
               @let invoice = asInvoice(data());
               <div class="grid grid-cols-2 gap-4">
-                <div><p class="text-sm text-charcoal-400">Issue Date</p><p class="font-semibold">{{ invoice.issueDate | date:'mediumDate' }}</p></div>
-                <div><p class="text-sm text-charcoal-400">Due Date</p><p class="font-semibold">{{ invoice.dueDate | date:'mediumDate' }}</p></div>
+                <div><p class="text-sm text-charcoal-400">Issue Date</p><p class="font-semibold">{{ invoice.issue_date | date:'mediumDate' }}</p></div>
+                <div><p class="text-sm text-charcoal-400">Due Date</p><p class="font-semibold">{{ invoice.due_date | date:'mediumDate' }}</p></div>
               </div>
               <div class="space-y-2 pt-2 border-t border-charcoal-700/50">
-                  <div class="flex justify-between text-sm"><span class="text-charcoal-300">Total</span> <span class="font-semibold tabular-nums">{{ invoice.amount | currency:'LKR ' }}</span></div>
-                  <div class="flex justify-between text-sm"><span class="text-charcoal-300">Paid</span> <span class="font-semibold tabular-nums text-green-400">-{{ invoice.totalPaid | currency:'LKR ' }}</span></div>
-                  <div class="flex justify-between text-base font-bold"><span class="text-charcoal-100">Balance</span> <span class="tabular-nums text-red-400">{{ invoice.balance | currency:'LKR ' }}</span></div>
+                  <div class="flex justify-between text-sm"><span class="text-charcoal-300">Total</span> <span class="font-semibold tabular-nums">{{ (invoice.total_lkr / 100) | currency:'LKR ' }}</span></div>
+                  <div class="flex justify-between text-sm"><span class="text-charcoal-300">Paid</span> <span class="font-semibold tabular-nums text-green-400">-{{ (invoice.paid_lkr / 100) | currency:'LKR ' }}</span></div>
+                  <div class="flex justify-between text-base font-bold"><span class="text-charcoal-100">Balance</span> <span class="tabular-nums text-red-400">{{ (invoice.balance_lkr / 100) | currency:'LKR ' }}</span></div>
               </div>
             }
           </div>
@@ -64,7 +64,10 @@
 
         <!-- Right Panel: Document Viewport -->
         <div #pdfContainer class="w-full h-full flex items-center justify-center overflow-hidden bg-surface-inset rounded-lg shadow-inner-sm">
-            <div #pdfWrapper [style.transform]="'scale(' + scale() + ')'" class="origin-center bg-white shadow-lg">
+            @if(isRendering()) {
+              <app-document-skeleton></app-document-skeleton>
+            }
+            <div #pdfWrapper [style.transform]="'scale(' + scale() + ')'" class="origin-center bg-white shadow-lg" [class.invisible]="isRendering()">
               @switch (normData.type) {
                 @case ('Invoice') {
                   <app-invoice-pdf [data]="asInvoice(data())"></app-invoice-pdf>

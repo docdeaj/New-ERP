@@ -11,21 +11,112 @@
         <button (click)="activeTimeRange.set('year-to-date')" [class]="'px-3 py-1.5 text-sm font-semibold rounded-md transition-colors ' + (activeTimeRange() === 'year-to-date' ? 'bg-surface-raised shadow-sm text-charcoal-100' : 'text-charcoal-400 hover:text-charcoal-200')">Year to Date</button>
       </div>
     </div>
-    <div class="flex items-center gap-3">
-      <button (click)="exportReport('pdf', 'ar-aging')" class="group flex items-center gap-2 px-3 h-10 rounded-xl bg-red-900/50 hover:bg-red-900/80 text-red-300 font-semibold transition-colors shadow-md">
-        <i class="fa-solid fa-file-pdf text-red-400"></i><span>Export PDF</span>
-      </button>
-      <button (click)="exportReport('csv', 'ar-aging')" class="group flex items-center gap-2 px-3 h-10 rounded-xl bg-green-900/50 hover:bg-green-900/80 text-green-300 font-semibold transition-colors shadow-md">
-        <i class="fa-solid fa-file-csv text-green-400"></i><span>Export CSV</span>
-      </button>
-      <button (click)="exportReport('xlsx', 'ar-aging')" class="group flex items-center gap-2 px-3 h-10 rounded-xl bg-teal-900/50 hover:bg-teal-900/80 text-teal-300 font-semibold transition-colors shadow-md">
-        <i class="fa-solid fa-file-excel text-teal-400"></i><span>Export XLSX</span>
-      </button>
-    </div>
+    <!-- Global export buttons removed from here -->
   </header>
+  
+  <!-- Profit & Loss Statement -->
+  <section id="pnl-report">
+    <div class="bg-surface rounded-2xl shadow-lg p-6">
+       <div class="flex justify-between items-start">
+          <div>
+            <h3 class="text-xl font-bold text-brand-text mb-1">Profit & Loss</h3>
+            <p class="text-charcoal-400 mb-6">Summarizes revenues, costs, and expenses incurred during a specific period.</p>
+          </div>
+          <div class="flex items-center gap-2">
+             <button (click)="exportReport('csv', 'pnl', pnlData(), [])" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-csv text-green-400"></i>CSV</button>
+             <button (click)="exportReport('pdf', 'pnl', [], [])" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-pdf text-red-400"></i>PDF</button>
+          </div>
+       </div>
+       @if(isPnlLoading()) {
+          <div class="h-64 bg-surface-raised rounded-lg animate-pulse"></div>
+       } @else {
+          <div class="bg-surface-inset p-4 rounded-lg max-w-3xl mx-auto">
+            @for(row of pnlData(); track row.category) {
+              @if(row.isHeader) {
+                <h4 class="text-lg font-semibold mt-4 mb-2 border-b border-charcoal-700 pb-1">{{ row.category }}</h4>
+              }
+              @if(!row.isHeader && !row.isTotal) {
+                 @for(item of row.items; track item.label) {
+                   <div class="flex justify-between py-1.5 px-2 text-sm">
+                      <span class="text-charcoal-300">{{ item.label }}</span>
+                      <span class="font-mono tabular-nums">{{ (item.amount / 100) | currency:'LKR ' }}</span>
+                   </div>
+                 }
+              }
+              @if(row.isTotal) {
+                 @for(item of row.items; track item.label) {
+                  <div class="flex justify-between py-2 px-2 font-bold border-t-2 mt-1" [class]="row.category === 'Net Income' ? 'border-primary/50 text-primary text-lg' : 'border-charcoal-600'">
+                      <span>{{ item.label }}</span>
+                      <span class="font-mono tabular-nums">{{ (item.amount / 100) | currency:'LKR ' }}</span>
+                  </div>
+                 }
+              }
+            }
+          </div>
+       }
+    </div>
+  </section>
+
+  <!-- Balance Sheet -->
+  <section id="balance-sheet-report">
+    <div class="bg-surface rounded-2xl shadow-lg p-6">
+      <div class="flex justify-between items-start">
+        <div>
+          <h3 class="text-xl font-bold text-brand-text mb-1">Balance Sheet</h3>
+          <p class="text-charcoal-400 mb-6">A snapshot of your company’s assets, liabilities, and equity.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button (click)="exportReport('csv', 'balance-sheet', balanceSheetData(), [])" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-csv text-green-400"></i>CSV</button>
+          <button (click)="exportReport('pdf', 'balance-sheet', [], [])" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-pdf text-red-400"></i>PDF</button>
+        </div>
+      </div>
+      @if(isBalanceSheetLoading()) {
+        <div class="h-64 bg-surface-raised rounded-lg animate-pulse"></div>
+      } @else {
+        <div class="bg-surface-inset p-4 rounded-lg max-w-3xl mx-auto">
+          @for(row of balanceSheetData(); track row.category) {
+            @if(row.isHeader) {
+              <h4 class="text-lg font-semibold mt-4 mb-2 border-b border-charcoal-700 pb-1">{{ row.category }}</h4>
+            }
+            @if(!row.isHeader && !row.isTotal) {
+              @for(item of row.items; track item.label) {
+                <div class="flex justify-between py-1.5 px-2 text-sm">
+                  <span class="text-charcoal-300">{{ item.label }}</span>
+                  <span class="font-mono tabular-nums">{{ (item.amount / 100) | currency:'LKR ' }}</span>
+                </div>
+              }
+            }
+            @if(row.isTotal) {
+              @for(item of row.items; track item.label) {
+                <div class="flex justify-between py-2 px-2 font-bold border-t-2 mt-1 border-charcoal-600">
+                  <span>{{ item.label }}</span>
+                  <span class="font-mono tabular-nums">{{ (item.amount / 100) | currency:'LKR ' }}</span>
+                </div>
+              }
+            }
+          }
+        </div>
+      }
+    </div>
+  </section>
 
   <!-- Financial Reports -->
-  <section id="ar-aging-table">
+  <section id="tax-summary-report">
+    <app-data-table
+      [isLoading]="isTaxSummaryLoading()"
+      title="Sales Tax Summary"
+      description="Summarizes tax collected from sales and paid on purchases to determine net tax due."
+      [columns]="taxSummaryColumns"
+      [data]="taxSummaryData()"
+      context="tax-summary">
+      <div table-tools class="flex items-center gap-2">
+        <button (click)="exportReport('csv', 'tax-summary', taxSummaryData(), taxSummaryColumns)" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-csv text-green-400"></i>CSV</button>
+        <button (click)="exportReport('pdf', 'tax-summary', [], [])" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-pdf text-red-400"></i>PDF</button>
+      </div>
+    </app-data-table>
+  </section>
+
+  <section id="ar-aging-report">
     <app-data-table
       [isLoading]="isArAgingLoading()"
       title="Accounts Receivable Aging"
@@ -33,11 +124,30 @@
       [columns]="arAgingColumns"
       [data]="arAgingData()"
       context="ar-aging">
+       <div table-tools class="flex items-center gap-2">
+        <button (click)="exportReport('csv', 'ar-aging', arAgingData(), arAgingColumns)" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-csv text-green-400"></i>CSV</button>
+        <button (click)="exportReport('pdf', 'ar-aging', [], [])" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-pdf text-red-400"></i>PDF</button>
+      </div>
+    </app-data-table>
+  </section>
+  
+  <section id="ap-aging-report">
+    <app-data-table
+      [isLoading]="isApAgingLoading()"
+      title="Accounts Payable Aging"
+      description="A summary of unpaid bills to suppliers, bucketed by how long they have been outstanding."
+      [columns]="apAgingColumns"
+      [data]="apAgingData()"
+      context="ap-aging">
+      <div table-tools class="flex items-center gap-2">
+        <button (click)="exportReport('csv', 'ap-aging', apAgingData(), apAgingColumns)" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-csv text-green-400"></i>CSV</button>
+        <button (click)="exportReport('pdf', 'ap-aging', [], [])" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-pdf text-red-400"></i>PDF</button>
+      </div>
     </app-data-table>
   </section>
 
   <!-- Sales Reports -->
-  <section>
+  <section id="sales-by-customer-report">
     <app-data-table
       [isLoading]="isSalesByCustomerLoading()"
       title="Sales by Customer"
@@ -45,57 +155,73 @@
       [columns]="salesByCustomerColumns"
       [data]="salesByCustomerData()"
       context="sales-by-customer">
+       <div table-tools class="flex items-center gap-2">
+        <button (click)="exportReport('csv', 'sales-by-customer', salesByCustomerData(), salesByCustomerColumns)" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-csv text-green-400"></i>CSV</button>
+        <button (click)="exportReport('pdf', 'sales-by-customer', [], [])" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-pdf text-red-400"></i>PDF</button>
+      </div>
+    </app-data-table>
+  </section>
+  
+  <section id="sales-by-product-report">
+    <app-data-table
+      [isLoading]="isSalesByProductLoading()"
+      title="Sales by Product"
+      description="Ranks your products by sales revenue, quantity sold, or profit."
+      [columns]="salesByProductColumns"
+      [data]="salesByProductData()"
+      context="sales-by-product">
+       <div table-tools class="flex items-center gap-2">
+        <button (click)="exportReport('csv', 'sales-by-product', salesByProductData(), salesByProductColumns)" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-csv text-green-400"></i>CSV</button>
+        <button (click)="exportReport('pdf', 'sales-by-product', [], [])" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-pdf text-red-400"></i>PDF</button>
+      </div>
     </app-data-table>
   </section>
 
-  <!-- Placeholder Sections for Other Reports -->
-  <section>
-    <div class="bg-surface rounded-2xl shadow-lg p-6">
-        <h3 class="text-xl font-bold mb-4">Other Financial Reports</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            @for (report of financialReports(); track report.id) {
-                @if (report.id !== 'ar-aging') {
-                    <div class="p-4 bg-surface-raised rounded-lg">
-                        <h4 class="font-semibold">{{ report.name }}</h4>
-                        <p class="text-sm text-charcoal-400 mt-1">{{ report.description }}</p>
-                        <button class="text-sm font-semibold text-primary mt-3 hover:underline">Run Report</button>
-                    </div>
-                }
-            }
-        </div>
-    </div>
-  </section>
-
-  <section>
-    <div class="bg-surface rounded-2xl shadow-lg p-6">
-        <h3 class="text-xl font-bold mb-4">Other Sales Reports</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            @for (report of salesReports(); track report.id) {
-                @if (report.id !== 'sales-by-customer') {
-                    <div class="p-4 bg-surface-raised rounded-lg">
-                        <h4 class="font-semibold">{{ report.name }}</h4>
-                        <p class="text-sm text-charcoal-400 mt-1">{{ report.description }}</p>
-                        <button class="text-sm font-semibold text-primary mt-3 hover:underline">Run Report</button>
-                    </div>
-                }
-            }
-        </div>
-    </div>
+  <!-- Operational Reports -->
+  <section id="purchases-by-supplier-report">
+    <app-data-table
+      [isLoading]="isPurchasesBySupplierLoading()"
+      title="Purchases by Supplier"
+      description="Shows total purchase volume for each supplier."
+      [columns]="purchasesBySupplierColumns"
+      [data]="purchasesBySupplierData()"
+      context="purchases-by-supplier">
+      <div table-tools class="flex items-center gap-2">
+        <button (click)="exportReport('csv', 'purchases-by-supplier', purchasesBySupplierData(), purchasesBySupplierColumns)" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-csv text-green-400"></i>CSV</button>
+        <button (click)="exportReport('pdf', 'purchases-by-supplier', [], [])" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-pdf text-red-400"></i>PDF</button>
+      </div>
+    </app-data-table>
   </section>
   
-  <section>
-    <div class="bg-surface rounded-2xl shadow-lg p-6">
-        <h3 class="text-xl font-bold mb-4">Inventory Reports</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            @for (report of inventoryReports(); track report.id) {
-                <div class="p-4 bg-surface-raised rounded-lg">
-                    <h4 class="font-semibold">{{ report.name }}</h4>
-                    <p class="text-sm text-charcoal-400 mt-1">{{ report.description }}</p>
-                    <button class="text-sm font-semibold text-primary mt-3 hover:underline">Run Report</button>
-                </div>
-            }
-        </div>
-    </div>
+  <!-- Inventory Reports -->
+  <section id="inventory-valuation-report">
+    <app-data-table
+      [isLoading]="isInventoryValuationLoading()"
+      title="Inventory Valuation"
+      description="Calculates the current value of your inventory on hand based on cost."
+      [columns]="inventoryValuationColumns"
+      [data]="inventoryValuationData()"
+      context="inventory-valuation">
+       <div table-tools class="flex items-center gap-2">
+        <button (click)="exportReport('csv', 'inventory-valuation', inventoryValuationData(), inventoryValuationColumns)" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-csv text-green-400"></i>CSV</button>
+        <button (click)="exportReport('pdf', 'inventory-valuation', [], [])" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-pdf text-red-400"></i>PDF</button>
+      </div>
+    </app-data-table>
+  </section>
+  
+  <section id="stock-on-hand-report">
+    <app-data-table
+      [isLoading]="isStockOnHandLoading()"
+      title="Stock on Hand"
+      description="Shows the quantity of each product available at each location."
+      [columns]="stockOnHandColumns"
+      [data]="stockOnHandData()"
+      context="stock-on-hand">
+       <div table-tools class="flex items-center gap-2">
+        <button (click)="exportReport('csv', 'stock-on-hand', stockOnHandData(), stockOnHandColumns)" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-csv text-green-400"></i>CSV</button>
+        <button (click)="exportReport('pdf', 'stock-on-hand', [], [])" class="aurora-button-secondary h-9 px-3 text-sm flex items-center gap-2"><i class="fa-solid fa-file-pdf text-red-400"></i>PDF</button>
+      </div>
+    </app-data-table>
   </section>
 
 </div>

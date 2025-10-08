@@ -1,12 +1,12 @@
-
 import { Component, ChangeDetectionStrategy, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DataTableComponent, ColumnDefinition } from '../../components/data-table/data-table.component';
+import { DataTableComponent, ColumnDefinition, EmptyStateConfig } from '../../components/data-table/data-table.component';
 import { PurchaseOrder } from '../../models/types';
 import { ApiService } from '../../services/api.service';
 import { UiStateService } from '../../services/ui-state.service';
 import { PoToStockModalComponent } from '../../components/po-to-stock-modal/po-to-stock-modal.component';
 import { PdfGenerationService } from '../../services/pdf.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-purchase-orders',
@@ -19,6 +19,7 @@ export class PurchaseOrdersComponent {
   private api = inject(ApiService);
   private uiStateService = inject(UiStateService);
   private pdfService = inject(PdfGenerationService);
+  private toastService = inject(ToastService);
   purchaseOrders = signal<PurchaseOrder[]>([]);
   isLoading = signal(true);
   
@@ -34,6 +35,12 @@ export class PurchaseOrdersComponent {
     { key: 'total_lkr', label: 'Amount', type: 'currency' },
     { key: 'status', label: 'Status', type: 'chip' },
   ];
+
+  emptyStateConfig: EmptyStateConfig = {
+    title: 'No Purchase Orders',
+    message: 'Create purchase orders to track inventory from your suppliers.',
+    actionText: 'New Purchase Order'
+  };
 
   constructor() {
     this.loadPurchaseOrders();
@@ -61,7 +68,7 @@ export class PurchaseOrdersComponent {
           this.selectedPoForConversion.set(event.item);
           this.isConversionModalOpen.set(true);
         } else {
-          console.warn('This PO has already been received or cancelled.');
+          this.toastService.show({ type: 'info', message: `This PO has already been ${event.item.status}.` });
         }
         break;
       case 'edit':
@@ -78,9 +85,16 @@ export class PurchaseOrdersComponent {
     }
   }
   
-  async handleConfirmConversion(poId: number) {
-    await this.api.convertPoToStock(poId);
-    this.closeConversionModal();
+  async handleConfirmConversion(poId: string | number) {
+    try {
+      await this.api.purchaseOrders.receivePO(poId);
+      this.toastService.show({ type: 'success', message: `Stock received for PO #${this.selectedPoForConversion()?.number}.` });
+    } catch (e) {
+      console.error(e);
+      this.toastService.show({ type: 'error', message: 'Failed to receive stock.' });
+    } finally {
+      this.closeConversionModal();
+    }
   }
 
   handleBulkAction(event: { action: string, selectedIds: (string | number)[] }) {
@@ -96,6 +110,10 @@ export class PurchaseOrdersComponent {
   
   openAddNewDrawer() {
     this.uiStateService.openDrawer('new-po');
+  }
+
+  handleEmptyStateAction() {
+    this.openAddNewDrawer();
   }
   
   closeConversionModal() {

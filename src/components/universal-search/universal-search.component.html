@@ -3,6 +3,7 @@
 
 <!-- Search Modal -->
 <div 
+  cdkTrapFocus
   class="relative w-full max-w-5xl bg-surface-raised/95 backdrop-blur-xl rounded-2xl shadow-2xl flex flex-col animate-[slide-down_180ms_cubic-bezier(0.2,0.8,0.2,1)] border border-charcoal-700/30"
   aria-labelledby="search-heading">
   
@@ -100,18 +101,21 @@
             @let invoice = asInvoice(item.data);
             <div class="space-y-4">
               <div class="flex items-center justify-between">
-                <p class="text-sm text-charcoal-400">{{invoice.customerName}} • Due: {{invoice.dueDate | date:'mediumDate'}}</p>
+                <p class="text-sm text-charcoal-400">{{invoice.partyName}} • Due: {{invoice.due_date | date:'mediumDate'}}</p>
                 <button (click)="downloadPreviewPdf()" class="text-sm font-semibold text-primary hover:underline"><i class="fa-solid fa-file-arrow-down mr-1"></i>Download PDF</button>
               </div>
               <!-- A4 Ratio Container -->
               <div #pdfPreviewContainer class="w-full bg-surface-inset rounded-lg shadow-inner-sm aspect-[210/297] overflow-hidden">
-                <div #pdfPreviewWrapper [style.transform]="'scale(' + previewScale() + ')'" class="origin-top-left">
+                @if(isPdfRendering()) {
+                  <app-document-skeleton></app-document-skeleton>
+                }
+                <div #pdfPreviewWrapper [style.transform]="'scale(' + previewScale() + ')'" class="origin-top-left" [class.invisible]="isPdfRendering()">
                   <app-invoice-pdf [data]="invoice"></app-invoice-pdf>
                 </div>
               </div>
               <div class="grid grid-cols-3 gap-2">
-                <div class="bg-surface-raised p-2 rounded-lg text-center shadow-md"><p class="text-xs text-charcoal-400">Total</p><p class="font-bold tabular-nums">{{ (invoice.amount_lkr / 100) | currency:'LKR ' }}</p></div>
-                <div class="bg-green-900/50 p-2 rounded-lg text-center shadow-md"><p class="text-xs text-green-400">Paid</p><p class="font-bold tabular-nums">{{ (invoice.totalPaid_lkr / 100) | currency:'LKR ' }}</p></div>
+                <div class="bg-surface-raised p-2 rounded-lg text-center shadow-md"><p class="text-xs text-charcoal-400">Total</p><p class="font-bold tabular-nums">{{ (invoice.total_lkr / 100) | currency:'LKR ' }}</p></div>
+                <div class="bg-green-900/50 p-2 rounded-lg text-center shadow-md"><p class="text-xs text-green-400">Paid</p><p class="font-bold tabular-nums">{{ (invoice.paid_lkr / 100) | currency:'LKR ' }}</p></div>
                 <div class="bg-red-900/50 p-2 rounded-lg text-center shadow-md"><p class="text-xs text-red-400">Balance</p><p class="font-bold tabular-nums">{{ (invoice.balance_lkr / 100) | currency:'LKR ' }}</p></div>
               </div>
             </div>
@@ -120,28 +124,52 @@
             @let quotation = asQuotation(item.data);
             <div class="space-y-4">
               <div class="flex items-center justify-between">
-                <p class="text-sm text-charcoal-400">{{quotation.customerName}} • Expires: {{quotation.expiryDate | date:'mediumDate'}}</p>
+                <p class="text-sm text-charcoal-400">{{quotation.partyName}} • Expires: {{quotation.due_date | date:'mediumDate'}}</p>
                 <button (click)="downloadPreviewPdf()" class="text-sm font-semibold text-primary hover:underline"><i class="fa-solid fa-file-arrow-down mr-1"></i>Download PDF</button>
               </div>
               <!-- A4 Ratio Container -->
               <div #pdfPreviewContainer class="w-full bg-surface-inset rounded-lg shadow-inner-sm aspect-[210/297] overflow-hidden">
-                <div #pdfPreviewWrapper [style.transform]="'scale(' + previewScale() + ')'" class="origin-top-left">
+                 @if(isPdfRendering()) {
+                  <app-document-skeleton></app-document-skeleton>
+                }
+                <div #pdfPreviewWrapper [style.transform]="'scale(' + previewScale() + ')'" class="origin-top-left" [class.invisible]="isPdfRendering()">
                   <app-invoice-pdf [data]="quotation"></app-invoice-pdf>
                 </div>
               </div>
               <div class="grid grid-cols-1 gap-2">
-                <div class="bg-surface-raised p-2 rounded-lg text-center shadow-md"><p class="text-xs text-charcoal-400">Total</p><p class="font-bold tabular-nums">{{ (quotation.amount_lkr / 100) | currency:'LKR ' }}</p></div>
+                <div class="bg-surface-raised p-2 rounded-lg text-center shadow-md"><p class="text-xs text-charcoal-400">Total</p><p class="font-bold tabular-nums">{{ (quotation.total_lkr / 100) | currency:'LKR ' }}</p></div>
+              </div>
+            </div>
+          }
+           @case ('po') {
+            @let po = asPurchaseOrder(item.data);
+             <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <p class="text-sm text-charcoal-400">{{po.partyName}} • Expected: {{po.due_date | date:'mediumDate'}}</p>
+                <button (click)="downloadPreviewPdf()" class="text-sm font-semibold text-primary hover:underline"><i class="fa-solid fa-file-arrow-down mr-1"></i>Download PDF</button>
+              </div>
+              <!-- A4 Ratio Container -->
+              <div #pdfPreviewContainer class="w-full bg-surface-inset rounded-lg shadow-inner-sm aspect-[210/297] overflow-hidden">
+                 @if(isPdfRendering()) {
+                  <app-document-skeleton></app-document-skeleton>
+                }
+                <div #pdfPreviewWrapper [style.transform]="'scale(' + previewScale() + ')'" class="origin-top-left" [class.invisible]="isPdfRendering()">
+                  <app-invoice-pdf [data]="po"></app-invoice-pdf>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 gap-2">
+                <div class="bg-surface-raised p-2 rounded-lg text-center shadow-md"><p class="text-xs text-charcoal-400">Total</p><p class="font-bold tabular-nums">{{ (po.total_lkr / 100) | currency:'LKR ' }}</p></div>
               </div>
             </div>
           }
           @case ('product') {
              @let p = asProduct(item.data);
-             <img [src]="p.imageUrl" class="w-full h-40 object-cover rounded-lg mb-4 shadow-lg" alt="Product Image"/>
+             <img [src]="p.image_url" class="w-full h-40 object-cover rounded-lg mb-4 shadow-lg" alt="Product Image"/>
              <div class="grid grid-cols-3 gap-2 text-center text-sm mb-4">
               @for(loc of ['mainWarehouse', 'downtownStore', 'online']; track loc) {
                 <div class="bg-surface-raised p-2 rounded-lg shadow-md">
                   <p class="text-xs text-charcoal-400 capitalize">{{loc.replace('Warehouse',' WH')}}</p>
-                  <p class="font-bold tabular-nums">{{ p.stock[loc] - (p.committed?.[loc] || 0) }} <span class="text-xs">Avail.</span></p>
+                  <p class="font-bold tabular-nums">{{ p.onHand[loc] - (p.committed?.[loc] || 0) }} <span class="text-xs">Avail.</span></p>
                 </div>
               }
              </div>
@@ -151,21 +179,10 @@
                 <div class="bg-surface-raised p-2 rounded-lg shadow-md"><p class="text-xs text-charcoal-400">Margin</p><p class="font-bold tabular-nums">{{ ((p.price_lkr - p.cost_lkr) / p.price_lkr) * 100 | number:'1.0-0' }}%</p></div>
              </div>
           }
-           @case ('po') {
-            @let po = asPurchaseOrder(item.data);
-            <p class="text-sm text-charcoal-400 mb-4">{{po.supplierName}} • Expected: {{po.expectedDate | date:'mediumDate'}}</p>
-            <div class="bg-surface-raised p-3 rounded-lg mb-4 shadow-md"><p class="text-xs text-charcoal-400">Total Value</p><p class="font-bold text-2xl tabular-nums">{{ (po.amount_lkr / 100) | currency:'LKR ' }}</p></div>
-            <p class="text-xs font-semibold uppercase text-charcoal-400 mb-2">Items ({{po.lineItems?.length}})</p>
-            <ul class="text-sm space-y-1">
-              @for(line of po.lineItems; track line.productId) {
-                <li class="flex justify-between items-center p-2 bg-surface-raised rounded-md shadow-sm"><span [innerHTML]="line.productName | highlight:query()"></span> <span class="text-xs tabular-nums bg-surface-inset px-1.5 py-0.5 rounded-full shadow-inner-sm">{{line.quantity}} units</span></li>
-              }
-            </ul>
-          }
           @case ('recurring') {
             @let expense = asRecurringExpense(item.data);
             <p class="text-sm text-charcoal-400 mb-4">Cadence: <span class="font-semibold">{{expense.cadence}}</span> • Next Due: <span class="font-semibold">{{expense.nextDueDate | date:'mediumDate'}}</span></p>
-            <div class="bg-surface-raised p-3 rounded-lg shadow-md"><p class="text-xs text-charcoal-400">Amount</p><p class="font-bold text-3xl tabular-nums">{{ (expense.amount_lkr / 100) | currency:'LKR ' }}</p></div>
+            <div class="bg-surface-raised p-3 rounded-lg shadow-md"><p class="text-xs text-charcoal-400">Amount</p><p class="font-bold text-3xl tabular-nums">{{ (expense.amount / 100) | currency:'LKR ' }}</p></div>
           }
           @default {
              <div class="flex flex-col items-center justify-center h-full text-center text-charcoal-500">

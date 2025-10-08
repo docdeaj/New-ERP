@@ -3,7 +3,7 @@
   <div class="aurora-backdrop absolute inset-0 animate-[fade-in_180ms_ease-in-out]" (click)="onClose()"></div>
 
   <!-- Modal -->
-  <form [formGroup]="filterForm" (ngSubmit)="onApply()" class="relative w-full max-w-lg bg-surface/90 backdrop-blur-xl rounded-2xl shadow-2xl animate-[slide-down_180ms_cubic-bezier(0.2,0.8,0.2,1)]" role="dialog" aria-modal="true">
+  <form [formGroup]="filterForm" (ngSubmit)="onApply()" cdkTrapFocus class="relative w-full max-w-lg bg-surface/90 backdrop-blur-xl rounded-2xl shadow-2xl animate-[slide-down_180ms_cubic-bezier(0.2,0.8,0.2,1)]" role="dialog" aria-modal="true">
     <!-- Header -->
     <div class="p-4 flex justify-between items-center border-b border-charcoal-800/50">
       <h3 class="text-xl font-bold">Customize Report</h3>

@@ -13,12 +13,13 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { NotificationService } from './src/services/notification.service';
 import { AuthService } from './src/services/auth.service';
 import { ToastService } from './src/services/toast.service';
+import { A11yModule } from '@angular/cdk/a11y';
 
 bootstrapApplication(AppComponent, {
   providers: [
     provideZonelessChangeDetection(),
     provideRouter(APP_ROUTES, withHashLocation()),
-    importProvidersFrom(ScrollingModule, FormsModule, ReactiveFormsModule, DragDropModule),
+    importProvidersFrom(ScrollingModule, FormsModule, ReactiveFormsModule, DragDropModule, A11yModule),
     CalendarDataService,
     SettingsService,
     NotificationService,

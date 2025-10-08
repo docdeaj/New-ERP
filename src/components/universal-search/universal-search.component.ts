@@ -1,15 +1,15 @@
-
 import { Component, ChangeDetectionStrategy, output, signal, ElementRef, viewChild, afterNextRender, effect, computed, inject } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 import { HighlightPipe } from '../../pipes/highlight.pipe';
-// FIX: Imported missing RecurringExpense type.
 import { Invoice, Product, PurchaseOrder, RecurringExpense, Quotation } from '../../models/types';
 import { InvoicePdfComponent } from '../invoice-pdf/invoice-pdf.component';
 import { PdfGenerationService } from '../../services/pdf.service';
 import { UiStateService, DrawerContext } from '../../services/ui-state.service';
 import { Router } from '@angular/router';
 import { AnalyticsService } from '../../services/analytics.service';
+import { DocumentSkeletonComponent } from '../document-skeleton/document-skeleton.component';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
 
 interface SearchResultItem {
   type: string;
@@ -33,7 +33,7 @@ type SearchFilter = 'All' | 'Invoices' | 'Quotations' | 'Products' | 'POs' | 'Re
   templateUrl: './universal-search.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, DatePipe, HighlightPipe, InvoicePdfComponent],
+  imports: [CommonModule, CurrencyPipe, DatePipe, HighlightPipe, InvoicePdfComponent, DocumentSkeletonComponent, CdkTrapFocus],
   host: {
     'class': 'fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-20',
     'role': 'dialog',
@@ -65,6 +65,7 @@ export class UniversalSearchComponent {
   activeItemIndex = signal(0);
   focusTarget = signal<'list' | 'preview'>('list');
   previewScale = signal(1);
+  isPdfRendering = signal(false);
 
   // Static items
   sidebarItems: SearchResultItem[] = [
@@ -123,14 +124,19 @@ export class UniversalSearchComponent {
     // Effect for scaling PDF preview
     effect(() => {
         const item = this.selectedItem();
-        if ((item?.type === 'invoice' || item?.type === 'quotation') && this.pdfPreviewContainer() && this.pdfPreviewWrapper()) {
-            this.calculatePdfScale();
+        if ((item?.type === 'invoice' || item?.type === 'quotation' || item?.type === 'po') && this.pdfPreviewContainer() && this.pdfPreviewWrapper()) {
+            this.isPdfRendering.set(true);
+            // Delay calculation slightly to allow the skeleton to render first
+            setTimeout(() => {
+              this.calculatePdfScale();
+              // After scaling is set, wait a bit longer for the PDF to actually draw, then hide skeleton
+              setTimeout(() => this.isPdfRendering.set(false), 250);
+            }, 50);
         }
     });
   }
   
   calculatePdfScale() {
-    setTimeout(() => {
       const container = this.pdfPreviewContainer()?.nativeElement;
       const wrapper = this.pdfPreviewWrapper()?.nativeElement;
       if (container && wrapper) {
@@ -140,7 +146,6 @@ export class UniversalSearchComponent {
         const scale = containerWidth / contentWidth;
         this.previewScale.set(scale);
       }
-    });
   }
 
   async performSearch(query: string) {
@@ -199,11 +204,11 @@ export class UniversalSearchComponent {
      switch(type) {
       case 'nav': return { ...item, id };
       case 'action': return { ...item, id };
-      case 'invoice': return { id, type, icon: 'fa-solid fa-file-invoice-dollar', title: item.number, secondary: item.partyName, meta: { amount: item.total_lkr, status: item.status, date: item.due_date }, data: item };
-      case 'quotation': return { id, type, icon: 'fa-solid fa-file-lines', title: item.number, secondary: item.partyName, meta: { amount: item.total_lkr, status: item.status, date: item.due_date }, data: item };
-      case 'product': return { id, type, icon: 'fa-solid fa-box', title: item.name, secondary: `SKU: ${item.sku}`, meta: { price: item.price_lkr }, data: item };
-      case 'po': return { id, type, icon: 'fa-solid fa-cart-shopping', title: item.number, secondary: item.partyName, meta: { amount: item.total_lkr, status: item.status, date: item.due_date }, data: item };
-      case 'recurring': return { id, type, icon: 'fa-solid fa-sync', title: item.description, secondary: `Next: ${new Date(item.nextDueDate).toLocaleDateString()}`, meta: { amount: item.amount, cadence: item.cadence }, data: item };
+      case 'invoice': return { id, type, icon: 'fa-solid fa-file-invoice-dollar', title: item.number, secondary: item.partyName, meta: { amount_lkr: item.total_lkr, status: item.status, date: item.due_date }, data: item };
+      case 'quotation': return { id, type, icon: 'fa-solid fa-file-lines', title: item.number, secondary: item.partyName, meta: { amount_lkr: item.total_lkr, status: item.status, date: item.due_date }, data: item };
+      case 'product': return { id, type, icon: 'fa-solid fa-box', title: item.name, secondary: `SKU: ${item.sku}`, meta: { price_lkr: item.price_lkr, stock: item.onHand }, data: item };
+      case 'po': return { id, type, icon: 'fa-solid fa-cart-shopping', title: item.number, secondary: item.partyName, meta: { amount_lkr: item.total_lkr, status: item.status, date: item.due_date }, data: item };
+      case 'recurring': return { id, type, icon: 'fa-solid fa-sync', title: item.description, secondary: `Next: ${new Date(item.nextDueDate).toLocaleDateString()}`, meta: { amount_lkr: item.amount, cadence: item.cadence }, data: item };
       default: return { id, type: 'unknown', icon: 'fa-solid fa-question-circle', title: 'Unknown Item', data: item };
      }
   }
@@ -221,7 +226,7 @@ export class UniversalSearchComponent {
 
   downloadPreviewPdf() {
     const item = this.selectedItem();
-    if (item?.type === 'invoice' || item?.type === 'quotation') {
+    if (item?.type === 'invoice' || item?.type === 'quotation' || item?.type === 'po') {
       this.pdfService.generatePdf(item.data);
     }
   }

@@ -1,13 +1,8 @@
-
-
-
-
 import { Component, ChangeDetectionStrategy, input, output, computed, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormArray, FormGroup } from '@angular/forms';
 import { DrawerContext, UiStateService } from '../../services/ui-state.service';
 import { MiniMediaBrowserComponent } from '../mini-media-browser/mini-media-browser.component';
-// FIX: Imported missing RecurringExpense, RecurringCadence, and ContactType types.
 import { MediaItem, Product, Quotation, Contact, ReceiptPaymentMethod, Invoice, Expense, PurchaseOrder, Cheque, RecurringExpense, RecurringCadence, ContactType } from '../../models/types';
 import { ApiService } from '../../services/api.service';
 import { startWith } from 'rxjs/operators';
@@ -19,13 +14,15 @@ import { ProductPickerComponent } from '../product-picker/product-picker.compone
 import { SupplierPickerComponent } from '../supplier-picker/supplier-picker.component';
 import { AnalyticsService } from '../../services/analytics.service';
 import { ToastService } from '../../services/toast.service';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
+import { SelectComponent } from '../select/select.component';
 
 @Component({
   selector: 'app-universal-add-drawer',
   templateUrl: './universal-add-drawer.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MiniMediaBrowserComponent, CustomerPickerComponent, DatePickerComponent, ProductPickerComponent, SupplierPickerComponent],
+  imports: [CommonModule, ReactiveFormsModule, MiniMediaBrowserComponent, CustomerPickerComponent, DatePickerComponent, ProductPickerComponent, SupplierPickerComponent, CdkTrapFocus, SelectComponent],
 })
 export class UniversalAddDrawerComponent {
   context = input.required<DrawerContext | null>();
@@ -51,7 +48,13 @@ export class UniversalAddDrawerComponent {
 
   // --- Form Totals Calculation ---
   private currentItems = signal<any[]>([]);
-  subtotal = computed(() => this.currentItems().reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0));
+  subtotal = computed(() => {
+    const items = this.currentItems() || [];
+    return items.reduce((acc, item) => {
+        const lineTotal = (item.quantity * item.unitPrice) - (item.lineDiscount || 0);
+        return acc + lineTotal;
+    }, 0);
+  });
   
   discountAmount = computed(() => {
     const form = this.getCurrentForm();
@@ -61,16 +64,24 @@ export class UniversalAddDrawerComponent {
     const value = (form as FormGroup).get('discountValue')?.value || 0;
     const sub = this.subtotal();
     
+    let discount = 0;
     if (type === 'percent') {
-        return sub * (value / 100);
+        discount = sub * (value / 100);
+    } else { // fixed
+        discount = value * 100; // convert to cents
     }
-    return Math.min(value, sub);
+    return Math.min(discount, sub);
   });
-  subtotalAfterDiscount = computed(() => this.subtotal() - this.discountAmount());
 
+  subtotalAfterDiscount = computed(() => this.subtotal() - this.discountAmount());
   taxRate = this.settingsService.get<number>('regional.tax.vat_rate');
   tax = computed(() => this.subtotalAfterDiscount() * (this.taxRate() / 100));
   total = computed(() => this.subtotalAfterDiscount() + this.tax());
+  
+  discountOptions = [
+    { value: 'percent', label: '%' },
+    { value: 'fixed', label: 'LKR' }
+  ];
 
   constructor() {
     this.loadProducts();
@@ -81,7 +92,12 @@ export class UniversalAddDrawerComponent {
       if (form && 'items' in form.controls) {
         const items = (form as FormGroup).get('items') as FormArray;
         const sub = items.valueChanges.pipe(startWith(items.value)).subscribe(val => {
-          this.currentItems.set(val);
+          this.currentItems.set(val.map(item => ({
+            ...item,
+            quantity: item.quantity || 0,
+            unitPrice: item.unitPrice || 0,
+            lineDiscount: item.lineDiscount || 0,
+          })));
         });
         onCleanup(() => sub.unsubscribe());
       } else {
@@ -96,7 +112,7 @@ export class UniversalAddDrawerComponent {
       const form = this.getCurrentForm();
 
       if (ctx === 'new-invoice' && !this.isEditMode()) {
-          this.analytics.emitEvent('invoice_create_start', { source: data ? ('quotationNumber' in data ? 'from_quotation' : 'from_contact') : 'direct' });
+          this.analytics.emitEvent('invoice_create_start', { source: data ? ('number' in data && data.number?.startsWith('QUO') ? 'from_quotation' : 'from_contact') : 'direct' });
       }
       
       // Reset all forms first to ensure clean state
@@ -114,26 +130,30 @@ export class UniversalAddDrawerComponent {
          // Special case: Converting a Quotation to an Invoice or starting with a customer
         if ('number' in data && data.number.startsWith('QUO')) { // from Quotation
             const quotation = data as Quotation;
-            // FIX: Use avatar_url, partyName, and partyAvatarUrl.
-            const mockCustomer: Partial<Contact> = { name: quotation.partyName, avatar_url: quotation.partyAvatarUrl };
+            const mockCustomer: Partial<Contact> = { id: quotation.party_id, name: quotation.partyName, avatar_url: quotation.partyAvatarUrl };
             this.invoiceForm.patchValue({ customer: mockCustomer as Contact });
             
             const items = this.invoiceForm.get('items') as FormArray;
             items.clear();
-            // FIX: Use items property from DocBase.
             quotation.items?.forEach(item => {
               const lineItemGroup = this.createLineItem();
-              lineItemGroup.patchValue(item);
+              lineItemGroup.patchValue({
+                productId: item.product_id,
+                productName: item.name,
+                quantity: item.qty,
+                unitPrice: item.unit_price_lkr,
+                lineDiscount: item.line_discount_lkr || 0
+              });
               items.push(lineItemGroup);
             });
         } else if ('name' in data) { // From Contact
              this.invoiceForm.patchValue({ customer: data as Contact });
         }
       } else if (ctx === 'new-po' && data) {
-         if ('lineItems' in data) { // from Product quick action
+         if ('items' in data) { // from Product quick action
            const items = this.purchaseOrderForm.get('items') as FormArray;
            items.clear();
-           data.lineItems.forEach((item: any) => items.push(this.createLineItem(item)));
+           data.items.forEach((item: any) => items.push(this.createLineItem(item)));
          } else if ('name' in data) { // from Contact
             this.purchaseOrderForm.patchValue({ supplier: data as Contact });
          }
@@ -146,7 +166,7 @@ export class UniversalAddDrawerComponent {
   }
 
   resetAllForms() {
-    this.invoiceForm.reset({ issueDate: new Date().toISOString().split('T')[0], discountType: 'percent', discountValue: 0 });
+    this.invoiceForm.reset({ issue_date: new Date().toISOString().split('T')[0], discountType: 'percent', discountValue: 0 });
     (this.invoiceForm.get('items') as FormArray).clear();
     (this.invoiceForm.get('items') as FormArray).push(this.createLineItem());
 
@@ -154,16 +174,15 @@ export class UniversalAddDrawerComponent {
     this.productForm.reset();
     this.contactForm.reset({ type: 'customer' });
     
-    this.purchaseOrderForm.reset({ orderDate: new Date().toISOString().split('T')[0] });
+    this.purchaseOrderForm.reset({ issue_date: new Date().toISOString().split('T')[0] });
     (this.purchaseOrderForm.get('items') as FormArray).clear();
     (this.purchaseOrderForm.get('items') as FormArray).push(this.createLineItem());
 
-    this.quotationForm.reset({ issueDate: new Date().toISOString().split('T')[0] });
+    this.quotationForm.reset({ issue_date: new Date().toISOString().split('T')[0] });
     (this.quotationForm.get('items') as FormArray).clear();
     (this.quotationForm.get('items') as FormArray).push(this.createLineItem());
     
     this.chequeForm.reset({ chequeDate: new Date().toISOString().split('T')[0] });
-    // FIX: Use lowercase 'cash' for enum value.
     this.recordSaleForm.reset({ paymentMethod: 'cash' });
     this.recordPaymentForm.reset({ paymentDate: new Date().toISOString().split('T')[0], paymentMethod: 'cash' });
   }
@@ -175,7 +194,6 @@ export class UniversalAddDrawerComponent {
       lineItem.patchValue({
         productId: product.id,
         productName: product.name,
-        // FIX: Use price_lkr property.
         unitPrice: product.price_lkr,
       });
     }
@@ -188,7 +206,7 @@ export class UniversalAddDrawerComponent {
       productName: [''],
       quantity: [1, [Validators.required, Validators.min(1)]],
       unitPrice: [0, Validators.required],
-      total: [0]
+      lineDiscount: [0]
     });
 
     if (data) {
@@ -217,8 +235,8 @@ export class UniversalAddDrawerComponent {
   // --- Form Definitions ---
   invoiceForm = this.fb.group({
     customer: [null as Contact | null, Validators.required],
-    issueDate: [new Date().toISOString().split('T')[0], Validators.required],
-    dueDate: ['', Validators.required],
+    issue_date: [new Date().toISOString().split('T')[0], Validators.required],
+    due_date: ['', Validators.required],
     items: this.fb.array([this.createLineItem()]),
     notes: [''],
     discountType: ['percent'],
@@ -227,25 +245,25 @@ export class UniversalAddDrawerComponent {
 
   expenseForm = this.fb.group({
     category: ['', Validators.required],
-    amount: [null, [Validators.required, Validators.min(0)]],
+    amount_lkr: [null, [Validators.required, Validators.min(0)]],
     date: [new Date().toISOString().split('T')[0], Validators.required],
     vendor: [''],
-    notes: [''],
+    note: [''],
     attachmentUrl: [''],
     isRecurring: [false],
     cadence: ['monthly' as RecurringCadence],
-    nextDueDate: [''],
+    next_due: [''],
   });
 
   productForm = this.fb.group({
     name: ['', Validators.required],
     sku: ['', Validators.required],
-    category: ['', Validators.required],
-    price: [null, [Validators.required, Validators.min(0)]],
-    cost: [null, [Validators.required, Validators.min(0)]],
+    category: [''],
+    price_lkr: [null, [Validators.required, Validators.min(0)]],
+    cost_lkr: [null, [Validators.required, Validators.min(0)]],
     description: [''],
-    imageUrl: [''],
-    stock: this.fb.group({
+    image_url: [''],
+    onHand: this.fb.group({
       mainWarehouse: [0],
       downtownStore: [0],
       online: [0]
@@ -257,23 +275,27 @@ export class UniversalAddDrawerComponent {
     type: ['customer' as ContactType, Validators.required],
     email: ['', [Validators.required, Validators.email]],
     phone: [''],
-    avatarUrl: [''],
+    avatar_url: [''],
   });
   
   purchaseOrderForm = this.fb.group({
     supplier: [null as Contact | null, Validators.required],
-    orderDate: [new Date().toISOString().split('T')[0], Validators.required],
-    expectedDate: [''],
+    issue_date: [new Date().toISOString().split('T')[0], Validators.required],
+    due_date: [''],
     items: this.fb.array([this.createLineItem()]),
     notes: [''],
+    discountType: ['percent'],
+    discountValue: [0],
   });
   
   quotationForm = this.fb.group({
-    customerName: ['', Validators.required],
-    issueDate: [new Date().toISOString().split('T')[0], Validators.required],
-    expiryDate: ['', Validators.required],
+    customer: [null as Contact | null, Validators.required],
+    issue_date: [new Date().toISOString().split('T')[0], Validators.required],
+    due_date: ['', Validators.required],
     items: this.fb.array([this.createLineItem()]),
     notes: [''],
+    discountType: ['percent'],
+    discountValue: [0],
   });
 
   chequeForm = this.fb.group({
@@ -281,20 +303,20 @@ export class UniversalAddDrawerComponent {
     bank: ['', Validators.required],
     payee: ['', Validators.required],
     payer: ['', Validators.required],
-    amount: [null, [Validators.required, Validators.min(0)]],
+    amount_lkr: [null, [Validators.required, Validators.min(0)]],
     chequeDate: [new Date().toISOString().split('T')[0], Validators.required],
   });
 
   recordSaleForm = this.fb.group({
     customer: [null as Contact | null],
-    amount: [null, [Validators.required, Validators.min(0.01)]],
+    amount_lkr: [null, [Validators.required, Validators.min(0.01)]],
     paymentMethod: ['cash' as ReceiptPaymentMethod, Validators.required],
     notes: [''],
   });
 
   recordPaymentForm = this.fb.group({
     customer: [null as Contact | null, Validators.required],
-    amount: [null, [Validators.required, Validators.min(0.01)]],
+    amount_lkr: [null, [Validators.required, Validators.min(0.01)]],
     paymentDate: [new Date().toISOString().split('T')[0], Validators.required],
     paymentMethod: ['cash' as ReceiptPaymentMethod, Validators.required],
   });
@@ -355,18 +377,22 @@ export class UniversalAddDrawerComponent {
         const formValue = form.getRawValue(); // Use getRawValue to include disabled fields if any
         const payload: any = { ...formValue };
         if ('items' in formValue) {
-           payload.subtotal_lkr = this.subtotal();
-           payload.tax_lkr = this.tax();
-           payload.total_lkr = this.total();
-           // items is already correct
+          payload.items = formValue.items.map((item: any) => ({
+            product_id: item.productId,
+            name: item.productName,
+            qty: item.quantity,
+            unit_price_lkr: item.unitPrice,
+            line_discount_lkr: item.lineDiscount || 0,
+          }));
+          payload.tax_rate = this.taxRate();
+          payload.discount_lkr = this.discountAmount();
         }
         if ('customer' in payload && payload.customer) {
-            payload.partyName = payload.customer.name;
-            payload.partyAvatarUrl = payload.customer.avatar_url;
+            payload.party_id = payload.customer.id;
             delete payload.customer;
         }
         if ('supplier' in payload && payload.supplier) {
-            payload.partyName = payload.supplier.name;
+            payload.party_id = payload.supplier.id;
             delete payload.supplier;
         }
         return payload;
@@ -478,9 +504,9 @@ export class UniversalAddDrawerComponent {
     if (context === 'expense-attachment') {
       this.expenseForm.patchValue({ attachmentUrl: mediaItem.url });
     } else if (context === 'product-image') {
-      this.productForm.patchValue({ imageUrl: mediaItem.url });
+      this.productForm.patchValue({ image_url: mediaItem.url });
     } else if (context === 'contact-avatar') {
-        this.contactForm.patchValue({ avatarUrl: mediaItem.url });
+        this.contactForm.patchValue({ avatar_url: mediaItem.url });
     }
     this.closeMediaBrowser();
   }

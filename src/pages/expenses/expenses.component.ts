@@ -1,9 +1,7 @@
-
-
 import { Component, ChangeDetectionStrategy, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { DataTableComponent, ColumnDefinition } from '../../components/data-table/data-table.component';
+import { DataTableComponent, ColumnDefinition, EmptyStateConfig } from '../../components/data-table/data-table.component';
 import { Expense } from '../../models/types';
 import { ApiService } from '../../services/api.service';
 import { UiStateService } from '../../services/ui-state.service';
@@ -33,6 +31,12 @@ export class ExpensesComponent {
     { key: 'amount_lkr', label: 'Amount', type: 'currency' },
     { key: 'status', label: 'Status', type: 'chip' },
   ];
+
+  emptyStateConfig: EmptyStateConfig = {
+    title: 'No Expenses Recorded',
+    message: 'Track business expenses to get a clear financial picture.',
+    actionText: 'Add New Expense'
+  };
 
   constructor() {
     this.initialQuery.set(this.route.snapshot.queryParamMap.get('q'));
@@ -72,6 +76,10 @@ export class ExpensesComponent {
   
   openAddNewExpenseDrawer() {
     this.uiStateService.openDrawer('new-expense');
+  }
+
+  handleEmptyStateAction() {
+    this.openAddNewExpenseDrawer();
   }
 
   editExpense(expense: Expense) {

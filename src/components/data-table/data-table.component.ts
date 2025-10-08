@@ -47,6 +47,7 @@ export class DataTableComponent<T extends { id: any, amount?: number }> {
   title = input<string>('');
   description = input<string | null>(null);
   disableQuickPeek = input<boolean>(false);
+  isLoading = input<boolean>(false);
   
   rowAction = output<{ action: string, item: T }>();
   bulkAction = output<{ action: string, selectedIds: (string | number)[] }>();

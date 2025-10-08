@@ -1,11 +1,10 @@
-
-
 import { Component, ChangeDetectionStrategy, input, output, computed, viewChild, ElementRef, signal, effect, afterNextRender, inject } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { Invoice, Quotation, PurchaseOrder, LineItem, Receipt } from '../../models/types';
 import { InvoicePdfComponent } from '../invoice-pdf/invoice-pdf.component';
 import { PdfGenerationService } from '../../services/pdf.service';
 import { UiStateService } from '../../services/ui-state.service';
+import { DocumentSkeletonComponent } from '../document-skeleton/document-skeleton.component';
 
 type PrintableDocument = Invoice | Quotation | PurchaseOrder | Receipt;
 
@@ -20,7 +19,7 @@ interface NormalizedDocumentData {
 @Component({
   selector: 'app-document-preview-modal',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, DatePipe, InvoicePdfComponent],
+  imports: [CommonModule, CurrencyPipe, DatePipe, InvoicePdfComponent, DocumentSkeletonComponent],
   templateUrl: './document-preview-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -34,6 +33,7 @@ export class DocumentPreviewModalComponent {
   pdfContainer = viewChild<ElementRef<HTMLDivElement>>('pdfContainer');
   pdfWrapper = viewChild<ElementRef<HTMLDivElement>>('pdfWrapper');
   scale = signal(1);
+  isRendering = signal(true);
 
   constructor() {
     afterNextRender(() => {
@@ -64,6 +64,7 @@ export class DocumentPreviewModalComponent {
   });
 
   calculateScale() {
+    this.isRendering.set(true);
     // A slight delay to ensure rendering is complete
     setTimeout(() => {
       const container = this.pdfContainer()?.nativeElement;
@@ -74,6 +75,9 @@ export class DocumentPreviewModalComponent {
         const containerWidth = container.offsetWidth;
         const scale = containerWidth / contentWidth;
         this.scale.set(scale);
+        setTimeout(() => this.isRendering.set(false), 250);
+      } else {
+        this.isRendering.set(false);
       }
     }, 50);
   }

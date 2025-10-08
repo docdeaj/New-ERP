@@ -201,6 +201,7 @@ export interface InventoryItem {
 export interface Kpi {
   value: number;
   delta: number; // percentage change
+  previousValue?: number;
 }
 
 export interface CashflowSnapshot {
@@ -308,6 +309,65 @@ export interface ApAgingRow {
   bucket_61_90: number;
   bucket_90_plus: number;
   total: number;
+}
+
+export interface PnlRow {
+  category: string; // e.g., 'Total Revenue', 'Cost of Goods Sold'
+  isHeader: boolean;
+  isTotal: boolean;
+  items: {
+    label: string;
+    amount: number;
+    isSubtotal?: boolean;
+  }[];
+}
+
+export interface BalanceSheetRow {
+    category: 'Assets' | 'Liabilities' | 'Equity';
+    isHeader: boolean;
+    isTotal: boolean;
+    items: {
+        label: string;
+        amount: number;
+        isSubtotal?: boolean;
+    }[];
+}
+
+export interface PurchasesBySupplierRow {
+    id: string;
+    supplierName: string;
+    supplierAvatarUrl: string;
+    poCount: number;
+    totalPurchases: number;
+}
+
+
+export interface InventoryValuationRow {
+  id: string;
+  productName: string;
+  sku: string;
+  onHand: number;
+  costPerUnit: number;
+  totalValue: number;
+}
+
+export interface StockOnHandRow {
+  id: string;
+  productName: string;
+  sku: string;
+  mainWarehouse: number;
+  downtownStore: number;
+  online: number;
+  totalOnHand: number;
+}
+
+export interface SalesByProductRow {
+  id: string;
+  productName: string;
+  sku: string;
+  quantitySold: number;
+  totalRevenue: number;
+  avgPrice: number;
 }
 
 export interface InventorySnapshot {

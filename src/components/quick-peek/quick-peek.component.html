@@ -3,7 +3,7 @@
   <div class="aurora-backdrop absolute inset-0 animate-[fade-in_180ms_ease-in-out]" (click)="onClose()"></div>
 
   <!-- Modal Content -->
-  <div class="relative w-full max-w-sm bg-surface/90 backdrop-blur-xl rounded-2xl shadow-2xl animate-[slide-down_180ms_cubic-bezier(0.2,0.8,0.2,1)]"
+  <div cdkTrapFocus class="relative w-full max-w-sm bg-surface/90 backdrop-blur-xl rounded-2xl shadow-2xl animate-[slide-down_180ms_cubic-bezier(0.2,0.8,0.2,1)]"
        role="dialog" aria-modal="true">
     
     @if (item()) {
@@ -13,15 +13,15 @@
           @switch (normalizedItemType()) {
             @case ('invoice') {
               <h3 class="text-xl font-semibold text-charcoal-100">
-                Invoice {{ asInvoice(item()).invoiceNumber }}
+                Invoice {{ asInvoice(item()).number }}
               </h3>
-              <p class="text-sm text-charcoal-400">{{ asInvoice(item()).customerName }}</p>
+              <p class="text-sm text-charcoal-400">{{ asInvoice(item()).partyName }}</p>
             }
             @case ('quotation') {
               <h3 class="text-xl font-semibold text-charcoal-100">
-                Quotation {{ asQuotation(item()).quotationNumber }}
+                Quotation {{ asQuotation(item()).number }}
               </h3>
-              <p class="text-sm text-charcoal-400">{{ asQuotation(item()).customerName }}</p>
+              <p class="text-sm text-charcoal-400">{{ asQuotation(item()).partyName }}</p>
             }
             @case ('product') {
               <h3 class="text-xl font-semibold text-charcoal-100">{{ product()?.name }}</h3>
@@ -35,16 +35,16 @@
               <p class="text-sm text-charcoal-400">{{ expense.vendor }}</p>
             }
             @case ('purchase-order') {
-                <h3 class="text-xl font-semibold text-charcoal-100">PO {{ asPurchaseOrder(item()).poNumber }}</h3>
-                <p class="text-sm text-charcoal-400">{{ asPurchaseOrder(item()).supplierName }}</p>
+                <h3 class="text-xl font-semibold text-charcoal-100">PO {{ asPurchaseOrder(item()).number }}</h3>
+                <p class="text-sm text-charcoal-400">{{ asPurchaseOrder(item()).partyName }}</p>
             }
             @case ('contact') {
                 <h3 class="text-xl font-semibold text-charcoal-100">{{ asContact(item()).name }}</h3>
-                <p class="text-sm text-charcoal-400">{{ asContact(item()).type }}</p>
+                <p class="text-sm text-charcoal-400 capitalize">{{ asContact(item()).type }}</p>
             }
             @case ('receipt') {
-                <h3 class="text-xl font-semibold text-charcoal-100">{{ asReceipt(item()).receiptNumber }}</h3>
-                <p class="text-sm text-charcoal-400">{{ asReceipt(item()).customerName }}</p>
+                <h3 class="text-xl font-semibold text-charcoal-100">{{ asReceipt(item()).number }}</h3>
+                <p class="text-sm text-charcoal-400">{{ asReceipt(item()).partyName }}</p>
             }
             @case ('cheque') {
                 <h3 class="text-xl font-semibold text-charcoal-100">Cheque {{ asCheque(item()).chequeNumber }}</h3>
@@ -76,19 +76,19 @@
               <div class="grid grid-cols-3 gap-3 text-center">
                 <div class="bg-red-900/50 p-3 rounded-lg shadow-inner col-span-3">
                   <p class="text-sm text-red-300">Balance Due</p>
-                  <p class="font-bold text-4xl tabular-nums tracking-tighter text-red-200">{{ invoice.balance | currency:'LKR ' }}</p>
+                  <p class="font-bold text-4xl tabular-nums tracking-tighter text-red-200">{{ (invoice.balance_lkr / 100) | currency:'LKR ' }}</p>
                 </div>
                 <div class="bg-surface-inset p-2 rounded-lg shadow-inner">
                   <p class="text-xs text-charcoal-400">Total</p>
-                  <p class="font-semibold tabular-nums text-lg">{{ invoice.amount | currency:'LKR ' }}</p>
+                  <p class="font-semibold tabular-nums text-lg">{{ (invoice.total_lkr / 100) | currency:'LKR ' }}</p>
                 </div>
                 <div class="bg-surface-inset p-2 rounded-lg shadow-inner">
                   <p class="text-xs text-charcoal-400">Paid</p>
-                  <p class="font-semibold tabular-nums text-lg text-green-400">{{ invoice.totalPaid | currency:'LKR ' }}</p>
+                  <p class="font-semibold tabular-nums text-lg text-green-400">{{ (invoice.paid_lkr / 100) | currency:'LKR ' }}</p>
                 </div>
                 <div class="bg-surface-inset p-2 rounded-lg shadow-inner">
                   <p class="text-xs text-charcoal-400">Due</p>
-                  <p class="font-semibold tabular-nums text-lg">{{ invoice.dueDate | date:'mediumDate' }}</p>
+                  <p class="font-semibold tabular-nums text-lg">{{ invoice.due_date | date:'mediumDate' }}</p>
                 </div>
               </div>
               
@@ -111,12 +111,12 @@
                     @for(payment of invoicePayments(); track payment.id) {
                       <div class="flex justify-between items-center bg-surface-inset p-2 rounded-lg text-sm">
                         <div class="flex items-center gap-2">
-                            <span class="font-mono text-xs px-1.5 py-0.5 rounded bg-surface shadow-inner">{{ payment.receiptNumber }}</span>
-                            <span class="text-charcoal-400">{{ payment.paymentDate | date:'mediumDate' }}</span>
+                            <span class="font-mono text-xs px-1.5 py-0.5 rounded bg-surface shadow-inner">{{ payment.number }}</span>
+                            <span class="text-charcoal-400">{{ payment.issue_date | date:'mediumDate' }}</span>
                         </div>
                         <div class="flex items-center gap-2">
                           <span [class]="'font-semibold text-xs px-1.5 py-0.5 rounded ' + getStatusColor(payment.method)">{{ payment.method }}</span>
-                          <span class="font-bold tabular-nums text-charcoal-200">{{ payment.amount | currency:'LKR ' }}</span>
+                          <span class="font-bold tabular-nums text-charcoal-200">{{ (payment.amount_lkr / 100) | currency:'LKR ' }}</span>
                         </div>
                       </div>
                     }
@@ -132,7 +132,7 @@
              <div class="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <p class="text-charcoal-400">Total Amount</p>
-                <p class="font-semibold text-lg tabular-nums text-primary-400">{{ quotation.amount | currency:'LKR ' }}</p>
+                <p class="font-semibold text-lg tabular-nums text-primary-400">{{ (quotation.total_lkr / 100) | currency:'LKR ' }}</p>
               </div>
               <div class="text-right">
                 <p class="text-charcoal-400">Status</p>
@@ -191,8 +191,8 @@
 
                   <!-- Financials -->
                   <div class="grid grid-cols-3 gap-2 text-center text-sm pt-2">
-                    <div class="bg-surface-inset p-2 rounded-lg shadow-inner"><p class="text-xs text-charcoal-400">Cost</p><p class="font-bold tabular-nums">{{ p.cost | currency:'LKR ' }}</p></div>
-                    <div class="bg-surface-inset p-2 rounded-lg shadow-inner"><p class="text-xs text-charcoal-400">Price</p><p class="font-bold tabular-nums">{{ p.price | currency:'LKR ' }}</p></div>
+                    <div class="bg-surface-inset p-2 rounded-lg shadow-inner"><p class="text-xs text-charcoal-400">Cost</p><p class="font-bold tabular-nums">{{ (p.cost_lkr / 100) | currency:'LKR ' }}</p></div>
+                    <div class="bg-surface-inset p-2 rounded-lg shadow-inner"><p class="text-xs text-charcoal-400">Price</p><p class="font-bold tabular-nums">{{ (p.price_lkr / 100) | currency:'LKR ' }}</p></div>
                     <div class="p-2 rounded-lg shadow-inner" [class]="isLoss() ? 'bg-red-900/50' : 'bg-green-900/50'">
                       <p class="text-xs" [class]="isLoss() ? 'text-red-300' : 'text-green-300'">Margin</p>
                       <p class="font-bold tabular-nums" [class]="isLoss() ? 'text-red-200' : 'text-green-200'">{{ profitMargin() | number:'1.0-0' }}%</p>
@@ -206,7 +206,7 @@
             <div class="space-y-4">
               <div class="bg-surface-inset p-4 rounded-lg shadow-inner text-center">
                 <p class="text-xs text-charcoal-400">Amount</p>
-                <p class="font-bold text-3xl tabular-nums text-red-400">{{ expense.amount | currency:'LKR ' }}</p>
+                <p class="font-bold text-3xl tabular-nums text-red-400">{{ (expense.amount / 100) | currency:'LKR ' }}</p>
               </div>
               <div class="grid grid-cols-2 gap-4 text-sm">
                 <div>
@@ -218,10 +218,10 @@
                   <p><span [class]="'px-2.5 py-1 font-semibold rounded-full ' + getStatusColor('status' in expense ? expense.status : expense.cadence)">{{ 'status' in expense ? expense.status : expense.cadence }}</span></p>
                 </div>
               </div>
-              @if('notes' in expense && expense.notes) {
+              @if('note' in expense && expense.note) {
                 <div>
                   <p class="text-sm font-semibold text-charcoal-300 mb-1">Notes</p>
-                  <p class="text-sm p-3 bg-surface-inset rounded-lg shadow-inner text-charcoal-300 whitespace-pre-wrap">{{ expense.notes }}</p>
+                  <p class="text-sm p-3 bg-surface-inset rounded-lg shadow-inner text-charcoal-300 whitespace-pre-wrap">{{ expense.note }}</p>
                 </div>
               }
               @if(item().attachmentUrl) {
@@ -238,14 +238,14 @@
               <div class="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p class="text-charcoal-400">Total Amount</p>
-                  <p class="font-semibold text-lg tabular-nums text-primary-400">{{ po.amount | currency:'LKR ' }}</p>
+                  <p class="font-semibold text-lg tabular-nums text-primary-400">{{ (po.total_lkr / 100) | currency:'LKR ' }}</p>
                 </div>
                 <div class="text-right">
                   <p class="text-charcoal-400">Status</p>
                   <p><span [class]="'px-2.5 py-1 font-semibold rounded-full ' + getStatusColor(po.status)">{{ po.status }}</span></p>
                 </div>
               </div>
-              <p class="text-xs text-charcoal-400">Expected: {{po.expectedDate | date:'mediumDate'}}</p>
+              <p class="text-xs text-charcoal-400">Expected: {{po.due_date | date:'mediumDate'}}</p>
               <div #pdfPreviewContainer class="w-full bg-white rounded-lg shadow-inner-sm aspect-[210/297] overflow-hidden">
                 <div [style.transform]="'scale(' + previewScale() + ')'" class="origin-top-left">
                   <app-invoice-pdf [data]="po"></app-invoice-pdf>
@@ -258,9 +258,9 @@
             <div class="space-y-4">
               <!-- Header -->
               <div class="flex items-start gap-4">
-                <img [src]="contact.avatarUrl" alt="Avatar" class="w-16 h-16 rounded-full object-cover shadow-lg border-2 border-surface-inset">
+                <img [src]="contact.avatar_url" alt="Avatar" class="w-16 h-16 rounded-full object-cover shadow-lg border-2 border-surface-inset">
                 <div class="flex-1">
-                  <p class="text-sm font-semibold px-2 py-0.5 rounded-full inline-block" [class]="contact.type === 'Customer' ? 'bg-blue-900/50 text-blue-300' : 'bg-purple-900/50 text-purple-300'">{{ contact.type }}</p>
+                  <p class="text-sm font-semibold px-2 py-0.5 rounded-full inline-block" [class]="contact.type === 'customer' ? 'bg-blue-900/50 text-blue-300' : 'bg-purple-900/50 text-purple-300'">{{ contact.type }}</p>
                   @if (contact.tags && contact.tags.length > 0) {
                     <div class="flex flex-wrap gap-1 mt-1">
                       @for(tag of contact.tags; track tag) {
@@ -277,19 +277,10 @@
               </div>
               <!-- Stats -->
               <div class="grid grid-cols-2 gap-3 text-center">
-                @if (contact.type === 'Customer') {
-                  <div class="bg-surface-inset p-3 rounded-lg shadow-inner">
-                    <p class="text-xs text-charcoal-400">Total Sales</p>
-                    <p class="font-bold text-xl tabular-nums">{{ contact.stats?.total_sales_lkr | currency:'LKR ':'symbol':'1.0-0' }}</p>
-                  </div>
+                @if (contact.type === 'customer') {
                   <div class="bg-surface-inset p-3 rounded-lg shadow-inner">
                     <p class="text-xs text-charcoal-400">Balance Due</p>
-                    <p class="font-bold text-xl tabular-nums" [class.text-red-400]="(contact.stats?.balance_lkr || 0) > 0">{{ contact.stats?.balance_lkr | currency:'LKR ':'symbol':'1.0-0' }}</p>
-                  </div>
-                } @else {
-                  <div class="bg-surface-inset p-3 rounded-lg shadow-inner col-span-2">
-                    <p class="text-xs text-charcoal-400">Total Purchases</p>
-                    <p class="font-bold text-xl tabular-nums">{{ contact.stats?.total_purchases_lkr | currency:'LKR ':'symbol':'1.0-0' }}</p>
+                    <p class="font-bold text-xl tabular-nums" [class.text-red-400]="(contact.stats?.balance_lkr || 0) > 0">{{ (contact.stats?.balance_lkr || 0) / 100 | currency:'LKR ':'symbol':'1.0-0' }}</p>
                   </div>
                 }
               </div>
@@ -305,10 +296,10 @@
                     @for(activity of recentActivity(); track activity.id) {
                       <div class="flex justify-between items-center bg-surface-inset p-2 rounded-lg text-sm">
                         <div class="flex items-center gap-2">
-                            <span class="font-mono text-xs px-1.5 py-0.5 rounded bg-surface shadow-inner">{{ 'invoiceNumber' in activity ? activity.invoiceNumber : activity.poNumber }}</span>
+                            <span class="font-mono text-xs px-1.5 py-0.5 rounded bg-surface shadow-inner">{{ activity.number }}</span>
                             <span [class]="'font-semibold text-xs px-1.5 py-0.5 rounded ' + getStatusColor(activity.status)">{{ activity.status }}</span>
                         </div>
-                        <span class="font-bold tabular-nums text-charcoal-200">{{ activity.amount | currency:'LKR ' }}</span>
+                        <span class="font-bold tabular-nums text-charcoal-200">{{ (activity.total_lkr / 100) | currency:'LKR ' }}</span>
                       </div>
                     }
                   </div>
@@ -323,12 +314,12 @@
             <div class="space-y-4">
               <div class="bg-surface-inset p-4 rounded-lg shadow-inner text-center">
                 <p class="text-xs text-charcoal-400">Amount Paid</p>
-                <p class="font-bold text-3xl tabular-nums text-green-400">{{ receipt.amount | currency:'LKR ' }}</p>
+                <p class="font-bold text-3xl tabular-nums text-green-400">{{ (receipt.amount_lkr / 100) | currency:'LKR ' }}</p>
               </div>
               <div class="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p class="text-charcoal-400">Payment Date</p>
-                  <p class="font-semibold">{{ receipt.paymentDate | date:'mediumDate' }}</p>
+                  <p class="font-semibold">{{ receipt.issue_date | date:'mediumDate' }}</p>
                 </div>
                 <div class="text-right">
                   <p class="text-charcoal-400">Method</p>
@@ -337,7 +328,7 @@
               </div>
               <div>
                   <p class="text-charcoal-400 text-sm">Applied to Invoice</p>
-                  <p class="font-semibold">{{ receipt.invoiceNumber }}</p>
+                  <p class="font-semibold">{{ receipt.invoice_number }}</p>
               </div>
             </div>
           }
@@ -346,7 +337,7 @@
             <div class="space-y-4">
               <div class="bg-surface-inset p-4 rounded-lg shadow-inner text-center">
                 <p class="text-xs text-charcoal-400">Amount</p>
-                <p class="font-bold text-3xl tabular-nums text-primary-400">{{ cheque.amount | currency:'LKR ' }}</p>
+                <p class="font-bold text-3xl tabular-nums text-primary-400">{{ (cheque.amount_lkr / 100) | currency:'LKR ' }}</p>
               </div>
               <div class="grid grid-cols-2 gap-4 text-sm">
                 <div><p class="text-charcoal-400">Payee (From)</p><p class="font-semibold">{{ cheque.payee }}</p></div>
@@ -361,13 +352,13 @@
             <div class="space-y-3">
               <div class="bg-surface-inset p-4 rounded-lg shadow-inner text-center">
                 <p class="text-xs text-charcoal-400">Total Due</p>
-                <p class="font-bold text-3xl tabular-nums text-red-400">{{ row.total | currency:'LKR ' }}</p>
+                <p class="font-bold text-3xl tabular-nums text-red-400">{{ (row.total / 100) | currency:'LKR ' }}</p>
               </div>
               <div class="grid grid-cols-2 gap-3 text-sm">
-                <div class="bg-surface p-2 rounded-md shadow-sm"><p class="text-charcoal-400">0-30 Days</p><p class="font-semibold tabular-nums">{{ row.bucket_0_30 | currency:'LKR '}}</p></div>
-                <div class="bg-surface p-2 rounded-md shadow-sm"><p class="text-charcoal-400">31-60 Days</p><p class="font-semibold tabular-nums">{{ row.bucket_31_60 | currency:'LKR '}}</p></div>
-                <div class="bg-surface p-2 rounded-md shadow-sm"><p class="text-charcoal-400">61-90 Days</p><p class="font-semibold tabular-nums">{{ row.bucket_61_90 | currency:'LKR '}}</p></div>
-                <div class="bg-surface p-2 rounded-md shadow-sm"><p class="text-charcoal-400">90+ Days</p><p class="font-semibold tabular-nums">{{ row.bucket_90_plus | currency:'LKR '}}</p></div>
+                <div class="bg-surface p-2 rounded-md shadow-sm"><p class="text-charcoal-400">0-30 Days</p><p class="font-semibold tabular-nums">{{ (row.bucket_0_30 / 100) | currency:'LKR '}}</p></div>
+                <div class="bg-surface p-2 rounded-md shadow-sm"><p class="text-charcoal-400">31-60 Days</p><p class="font-semibold tabular-nums">{{ (row.bucket_31_60 / 100) | currency:'LKR '}}</p></div>
+                <div class="bg-surface p-2 rounded-md shadow-sm"><p class="text-charcoal-400">61-90 Days</p><p class="font-semibold tabular-nums">{{ (row.bucket_61_90 / 100) | currency:'LKR '}}</p></div>
+                <div class="bg-surface p-2 rounded-md shadow-sm"><p class="text-charcoal-400">90+ Days</p><p class="font-semibold tabular-nums">{{ (row.bucket_90_plus / 100) | currency:'LKR '}}</p></div>
               </div>
             </div>
           }
@@ -376,13 +367,13 @@
             <div class="space-y-3">
               <div class="bg-surface-inset p-4 rounded-lg shadow-inner text-center">
                 <p class="text-xs text-charcoal-400">Total Payable</p>
-                <p class="font-bold text-3xl tabular-nums text-yellow-400">{{ row.total | currency:'LKR ' }}</p>
+                <p class="font-bold text-3xl tabular-nums text-yellow-400">{{ (row.total / 100) | currency:'LKR ' }}</p>
               </div>
               <div class="grid grid-cols-2 gap-3 text-sm">
-                <div class="bg-surface p-2 rounded-md shadow-sm"><p class="text-charcoal-400">0-30 Days</p><p class="font-semibold tabular-nums">{{ row.bucket_0_30 | currency:'LKR '}}</p></div>
-                <div class="bg-surface p-2 rounded-md shadow-sm"><p class="text-charcoal-400">31-60 Days</p><p class="font-semibold tabular-nums">{{ row.bucket_31_60 | currency:'LKR '}}</p></div>
-                <div class="bg-surface p-2 rounded-md shadow-sm"><p class="text-charcoal-400">61-90 Days</p><p class="font-semibold tabular-nums">{{ row.bucket_61_90 | currency:'LKR '}}</p></div>
-                <div class="bg-surface p-2 rounded-md shadow-sm"><p class="text-charcoal-400">90+ Days</p><p class="font-semibold tabular-nums">{{ row.bucket_90_plus | currency:'LKR '}}</p></div>
+                <div class="bg-surface p-2 rounded-md shadow-sm"><p class="text-charcoal-400">0-30 Days</p><p class="font-semibold tabular-nums">{{ (row.bucket_0_30 / 100) | currency:'LKR '}}</p></div>
+                <div class="bg-surface p-2 rounded-md shadow-sm"><p class="text-charcoal-400">31-60 Days</p><p class="font-semibold tabular-nums">{{ (row.bucket_31_60 / 100) | currency:'LKR '}}</p></div>
+                <div class="bg-surface p-2 rounded-md shadow-sm"><p class="text-charcoal-400">61-90 Days</p><p class="font-semibold tabular-nums">{{ (row.bucket_61_90 / 100) | currency:'LKR '}}</p></div>
+                <div class="bg-surface p-2 rounded-md shadow-sm"><p class="text-charcoal-400">90+ Days</p><p class="font-semibold tabular-nums">{{ (row.bucket_90_plus / 100) | currency:'LKR '}}</p></div>
               </div>
             </div>
           }
@@ -395,7 +386,7 @@
       <!-- Footer Actions -->
       <div class="flex items-center p-4 space-x-2">
         @if (normalizedItemType() === 'invoice') {
-            <button (click)="onRecordPaymentForInvoice()" [disabled]="asInvoice(item()).balance <= 0" type="button" class="aurora-button-primary flex-1 inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl">
+            <button (click)="onRecordPaymentForInvoice()" [disabled]="asInvoice(item()).balance_lkr <= 0" type="button" class="aurora-button-primary flex-1 inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl">
                 <i class="fa-solid fa-hand-holding-dollar"></i><span>Record Payment</span>
             </button>
             <button (click)="onEdit()" type="button" class="aurora-button-secondary flex-1 inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-4 py-2 rounded-xl">
@@ -413,11 +404,11 @@
                     <span>Edit</span>
                 </button>
             }
-            @if (normalizedItemType() === 'contact' && asContact(item()).type === 'Customer') {
+            @if (normalizedItemType() === 'contact' && asContact(item()).type === 'customer') {
                 <button (click)="onRecordPaymentForContact()" type="button" class="aurora-button-secondary flex-1 inline-flex items-center justify-center gap-2 font-semibold text-charcoal-200 px-4 py-2 rounded-xl"><i class="fa-solid fa-hand-holding-dollar"></i><span>Record Payment</span></button>
                 <button (click)="onNewInvoiceForContact()" type="button" class="aurora-button-primary flex-1 inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl"><i class="fa-solid fa-plus"></i><span>New Invoice</span></button>
             }
-            @if (normalizedItemType() === 'contact' && asContact(item()).type === 'Supplier') {
+            @if (normalizedItemType() === 'contact' && asContact(item()).type === 'supplier') {
                 <button (click)="onNewPurchaseOrderForContact()" type="button" class="aurora-button-primary flex-1 inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl"><i class="fa-solid fa-plus"></i><span>New PO</span></button>
             }
             @if(normalizedItemType() === 'product') {

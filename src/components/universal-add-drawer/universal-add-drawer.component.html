@@ -3,7 +3,7 @@
   <div class="aurora-backdrop absolute inset-0 animate-[fade-in_180ms_ease-in-out]" (click)="onClose()"></div>
 
   <!-- Drawer Panel -->
-  <div class="absolute top-3 right-3 bottom-3 w-full max-w-2xl bg-charcoal-900/90 backdrop-blur-xl shadow-2xl flex flex-col rounded-2xl animate-slide-in-drawer-spring">
+  <div cdkTrapFocus class="absolute top-3 right-3 bottom-3 w-full max-w-2xl bg-charcoal-900/90 backdrop-blur-xl shadow-2xl flex flex-col rounded-2xl animate-slide-in-drawer-spring">
     <!-- Sticky Header -->
     <header class="flex items-center justify-between p-4 bg-surface-raised/80 backdrop-blur-md sticky top-0 z-10 rounded-t-2xl">
       <h2 class="text-xl font-semibold text-brand-text">{{ title() }}</h2>
@@ -32,8 +32,8 @@
 
             <!-- Dates -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <app-date-picker label="Issue Date" formControlName="issueDate"></app-date-picker>
-              <app-date-picker label="Due Date" formControlName="dueDate"></app-date-picker>
+              <app-date-picker label="Issue Date" formControlName="issue_date"></app-date-picker>
+              <app-date-picker label="Due Date" formControlName="due_date"></app-date-picker>
             </div>
 
             <!-- Line Items -->
@@ -94,10 +94,7 @@
                   <span class="text-charcoal-400">Discount</span>
                   <div class="flex items-center gap-1">
                     <input type="number" formControlName="discountValue" class="aurora-input bg-surface w-20 h-7 text-right text-sm">
-                    <select formControlName="discountType" class="aurora-input bg-surface h-7 text-sm">
-                      <option value="percent">%</option>
-                      <option value="fixed">LKR</option>
-                    </select>
+                    <app-select formControlName="discountType" [options]="discountOptions"></app-select>
                   </div>
                 </div>
                  @if(discountAmount() > 0) {
@@ -368,7 +365,7 @@
                   <button (click)="openMediaBrowser('product-image')" type="button" class="text-sm font-semibold text-primary hover:underline">Choose from Library</button>
               </div>
             </div>
-             <div formGroupName="stock">
+             <div formGroupName="onHand">
                 <h3 class="flex items-center gap-2 text-lg font-medium text-brand-text">
                   <i class="fa-solid fa-boxes-stacked w-4 text-center text-charcoal-400"></i>
                   <span>Initial Stock Quantity</span>
@@ -461,9 +458,9 @@
                  <div class="space-y-4">
                   @for(item of itemsFormArray?.controls; track item; let i = $index) {
                     <div [formGroupName]="i" class="grid grid-cols-12 gap-x-4 gap-y-2 items-end p-3 bg-surface-raised rounded-xl shadow-md">
-                      <div class="col-span-12 sm:col-span-6"><label class="block text-xs font-medium text-charcoal-300">Product</label><app-product-picker [value]="item.value.product_id" (onSelect)="onProductSelect($event, i)"></app-product-picker></div>
-                      <div class="col-span-4 sm:col-span-2"><label class="block text-xs font-medium text-charcoal-300">Qty</label><input type="number" formControlName="qty" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none"></div>
-                      <div class="col-span-5 sm:col-span-3"><label class="block text-xs font-medium text-charcoal-300">Unit Price</label><input type="number" formControlName="unit_price_lkr" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none"></div>
+                      <div class="col-span-12 sm:col-span-6"><label class="block text-xs font-medium text-charcoal-300">Product</label><app-product-picker [value]="item.value.productId" (onSelect)="onProductSelect($event, i)"></app-product-picker></div>
+                      <div class="col-span-4 sm:col-span-2"><label class="block text-xs font-medium text-charcoal-300">Qty</label><input type="number" formControlName="quantity" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none"></div>
+                      <div class="col-span-5 sm:col-span-3"><label class="block text-xs font-medium text-charcoal-300">Unit Price</label><input type="number" formControlName="unitPrice" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none"></div>
                       <div class="col-span-3 sm:col-span-1"><button (click)="removeLineItem(i)" type="button" class="w-full h-10 flex items-center justify-center text-charcoal-500 hover:text-red-400"><i class="fa-solid fa-trash-can"></i></button></div>
                     </div>
                   }
@@ -495,9 +492,9 @@
                  <div class="space-y-4">
                   @for(item of itemsFormArray?.controls; track item; let i = $index) {
                     <div [formGroupName]="i" class="grid grid-cols-12 gap-x-4 gap-y-2 items-end p-3 bg-surface-raised rounded-xl shadow-md">
-                      <div class="col-span-12 sm:col-span-6"><label class="block text-xs font-medium text-charcoal-300">Product</label><app-product-picker [value]="item.value.product_id" (onSelect)="onProductSelect($event, i)"></app-product-picker></div>
-                      <div class="col-span-4 sm:col-span-2"><label class="block text-xs font-medium text-charcoal-300">Qty</label><input type="number" formControlName="qty" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none"></div>
-                      <div class="col-span-5 sm:col-span-3"><label class="block text-xs font-medium text-charcoal-300">Unit Price</label><input type="number" formControlName="unit_price_lkr" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none"></div>
+                      <div class="col-span-12 sm:col-span-6"><label class="block text-xs font-medium text-charcoal-300">Product</label><app-product-picker [value]="item.value.productId" (onSelect)="onProductSelect($event, i)"></app-product-picker></div>
+                      <div class="col-span-4 sm:col-span-2"><label class="block text-xs font-medium text-charcoal-300">Qty</label><input type="number" formControlName="quantity" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none"></div>
+                      <div class="col-span-5 sm:col-span-3"><label class="block text-xs font-medium text-charcoal-300">Unit Price</label><input type="number" formControlName="unitPrice" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none"></div>
                       <div class="col-span-3 sm:col-span-1"><button (click)="removeLineItem(i)" type="button" class="w-full h-10 flex items-center justify-center text-charcoal-500 hover:text-red-400"><i class="fa-solid fa-trash-can"></i></button></div>
                     </div>
                   }

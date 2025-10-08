@@ -4,7 +4,10 @@
     description="A record of all business expenses."
     [columns]="columns" 
     [data]="expenses()"
+    [isLoading]="isLoading()"
     [initialSearchQuery]="initialQuery()"
+    [emptyStateConfig]="emptyStateConfig"
+    (emptyStateAction)="handleEmptyStateAction()"
     context="expense"
     (rowAction)="handleRowAction($event)"
     (bulkAction)="handleBulkAction($event)">

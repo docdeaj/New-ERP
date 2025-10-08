@@ -1,7 +1,3 @@
-
-
-
-
 import { Component, ChangeDetectionStrategy, signal, effect, inject, computed } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -16,6 +12,7 @@ import { Invoice, Quotation, PurchaseOrder, Receipt, PrintableDocument } from '.
 import { NotificationsDropdownComponent } from './components/notifications-dropdown/notifications-dropdown.component';
 import { AuthService } from './services/auth.service';
 import { ToastContainerComponent } from './components/toast-container/toast-container.component';
+import { KeyboardShortcutsComponent } from './components/keyboard-shortcuts/keyboard-shortcuts.component';
 
 
 @Component({
@@ -34,6 +31,7 @@ import { ToastContainerComponent } from './components/toast-container/toast-cont
     DocumentPreviewModalComponent,
     NotificationsDropdownComponent,
     ToastContainerComponent,
+    KeyboardShortcutsComponent,
   ],
   host: {
     '(window:keydown)': 'handleKeyboardEvent($event)',
@@ -52,12 +50,13 @@ export class AppComponent {
   confirmationState = this.uiStateService.confirmationState;
   documentPreviewState = this.uiStateService.documentPreviewState;
   progressState = this.uiStateService.progressState;
+  isShortcutsOpen = this.uiStateService.isShortcutsOpen;
   
   mainContentMargin = computed(() => this.isSidebarCollapsed() ? 'ml-[calc(5rem+20px)] mr-2.5' : 'ml-[calc(16rem+20px)] mr-2.5');
 
   constructor() {
     effect(() => {
-      if (this.isSearchOpen() || this.isDrawerOpen() || this.confirmationState() || this.documentPreviewState() || this.isNotificationsOpen()) {
+      if (this.isSearchOpen() || this.isDrawerOpen() || this.confirmationState() || this.documentPreviewState() || this.isNotificationsOpen() || this.isShortcutsOpen()) {
         document.body.style.overflow = 'hidden';
       } else {
         document.body.style.overflow = 'auto';
@@ -120,6 +119,10 @@ export class AppComponent {
     const isTypingInInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable;
 
     if (event.key === 'Escape') {
+      if (this.isShortcutsOpen()) {
+        this.uiStateService.toggleShortcuts(false);
+        return;
+      }
       if (this.progressState()?.cancellable) {
         this.uiStateService.cancelProgress();
         return;
@@ -152,6 +155,12 @@ export class AppComponent {
          event.preventDefault();
          this.isSearchOpen.set(true);
        }
+    }
+    
+    // Keyboard Shortcuts
+    if (event.key === '?' && !isTypingInInput) {
+      event.preventDefault();
+      this.uiStateService.toggleShortcuts();
     }
 
     // Data Table "Search on keypress"

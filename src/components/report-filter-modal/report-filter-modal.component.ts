@@ -5,6 +5,7 @@ import { Contact } from '../../models/types';
 import { CustomerPickerComponent } from '../customer-picker/customer-picker.component';
 import { SupplierPickerComponent } from '../supplier-picker/supplier-picker.component';
 import { DatePickerComponent } from '../date-picker/date-picker.component';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
 
 export interface ReportFilters {
   startDate?: string | null;
@@ -17,7 +18,7 @@ export interface ReportFilters {
 @Component({
   selector: 'app-report-filter-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, CustomerPickerComponent, SupplierPickerComponent, DatePickerComponent],
+  imports: [CommonModule, ReactiveFormsModule, CustomerPickerComponent, SupplierPickerComponent, DatePickerComponent, CdkTrapFocus],
   templateUrl: './report-filter-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

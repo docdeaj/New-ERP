@@ -4,6 +4,7 @@
     description="A list of all invoices issued to customers, showing their status and amounts."
     [columns]="columns" 
     [data]="invoices()"
+    [isLoading]="isLoading()"
     [initialSearchQuery]="initialQuery()"
     context="invoice"
     [emptyStateConfig]="emptyStateConfig"

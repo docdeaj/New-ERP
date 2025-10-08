@@ -4,6 +4,7 @@
     description="Manage scheduled, automatic expenses."
     [columns]="columns" 
     [data]="recurringExpenses()"
+    [isLoading]="isLoading()"
     context="recurring-expense"
     (rowAction)="handleRowAction($event)"
     (bulkAction)="handleBulkAction($event)">

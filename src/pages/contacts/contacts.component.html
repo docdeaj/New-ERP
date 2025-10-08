@@ -4,6 +4,9 @@
     description="Manage your customers and suppliers."
     [columns]="columns" 
     [data]="contacts()"
+    [isLoading]="isLoading()"
+    [emptyStateConfig]="emptyStateConfig"
+    (emptyStateAction)="handleEmptyStateAction()"
     context="contact"
     (rowAction)="handleRowAction($event)"
     (bulkAction)="handleBulkAction($event)">

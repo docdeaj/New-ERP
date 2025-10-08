@@ -1,8 +1,8 @@
-
 import { Component, ChangeDetectionStrategy, input, output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, ValidatorFn, AbstractControl } from '@angular/forms';
 import { LocationKey } from '../../models/types';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
 
 const sameLocationValidator: ValidatorFn = (control: AbstractControl) => {
   const from = control.get('from');
@@ -15,7 +15,7 @@ const sameLocationValidator: ValidatorFn = (control: AbstractControl) => {
   templateUrl: './stock-transfer-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, CdkTrapFocus],
 })
 export class StockTransferModalComponent {
   selectedItemIds = input.required<(string | number)[]>();

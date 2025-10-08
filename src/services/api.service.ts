@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import {
-  Invoice, Product, Contact, Kpi, InventoryItem, Quotation, Receipt, Cheque, PurchaseOrder, MediaItem, Expense, ReceiptPaymentMethod, LineItem, RecurringExpense, LocationKey, ReportSummary, SalesTrend, TopProductReport, ArAgingRow, ApAgingRow, InventorySnapshot, RecurringForecastRow, TaxSummaryRow, ReportView, ReportQuery, ReportResult, ReportSchema, LogEntry, LogSeverity, CashflowSnapshot, QuotationStatus, ContactType, SalesByCustomerRow
+  Invoice, Product, Contact, Kpi, InventoryItem, Quotation, Receipt, Cheque, PurchaseOrder, MediaItem, Expense, ReceiptPaymentMethod, LineItem, RecurringExpense, LocationKey, ReportSummary, SalesTrend, TopProductReport, ArAgingRow, ApAgingRow, PnlRow, InventoryValuationRow, InventorySnapshot, RecurringForecastRow, TaxSummaryRow, ReportView, ReportQuery, ReportResult, ReportSchema, LogEntry, LogSeverity, CashflowSnapshot, QuotationStatus, ContactType, SalesByCustomerRow, StockOnHandRow, SalesByProductRow, BalanceSheetRow, PurchasesBySupplierRow
 } from '../models/types';
 import {
   SEED_PRODUCTS, SEED_CONTACTS, SEED_INVOICES, SEED_EXPENSES, SEED_QUOTATIONS, SEED_PURCHASE_ORDERS, SEED_RECEIPTS, SEED_MEDIA
@@ -91,8 +91,8 @@ export class ApiService {
       const todaySales = this._receipts().filter(r => r.issue_date.startsWith(today)).reduce((sum, r) => sum + r.amount_lkr, 0);
       const todayExpenses = this._expenses().filter(e => e.date.startsWith(today)).reduce((sum, e) => sum + e.amount_lkr, 0);
       return {
-        sales: { value: todaySales, delta: 12.5 },
-        expenses: { value: todayExpenses, delta: -5.2 }
+        sales: { value: todaySales, delta: 12.5, previousValue: todaySales / 1.125 },
+        expenses: { value: todayExpenses, delta: -5.2, previousValue: todayExpenses / 0.948 }
       };
     },
     getKpiTrend: async (kpi: 'sales' | 'expenses'): Promise<number[]> => {
@@ -198,14 +198,169 @@ export class ApiService {
         lastSaleDate: cs.lastSaleDate,
       })).sort((a,b) => b.totalSales - a.totalSales);
     },
+    getApAging: async (): Promise<ApAgingRow[]> => {
+      await this.delay(400);
+      const suppliers = this._contacts().filter(c => c.type === 'supplier');
+      const agingData: ApAgingRow[] = suppliers.map(s => ({
+          id: s.id,
+          supplierName: s.name,
+          supplierAvatarUrl: s.avatar_url || '',
+          bucket_0_30: Math.random() * 300000,
+          bucket_31_60: Math.random() * 100000,
+          bucket_61_90: 0,
+          bucket_90_plus: 0,
+          total: 0
+      }));
+       agingData.forEach(row => {
+          row.total = row.bucket_0_30 + row.bucket_31_60 + row.bucket_61_90 + row.bucket_90_plus;
+      });
+      return agingData;
+    },
+    getPnlData: async (): Promise<PnlRow[]> => {
+      await this.delay(500);
+      const totalRevenue = this._invoices().filter(i => i.status === 'Paid').reduce((sum, i) => sum + i.subtotal_lkr, 0);
+      const totalExpenses = this._expenses().reduce((sum, e) => sum + e.amount_lkr, 0);
+      const netIncome = totalRevenue - totalExpenses;
+
+      return [
+        { category: 'Revenue', isHeader: true, isTotal: false, items: [] },
+        { category: '', isHeader: false, isTotal: false, items: [{ label: 'Product Sales', amount: totalRevenue }] },
+        { category: 'Total Revenue', isHeader: false, isTotal: true, items: [{ label: 'Total Revenue', amount: totalRevenue, isSubtotal: true }] },
+        { category: 'Expenses', isHeader: true, isTotal: false, items: [] },
+        { category: '', isHeader: false, isTotal: false, items: [{ label: 'Utilities', amount: 1500000 }] },
+        { category: '', isHeader: false, isTotal: false, items: [{ label: 'Software', amount: 500000 }] },
+        { category: '', isHeader: false, isTotal: false, items: [{ label: 'Rent', amount: 15000000 }] },
+        { category: 'Total Expenses', isHeader: false, isTotal: true, items: [{ label: 'Total Expenses', amount: totalExpenses, isSubtotal: true }] },
+        { category: 'Net Income', isHeader: false, isTotal: true, items: [{ label: 'Net Income', amount: netIncome, isSubtotal: true }] },
+      ];
+    },
+    getBalanceSheet: async (): Promise<BalanceSheetRow[]> => {
+        await this.delay(550);
+        const totalReceivables = this._invoices().reduce((sum, i) => sum + i.balance_lkr, 0);
+        const inventoryValue = this._products().reduce((sum, p) => sum + (p.cost_lkr * Object.values(p.onHand).reduce((a,b) => a+b, 0)), 0);
+        const cash = 50000000;
+        const totalAssets = totalReceivables + inventoryValue + cash;
+        const totalLiabilities = 1250000;
+        const equity = totalAssets - totalLiabilities;
+        
+        return [
+            { category: 'Assets', isHeader: true, isTotal: false, items: [] },
+            { category: 'Assets', isHeader: false, isTotal: false, items: [{ label: 'Cash', amount: cash }] },
+            { category: 'Assets', isHeader: false, isTotal: false, items: [{ label: 'Accounts Receivable', amount: totalReceivables }] },
+            { category: 'Assets', isHeader: false, isTotal: false, items: [{ label: 'Inventory', amount: inventoryValue }] },
+            { category: 'Assets', isHeader: false, isTotal: true, items: [{ label: 'Total Assets', amount: totalAssets, isSubtotal: true }] },
+            { category: 'Liabilities', isHeader: true, isTotal: false, items: [] },
+            { category: 'Liabilities', isHeader: false, isTotal: false, items: [{ label: 'Accounts Payable', amount: totalLiabilities }] },
+            { category: 'Liabilities', isHeader: false, isTotal: true, items: [{ label: 'Total Liabilities', amount: totalLiabilities, isSubtotal: true }] },
+            { category: 'Equity', isHeader: true, isTotal: false, items: [] },
+            { category: 'Equity', isHeader: false, isTotal: false, items: [{ label: 'Retained Earnings', amount: equity }] },
+            { category: 'Equity', isHeader: false, isTotal: true, items: [{ label: 'Total Equity', amount: equity, isSubtotal: true }] },
+        ];
+    },
+    getPurchasesBySupplier: async (): Promise<PurchasesBySupplierRow[]> => {
+        await this.delay(400);
+        const supplierPurchases: { [supplierId: string]: { totalPurchases: number; poCount: number; supplier: Contact } } = {};
+
+        this._purchaseOrders().forEach(po => {
+            if (!supplierPurchases[po.party_id]) {
+                const supplier = this._contacts().find(c => c.id === po.party_id);
+                if (supplier) {
+                    supplierPurchases[po.party_id] = { totalPurchases: 0, poCount: 0, supplier };
+                }
+            }
+            if (supplierPurchases[po.party_id]) {
+                supplierPurchases[po.party_id].totalPurchases += po.total_lkr;
+                supplierPurchases[po.party_id].poCount++;
+            }
+        });
+        
+        return Object.values(supplierPurchases).map(sp => ({
+            id: sp.supplier.id,
+            supplierName: sp.supplier.name,
+            supplierAvatarUrl: sp.supplier.avatar_url || '',
+            totalPurchases: sp.totalPurchases,
+            poCount: sp.poCount,
+        })).sort((a,b) => b.totalPurchases - a.totalPurchases);
+    },
+     getInventoryValuation: async (): Promise<InventoryValuationRow[]> => {
+      await this.delay(300);
+      return this._products().map(p => {
+        const onHand = Object.values(p.onHand).reduce((a,b) => a + b, 0);
+        return {
+          id: p.id,
+          productName: p.name,
+          sku: p.sku,
+          onHand: onHand,
+          costPerUnit: p.cost_lkr,
+          totalValue: onHand * p.cost_lkr
+        };
+      });
+    },
+    getSalesByProduct: async (): Promise<SalesByProductRow[]> => {
+        await this.delay(450);
+        const productSales: { [productId: string]: { p: Product, qty: number, revenue: number } } = {};
+
+        this._invoices().forEach(invoice => {
+            invoice.items.forEach(item => {
+                if (!productSales[item.product_id]) {
+                    const product = this._products().find(p => p.id === item.product_id);
+                    if (product) {
+                        productSales[item.product_id] = { p: product, qty: 0, revenue: 0 };
+                    }
+                }
+                if (productSales[item.product_id]) {
+                    productSales[item.product_id].qty += item.qty;
+                    productSales[item.product_id].revenue += item.qty * item.unit_price_lkr;
+                }
+            });
+        });
+
+        return Object.values(productSales).map(ps => ({
+            id: ps.p.id,
+            productName: ps.p.name,
+            sku: ps.p.sku,
+            quantitySold: ps.qty,
+            totalRevenue: ps.revenue,
+            avgPrice: ps.qty > 0 ? ps.revenue / ps.qty : 0
+        })).sort((a,b) => b.totalRevenue - a.totalRevenue);
+    },
+    getStockOnHand: async (): Promise<StockOnHandRow[]> => {
+        await this.delay(200);
+        return this._products().map(p => {
+            const total = Object.values(p.onHand).reduce((a,b) => a + b, 0);
+            return {
+                id: p.id,
+                productName: p.name,
+                sku: p.sku,
+                mainWarehouse: p.onHand.mainWarehouse,
+                downtownStore: p.onHand.downtownStore,
+                online: p.onHand.online,
+                totalOnHand: total
+            };
+        });
+    },
+    getTaxSummary: async (): Promise<TaxSummaryRow[]> => {
+        await this.delay(350);
+        const taxableSales = this._invoices().reduce((sum, inv) => sum + inv.subtotal_lkr, 0);
+        const taxCollected = this._invoices().reduce((sum, inv) => sum + inv.tax_lkr, 0);
+        const taxablePurchases = this._expenses().reduce((sum, exp) => sum + exp.amount_lkr, 0);
+        const taxPaid = this._expenses().reduce((sum, exp) => sum + (exp.tax_lkr || 0), 0);
+
+        return [{
+            period: 'This Month',
+            taxable_sales: taxableSales,
+            tax_collected: taxCollected,
+            taxable_purchases: taxablePurchases,
+            tax_paid: taxPaid,
+            net_tax_due: taxCollected - taxPaid
+        }];
+    },
     // Add other report methods if needed
     getSummary: (): Promise<ReportSummary> => Promise.resolve({} as ReportSummary),
     getSalesTrend: (): Promise<SalesTrend> => Promise.resolve({} as SalesTrend),
     getTopProducts: (): Promise<TopProductReport[]> => Promise.resolve([]),
-    getApAging: (): Promise<ApAgingRow[]> => Promise.resolve([]),
     getInventorySnapshot: (): Promise<InventorySnapshot> => Promise.resolve({} as InventorySnapshot),
     getRecurringForecast: (): Promise<RecurringForecastRow[]> => Promise.resolve([]),
-    getTaxSummary: (): Promise<TaxSummaryRow[]> => Promise.resolve([]),
     getView: (id: string): Promise<ReportView | null> => Promise.resolve(null),
     getSchema: (): Promise<ReportSchema> => Promise.resolve({ dimensions: [], metrics: [] }),
     run: (query: ReportQuery): Promise<ReportResult> => Promise.resolve({} as ReportResult),
@@ -251,7 +406,35 @@ export class ApiService {
   };
 
   cheques = this.createCrudService<Cheque>(this._cheques);
-  purchaseOrders = this.createCrudService<PurchaseOrder>(this._purchaseOrders);
+  purchaseOrders = {
+     ...this.createCrudService<PurchaseOrder>(this._purchaseOrders),
+     receivePO: async (poId: string | number): Promise<void> => {
+        await this.delay(600);
+        const po = this._purchaseOrders().find(p => String(p.id) === String(poId));
+        if (!po || po.status !== 'Ordered') {
+            throw new Error(`Purchase Order ${poId} not found or cannot be received.`);
+        }
+
+        // Atomically update product stock
+        this._products.update(products => {
+            const newProducts = [...products];
+            po.items.forEach(item => {
+                const productIndex = newProducts.findIndex(p => p.id === item.product_id);
+                if (productIndex !== -1) {
+                    const updatedProduct = { ...newProducts[productIndex] };
+                    updatedProduct.onHand = { ...updatedProduct.onHand };
+                    updatedProduct.onHand.mainWarehouse += item.qty;
+                    newProducts[productIndex] = updatedProduct;
+                }
+            });
+            return newProducts;
+        });
+
+        // Update PO status
+        await this.purchaseOrders.update(poId, { status: 'Received' });
+        this.notifyDataChange();
+      }
+  };
 
   contacts = {
     ...this.createCrudService<Contact>(this._contacts),
@@ -388,7 +571,7 @@ export class ApiService {
     return this.contacts.create(newContactData);
   }
 
-  async updateQuotationStatus(id: number, status: QuotationStatus): Promise<Quotation> {
+  async updateQuotationStatus(id: string | number, status: QuotationStatus): Promise<Quotation> {
     return this.quotations.update(id, { status });
   }
 

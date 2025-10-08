@@ -1,5 +1,3 @@
-
-
 import { Routes } from '@angular/router';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { InvoicesComponent } from './pages/invoices/invoices.component';
@@ -22,11 +20,16 @@ import { LogsComponent } from './pages/logs/logs.component';
 import { LoginComponent } from './pages/login/login.component';
 import { authGuard } from './guards/auth.guard';
 import { SignupComponent } from './pages/signup/signup.component';
+import { NotFoundComponent } from './pages/not-found/not-found.component';
+import { ServerErrorComponent } from './pages/server-error/server-error.component';
+import { OfflineComponent } from './pages/offline/offline.component';
 
 
 export const APP_ROUTES: Routes = [
   { path: 'login', component: LoginComponent, title: 'Login' },
   { path: 'signup', component: SignupComponent, title: 'Sign Up' },
+  { path: '500', component: ServerErrorComponent, title: 'Server Error' },
+  { path: 'offline', component: OfflineComponent, title: 'Offline' },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'dashboard', component: DashboardComponent, title: 'Dashboard', canActivate: [authGuard] },
   { path: 'pos', component: PosComponent, title: 'Point of Sale', canActivate: [authGuard] },
@@ -52,5 +55,6 @@ export const APP_ROUTES: Routes = [
     canActivate: [authGuard] 
   },
   { path: 'recurring', component: RecurringExpensesComponent, title: 'Recurring Expenses', canActivate: [authGuard] },
-  { path: '**', redirectTo: 'login' } 
+  { path: '404', component: NotFoundComponent, title: 'Not Found' },
+  { path: '**', redirectTo: '/404' } 
 ];

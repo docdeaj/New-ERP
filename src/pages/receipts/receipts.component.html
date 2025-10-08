@@ -4,6 +4,7 @@
     description="A record of all payments received from customers."
     [columns]="columns" 
     [data]="receipts()"
+    [isLoading]="isLoading()"
     context="receipt"
     [disableQuickPeek]="true"
     (rowClicked)="openPreview($event)"

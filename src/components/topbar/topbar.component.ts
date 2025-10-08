@@ -1,5 +1,3 @@
-
-
 import { Component, ChangeDetectionStrategy, output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -37,5 +35,9 @@ export class TopbarComponent {
 
   onLogout() {
     this.authService.logout();
+  }
+  
+  onHelp() {
+    this.uiStateService.toggleShortcuts(true);
   }
 }

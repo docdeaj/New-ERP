@@ -1,5 +1,3 @@
-
-
 import { Component, ChangeDetectionStrategy, input, output, computed, inject, viewChild, ElementRef, signal, effect } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
@@ -9,13 +7,14 @@ import { InvoicePdfComponent } from '../invoice-pdf/invoice-pdf.component';
 import { PdfGenerationService } from '../../services/pdf.service';
 import { UiStateService, DrawerContext } from '../../services/ui-state.service';
 import { ApiService } from '../../services/api.service';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
 
 @Component({
   selector: 'app-quick-peek',
   templateUrl: './quick-peek.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, DatePipe, InvoicePdfComponent],
+  imports: [CommonModule, CurrencyPipe, DatePipe, InvoicePdfComponent, CdkTrapFocus],
 })
 export class QuickPeekComponent {
   item = input.required<Invoice | Product | any>();

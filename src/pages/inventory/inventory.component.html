@@ -4,6 +4,7 @@
     description="Current stock levels across all locations."
     [columns]="columns" 
     [data]="inventory()"
+    [isLoading]="isLoading()"
     [initialSearchQuery]="initialQuery()"
     context="inventory"
     (rowAction)="handleRowAction($event)"

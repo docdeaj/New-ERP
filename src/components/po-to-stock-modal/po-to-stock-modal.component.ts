@@ -1,15 +1,14 @@
-
-
 import { Component, ChangeDetectionStrategy, input, output, computed } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { PurchaseOrder } from '../../models/types';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
 
 @Component({
   selector: 'app-po-to-stock-modal',
   templateUrl: './po-to-stock-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, CurrencyPipe],
+  imports: [CommonModule, CurrencyPipe, CdkTrapFocus],
 })
 export class PoToStockModalComponent {
   purchaseOrder = input.required<PurchaseOrder>();

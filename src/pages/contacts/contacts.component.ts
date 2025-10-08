@@ -1,7 +1,6 @@
-
 import { Component, ChangeDetectionStrategy, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DataTableComponent, ColumnDefinition } from '../../components/data-table/data-table.component';
+import { DataTableComponent, ColumnDefinition, EmptyStateConfig } from '../../components/data-table/data-table.component';
 import { Contact } from '../../models/types';
 import { ApiService } from '../../services/api.service';
 import { UiStateService } from '../../services/ui-state.service';
@@ -26,6 +25,12 @@ export class ContactsComponent {
     { key: 'phone', label: 'Phone', type: 'string' },
     { key: 'type', label: 'Type', type: 'chip' },
   ];
+
+  emptyStateConfig: EmptyStateConfig = {
+    title: 'No Contacts Found',
+    message: 'Add customers and suppliers to get started.',
+    actionText: 'Add New Contact'
+  };
 
   constructor() {
     this.loadContacts();
@@ -62,6 +67,10 @@ export class ContactsComponent {
   
   openAddNewDrawer() {
     this.uiStateService.openDrawer('new-contact');
+  }
+
+  handleEmptyStateAction() {
+    this.openAddNewDrawer();
   }
 
   editContact(contact: Contact) {

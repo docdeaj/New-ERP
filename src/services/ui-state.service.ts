@@ -21,6 +21,7 @@ export class UiStateService {
   isSidebarCollapsed = signal(false);
   isSearchOpen = signal(false);
   isNotificationsOpen = signal(false);
+  isShortcutsOpen = signal(false);
   
   // Drawer State
   isDrawerOpen = signal(false);
@@ -95,5 +96,13 @@ export class UiStateService {
   
   cancelProgress() {
     this.progressState.update(state => state ? { ...state, isCancelled: true } : null);
+  }
+
+  toggleShortcuts(force?: boolean) {
+    if (typeof force === 'boolean') {
+      this.isShortcutsOpen.set(force);
+    } else {
+      this.isShortcutsOpen.update(v => !v);
+    }
   }
 }

@@ -1,0 +1,33 @@
+<div class="relative">
+  <button (click)="toggleDropdown()" type="button" class="aurora-input text-left mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none min-h-[40px] flex items-center justify-between">
+    <span [class.text-charcoal-400]="!selectedValue">{{ selectedLabel }}</span>
+    <i class="fa-solid fa-chevron-down text-charcoal-400 transition-transform" [class.rotate-180]="isOpen()"></i>
+  </button>
+
+  @if (isOpen()) {
+    <div class="absolute top-full mt-2 w-full z-20 bg-surface-raised/95 backdrop-blur-xl rounded-lg shadow-2xl overflow-hidden animate-[slide-down-fade_180ms_cubic-bezier(0.2,0.8,0.2,1)] border border-charcoal-700/30">
+      <ul class="p-1 max-h-60 overflow-y-auto">
+        @for (option of options(); track option.value) {
+          <li (click)="selectOption(option.value)"
+              class="px-3 py-1.5 text-sm rounded-md cursor-pointer flex justify-between items-center"
+              [class]="selectedValue === option.value ? 'bg-primary text-white' : 'hover:bg-surface-inset'">
+            <span>{{ option.label }}</span>
+            @if (selectedValue === option.value) {
+              <i class="fa-solid fa-check"></i>
+            }
+          </li>
+        }
+      </ul>
+    </div>
+  }
+</div>
+
+<style>
+@keyframes slide-down-fade {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-\[slide-down-fade_180ms_cubic-bezier\(0\.2\,0\.8\,0\.2\,1\)\] {
+  animation: slide-down-fade 180ms cubic-bezier(0.2,0.8,0.2,1);
+}
+</style>

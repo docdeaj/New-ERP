@@ -66,6 +66,10 @@
           </div>
       </div>
     }
+    
+    @if (isShortcutsOpen()) {
+      <app-keyboard-shortcuts (close)="uiStateService.toggleShortcuts(false)"></app-keyboard-shortcuts>
+    }
   </div>
 } @else {
   <router-outlet></router-outlet>

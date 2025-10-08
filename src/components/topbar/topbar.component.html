@@ -4,13 +4,13 @@
   </div>
   
   <div class="flex items-center gap-2 sm:gap-4">
-    <button (click)="onLogout()" class="group flex items-center justify-center w-11 h-11 bg-surface-raised rounded-full shadow-md hover:shadow-lg hover:bg-red-500/10 hover:-translate-y-px active:scale-98 active:shadow-inner transition-all duration-200 ease-in-out focus:outline-none focus-visible:shadow-[var(--focus-ring)]" aria-label="Logout">
-      <i class="fa-solid fa-right-from-bracket text-charcoal-300 group-hover:text-red-400 transition-colors"></i>
+    <button (click)="onLogout()" class="aurora-button-secondary !w-11 !h-11 !p-0 !rounded-full flex items-center justify-center" aria-label="Logout">
+      <i class="fa-solid fa-right-from-bracket text-charcoal-300"></i>
     </button>
     <button (click)="toggleNotifications()"
-            class="group relative flex items-center justify-center w-11 h-11 bg-surface-raised rounded-full shadow-md hover:shadow-lg hover:bg-primary-500/10 hover:-translate-y-px active:scale-98 active:shadow-inner transition-all duration-200 ease-in-out focus:outline-none focus-visible:shadow-[var(--focus-ring)]"
+            class="aurora-button-secondary !w-11 !h-11 !p-0 !rounded-full relative flex items-center justify-center"
             aria-label="Open notifications">
-        <i class="fa-solid fa-bell text-charcoal-300 transition-transform duration-200 group-hover:scale-110"></i>
+        <i class="fa-solid fa-bell text-charcoal-300"></i>
         @if(unreadCount() > 0) {
           <span class="absolute -top-1 -right-1 flex h-5 w-5">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -18,16 +18,16 @@
           </span>
         }
     </button>
-    <button (click)="onSettings()" class="group flex items-center justify-center w-11 h-11 bg-surface-raised rounded-full shadow-md hover:shadow-lg hover:bg-primary-500/10 hover:-translate-y-px active:scale-98 active:shadow-inner transition-all duration-200 ease-in-out focus:outline-none focus-visible:shadow-[var(--focus-ring)]" aria-label="Settings">
-      <i class="fa-solid fa-cog text-charcoal-300 transition-transform duration-200 group-hover:scale-110"></i>
+    <button (click)="onSettings()" class="aurora-button-secondary !w-11 !h-11 !p-0 !rounded-full flex items-center justify-center" aria-label="Settings">
+      <i class="fa-solid fa-cog text-charcoal-300"></i>
     </button>
     <button (click)="onOpenSearch()" 
-            class="group flex items-center justify-center w-11 h-11 bg-surface-raised rounded-full shadow-md hover:shadow-lg hover:bg-primary-500/10 hover:-translate-y-px active:scale-98 active:shadow-inner transition-all duration-200 ease-in-out focus:outline-none focus-visible:shadow-[var(--focus-ring)]"
+            class="aurora-button-secondary !w-11 !h-11 !p-0 !rounded-full flex items-center justify-center"
             aria-label="Open search">
-      <i class="fa-solid fa-magnifying-glass text-charcoal-300 transition-transform duration-200 group-hover:scale-110"></i>
+      <i class="fa-solid fa-magnifying-glass text-charcoal-300"></i>
     </button>
-    <button class="group flex items-center justify-center w-11 h-11 bg-surface-raised rounded-full shadow-md hover:shadow-lg hover:bg-primary-500/10 hover:-translate-y-px active:scale-98 active:shadow-inner transition-all duration-200 ease-in-out focus:outline-none focus-visible:shadow-[var(--focus-ring)]" aria-label="Help">
-      <i class="fa-solid fa-circle-question text-charcoal-300 transition-transform duration-200 group-hover:scale-110"></i>
+    <button (click)="onHelp()" class="aurora-button-secondary !w-11 !h-11 !p-0 !rounded-full flex items-center justify-center" aria-label="Help & Keyboard Shortcuts (?)">
+      <i class="fa-solid fa-circle-question text-charcoal-300"></i>
     </button>
   </div>
 </header>
