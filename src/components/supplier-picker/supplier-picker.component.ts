@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { Contact } from '../../models/types';
 import { ScrollingModule } from '@angular/cdk/scrolling';
+import { HighlightPipe } from '../../pipes/highlight.pipe';
 
 @Component({
   selector: 'app-supplier-picker',
   standalone: true,
-  imports: [CommonModule, ScrollingModule, FormsModule],
+  imports: [CommonModule, ScrollingModule, FormsModule, HighlightPipe],
   templateUrl: './supplier-picker.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -17,7 +18,7 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
 })
 export class SupplierPickerComponent {
   value = input<Contact | null>(null);
-  placeholder = input('Search supplier...');
+  placeholder = input('Search or add supplier...');
   onSelect = output<Contact>();
   onClear = output<void>();
 
@@ -26,34 +27,63 @@ export class SupplierPickerComponent {
   query = signal('');
   isDropdownOpen = signal(false);
   results = signal<Contact[]>([]);
+  allSuppliers = signal<Contact[]>([]);
   isLoading = signal(false);
   activeIndex = signal(0);
+  selectedSupplier = signal<Contact | null>(null);
 
-  searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
   pickerContainer = viewChild<ElementRef<HTMLDivElement>>('pickerContainer');
+  searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
 
   activeResult = computed(() => this.results()[this.activeIndex()]);
 
   constructor() {
+    this.fetchAllSuppliers();
+
+    effect(() => {
+        const selectedId = this.value()?.id;
+        if (selectedId && this.allSuppliers().length > 0) {
+            const supplier = this.allSuppliers().find(p => p.id === selectedId);
+            this.selectedSupplier.set(supplier || null);
+        } else {
+            this.selectedSupplier.set(null);
+        }
+    });
+
     effect((onCleanup) => {
-      const q = this.query();
+      const q = this.query().toLowerCase();
       this.activeIndex.set(0);
-      const timer = setTimeout(async () => {
-        this.isLoading.set(true);
-        const allContacts = await this.api.contacts.list({ query: q });
-        this.results.set(allContacts.filter(c => c.type === 'Supplier'));
-        this.isLoading.set(false);
-      }, 150);
+
+      const timer = setTimeout(() => {
+        if (!q) {
+          this.results.set(this.allSuppliers().slice(0, 10)); // Show some initial results
+          return;
+        }
+        this.results.set(
+          this.allSuppliers().filter(s => 
+            s.name.toLowerCase().includes(q)
+          )
+        );
+      }, 150); // Debounce
+
       onCleanup(() => clearTimeout(timer));
     });
 
     effect(() => {
-      if (this.isDropdownOpen() && !this.value()) {
-        setTimeout(() => this.searchInput()?.nativeElement.focus());
+      if (this.isDropdownOpen() && !this.selectedSupplier()) {
+        setTimeout(() => this.searchInput()?.nativeElement.focus(), 0);
       }
     });
   }
-  
+
+  async fetchAllSuppliers() {
+    this.isLoading.set(true);
+    const contacts = await this.api.contacts.list();
+    this.allSuppliers.set(contacts.filter(c => c.type === 'Supplier'));
+    this.results.set(this.allSuppliers().slice(0, 10));
+    this.isLoading.set(false);
+  }
+
   onDocumentClick(event: MouseEvent) {
     if (!this.pickerContainer()?.nativeElement.contains(event.target as Node)) {
       this.isDropdownOpen.set(false);
@@ -85,20 +115,19 @@ export class SupplierPickerComponent {
 
   openDropdown() {
     this.isDropdownOpen.set(true);
-    // Reset query to show all on open, which triggers the effect
-    this.query.set(''); 
   }
 
   selectItem(supplier: Contact) {
     this.onSelect.emit(supplier);
+    this.selectedSupplier.set(supplier);
     this.query.set('');
     this.isDropdownOpen.set(false);
   }
 
-  clearSelection(event?: MouseEvent) {
-    event?.stopPropagation();
+  clearSelection(event: MouseEvent) {
+    event.stopPropagation();
+    this.selectedSupplier.set(null);
     this.onClear.emit();
-    this.query.set('');
     this.openDropdown();
   }
 }

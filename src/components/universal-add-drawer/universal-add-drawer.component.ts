@@ -12,6 +12,7 @@ import { SettingsService } from '../../services/settings.service';
 import { DatePickerComponent } from '../date-picker/date-picker.component';
 import { ProductPickerComponent } from '../product-picker/product-picker.component';
 import { SupplierPickerComponent } from '../supplier-picker/supplier-picker.component';
+import { AnalyticsService } from '../../services/analytics.service';
 
 @Component({
   selector: 'app-universal-add-drawer',
@@ -29,6 +30,7 @@ export class UniversalAddDrawerComponent {
   private uiState = inject(UiStateService);
   private geminiService = inject(GeminiService);
   private settingsService = inject(SettingsService);
+  private analytics = inject(AnalyticsService);
 
   isMediaBrowserOpen = signal(false);
   mediaFieldContext = signal<'expense-attachment' | 'product-image' | 'contact-avatar' | null>(null);
@@ -85,6 +87,10 @@ export class UniversalAddDrawerComponent {
       const data = this.currentItem();
       const ctx = this.context();
       const form = this.getCurrentForm();
+
+      if (ctx === 'new-invoice' && !this.isEditMode()) {
+          this.analytics.emitEvent('invoice_create_start', { source: data ? ('quotation' in data ? 'from_quotation' : 'from_contact') : 'direct' });
+      }
       
       // Reset all forms first to ensure clean state
       this.resetAllForms();
@@ -367,7 +373,14 @@ export class UniversalAddDrawerComponent {
         }
       } else {
         switch(this.context()) {
-          case 'new-invoice': await this.api.createInvoice(payload); break;
+          case 'new-invoice': 
+            const newInvoice = await this.api.createInvoice(payload); 
+            this.analytics.emitEvent('invoice_create_save', {
+                invoice_id: newInvoice.id,
+                amount: newInvoice.amount,
+                line_items_count: newInvoice.lineItems?.length || 0,
+            });
+            break;
           case 'new-expense': 
             if (payload.isRecurring) {
               await this.api.createRecurringExpense(payload);

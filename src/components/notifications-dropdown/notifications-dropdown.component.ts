@@ -1,9 +1,11 @@
-import { Component, ChangeDetectionStrategy, inject, output, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, output, computed, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { NotificationService } from '../../services/notification.service';
-import { Notification } from '../../models/types';
+import { Notification, NotificationType } from '../../models/types';
 import { UiStateService } from '../../services/ui-state.service';
+
+type NotificationTab = 'All' | 'System' | 'Billing';
 
 @Component({
   selector: 'app-notifications-dropdown',
@@ -19,11 +21,22 @@ export class NotificationsDropdownComponent {
   uiStateService = inject(UiStateService);
   router = inject(Router);
 
-  recentUnread = computed(() => 
-    this.notificationService.notifications()
-      .filter(n => !n.read)
-      .slice(0, 5)
-  );
+  activeTab = signal<NotificationTab>('All');
+  
+  billingTypes: NotificationType[] = ['invoice', 'quotation', 'cheque', 'billing'];
+
+  filteredNotifications = computed(() => {
+    const notifications = this.notificationService.notifications();
+    const tab = this.activeTab();
+    
+    if (tab === 'System') {
+      return notifications.filter(n => n.type === 'system');
+    }
+    if (tab === 'Billing') {
+      return notifications.filter(n => this.billingTypes.includes(n.type));
+    }
+    return notifications; // 'All'
+  });
 
   getIconForType(type: string): string {
     switch (type) {
@@ -34,6 +47,7 @@ export class NotificationsDropdownComponent {
       case 'mention': return 'fa-solid fa-at';
       case 'cheque': return 'fa-solid fa-money-check-dollar';
       case 'quotation': return 'fa-solid fa-file-lines';
+      case 'billing': return 'fa-solid fa-credit-card';
       default: return 'fa-solid fa-bell';
     }
   }

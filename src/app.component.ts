@@ -1,3 +1,4 @@
+
 import { Component, ChangeDetectionStrategy, signal, effect, inject, computed } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -44,7 +45,7 @@ export class AppComponent {
   documentPreviewState = this.uiStateService.documentPreviewState;
   progressState = this.uiStateService.progressState;
   
-  mainContentMargin = computed(() => this.isSidebarCollapsed() ? 'ml-[calc(5rem+20px)]' : 'ml-[calc(16rem+20px)]');
+  mainContentMargin = computed(() => this.isSidebarCollapsed() ? 'ml-[calc(5rem+20px)] mr-2.5' : 'ml-[calc(16rem+20px)] mr-2.5');
 
   constructor() {
     effect(() => {

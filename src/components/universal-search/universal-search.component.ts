@@ -7,6 +7,7 @@ import { InvoicePdfComponent } from '../invoice-pdf/invoice-pdf.component';
 import { PdfGenerationService } from '../../services/pdf.service';
 import { UiStateService, DrawerContext } from '../../services/ui-state.service';
 import { Router } from '@angular/router';
+import { AnalyticsService } from '../../services/analytics.service';
 
 interface SearchResultItem {
   type: string;
@@ -48,6 +49,7 @@ export class UniversalSearchComponent {
   pdfService = inject(PdfGenerationService);
   uiState = inject(UiStateService);
   router = inject(Router);
+  analytics = inject(AnalyticsService);
   
   query = signal('');
   results = signal<SearchResultGroup[]>([]);
@@ -93,6 +95,7 @@ export class UniversalSearchComponent {
   });
 
   constructor() {
+    this.analytics.emitEvent('search_open', {});
     afterNextRender(() => this.searchInput()?.nativeElement.focus());
     effect((onCleanup) => {
       const currentQuery = this.query();
@@ -240,6 +243,13 @@ export class UniversalSearchComponent {
   handleSelect() {
     const item = this.selectedItem();
     if (!item) return;
+
+    this.analytics.emitEvent('search_select', {
+      query: this.query(),
+      item_type: item.type,
+      item_id: item.data.id,
+      item_title: item.title,
+    });
 
     switch (item.type) {
       case 'nav':

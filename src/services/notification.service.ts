@@ -9,6 +9,7 @@ let MOCK_NOTIFICATIONS: Notification[] = [
   { id: 5, type: 'mention', title: 'You were mentioned in an invoice note', body: '@Admin User mentioned you in a note on INV-2024-004: "Can you please follow up on this payment?"', createdAt: new Date().toISOString(), read: false, link: '/invoices?q=INV-2024-004', priority: 'high' },
   { id: 6, type: 'cheque', title: 'Cheque 654321 is pending deposit', body: 'A cheque for LKR 100,000.00 is ready for deposit.', createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), read: true, link: '/cheques', priority: 'medium' },
   { id: 7, type: 'quotation', title: 'Quotation QUO-2024-001 accepted', body: 'Pixel Perfect Designs has accepted your quotation.', createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(), read: true, link: '/quotations', priority: 'low' },
+  { id: 8, type: 'billing', title: 'Monthly Subscription Renewed', body: 'Your Aurora ERP+POS subscription has been renewed successfully for LKR 5,000.00.', createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), read: true, priority: 'low' },
 ];
 
 

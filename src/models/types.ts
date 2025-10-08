@@ -126,6 +126,7 @@ export interface Product {
   cost: number;
   imageUrl: string;
   description?: string;
+  dimensions?: { w: number; h: number; t: number; };
   stock: {
     [key in LocationKey]: number;
   };
@@ -147,6 +148,7 @@ export interface CartItem {
   flags?: {
     price_below_cost?: boolean;
   };
+  dimensions?: { w: number; h: number; t: number; };
 }
 
 export interface InventoryItem {
@@ -204,7 +206,7 @@ export interface DailyReport {
 }
 
 // --- Notifications ---
-export type NotificationType = 'invoice' | 'stock' | 'system' | 'purchase_order' | 'mention' | 'cheque' | 'quotation';
+export type NotificationType = 'invoice' | 'stock' | 'system' | 'purchase_order' | 'mention' | 'cheque' | 'quotation' | 'billing';
 export type NotificationPriority = 'high' | 'medium' | 'low';
 
 export interface Notification {

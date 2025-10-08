@@ -262,29 +262,32 @@
         </div>
       </div>
       <!-- Right side: Top Selling Products -->
-      <div>
+      <div class="flex flex-col h-full">
         <h4 class="text-lg font-semibold mb-4">Top Selling Products (This Month)</h4>
-        <div class="overflow-y-auto h-64">
+        <div class="flex-1 overflow-hidden">
           <table class="w-full text-left text-sm">
             <thead class="text-xs text-charcoal-400 uppercase sticky top-0 bg-surface z-10">
               <tr><th class="p-2">Product</th><th class="p-2 text-right">Price</th><th class="p-2 text-right">Qty Sold</th><th class="p-2 text-right">SKU</th></tr>
             </thead>
-            <tbody>
-              @for (product of topSellingProducts(); track product.id) {
-                <tr class="hover:bg-surface-raised hover:-translate-y-px transition-all duration-150">
-                  <td class="p-2 font-semibold flex items-center gap-3">
-                    <img [src]="product.imageUrl" [alt]="product.name" class="w-10 h-10 rounded-md object-cover">
-                    <span>{{product.name}}</span>
-                  </td>
-                  <td class="p-2 text-right tabular-nums">LKR {{product.price.toLocaleString()}}</td>
-                  <td class="p-2 text-right tabular-nums font-bold">{{product.quantity}}</td>
-                  <td class="p-2 text-right font-mono text-xs">{{product.sku}}</td>
-                </tr>
-              } @empty {
-                 <tr><td colspan="4" class="text-center p-4 text-charcoal-500">No product data available.</td></tr>
-              }
-            </tbody>
           </table>
+          <cdk-virtual-scroll-viewport itemSize="56" class="h-full">
+            <table class="w-full text-left text-sm">
+                <tbody>
+                    <tr *cdkVirtualFor="let product of topSellingProducts()" class="hover:bg-surface-raised hover:-translate-y-px transition-all duration-150 h-[56px]">
+                      <td class="p-2 font-semibold flex items-center gap-3 w-1/2">
+                        <img [src]="product.imageUrl" [alt]="product.name" class="w-10 h-10 rounded-md object-cover">
+                        <span>{{product.name}}</span>
+                      </td>
+                      <td class="p-2 text-right tabular-nums w-1/6">LKR {{product.price.toLocaleString()}}</td>
+                      <td class="p-2 text-right tabular-nums font-bold w-1/6">{{product.quantity}}</td>
+                      <td class="p-2 text-right font-mono text-xs w-1/6">{{product.sku}}</td>
+                    </tr>
+                </tbody>
+            </table>
+             @if (topSellingProducts().length === 0) {
+                 <div class="h-full flex items-center justify-center text-center p-4 text-charcoal-500">No product data available.</div>
+              }
+          </cdk-virtual-scroll-viewport>
         </div>
       </div>
     </div>

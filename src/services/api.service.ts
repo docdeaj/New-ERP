@@ -10,8 +10,8 @@ let MOCK_INVOICES: Invoice[] = [
 ];
 
 let MOCK_PRODUCTS: Product[] = [
-    { id: 1, name: 'Wireless Mouse', sku: 'WM-101', category: 'Electronics', price: 2000, cost: 800, description: 'Sleek, ergonomic wireless mouse with long-lasting battery life for ultimate productivity.', stock: { mainWarehouse: 50, downtownStore: 15, online: 30 }, committed: { mainWarehouse: 10, downtownStore: 5, online: 15}, imageUrl: 'https://picsum.photos/seed/p1/200/200', flags: { price_below_cost: false } },
-    { id: 2, name: 'Mechanical Keyboard', sku: 'MK-202', category: 'Electronics', price: 10000, cost: 4500, description: 'Experience tactile typing with this durable mechanical keyboard featuring customizable RGB backlighting.', stock: { mainWarehouse: 30, downtownStore: 10, online: 15 }, committed: { mainWarehouse: 5, downtownStore: 2, online: 8}, imageUrl: 'https://picsum.photos/seed/p2/200/200', flags: { price_below_cost: false } },
+    { id: 1, name: 'Wireless Mouse', sku: 'WM-101', category: 'Electronics', price: 2000, cost: 800, description: 'Sleek, ergonomic wireless mouse with long-lasting battery life for ultimate productivity.', stock: { mainWarehouse: 50, downtownStore: 15, online: 30 }, committed: { mainWarehouse: 10, downtownStore: 5, online: 15}, imageUrl: 'https://picsum.photos/seed/p1/200/200', flags: { price_below_cost: false }, dimensions: { w: 6, h: 10, t: 3.5 } },
+    { id: 2, name: 'Mechanical Keyboard', sku: 'MK-202', category: 'Electronics', price: 10000, cost: 4500, description: 'Experience tactile typing with this durable mechanical keyboard featuring customizable RGB backlighting.', stock: { mainWarehouse: 30, downtownStore: 10, online: 15 }, committed: { mainWarehouse: 5, downtownStore: 2, online: 8}, imageUrl: 'https://picsum.photos/seed/p2/200/200', flags: { price_below_cost: false }, dimensions: { w: 44, h: 13, t: 4 } },
     { id: 3, name: 'USB-C Hub', sku: 'UH-303', category: 'Accessories', price: 4000, cost: 1800, description: 'Expand your connectivity with this compact 7-in-1 USB-C hub, perfect for modern laptops.', stock: { mainWarehouse: 80, downtownStore: 25, online: 40 }, committed: { mainWarehouse: 20, downtownStore: 10, online: 20}, imageUrl: 'https://picsum.photos/seed/p3/200/200', flags: { price_below_cost: false } },
     { id: 4, name: '4K Webcam', sku: 'WC-401', category: 'Electronics', price: 8500, cost: 9000, description: 'Crystal-clear 4K resolution for professional video calls and streaming.', stock: { mainWarehouse: 25, downtownStore: 5, online: 10 }, committed: { mainWarehouse: 25, downtownStore: 5, online: 10}, imageUrl: 'https://picsum.photos/seed/p4/200/200', flags: { price_below_cost: true } },
     { id: 5, name: 'Ergonomic Chair', sku: 'EC-505', category: 'Furniture', price: 25000, cost: 11000, description: 'Support your back and improve posture with this fully adjustable ergonomic office chair.', stock: { mainWarehouse: 15, downtownStore: 5, online: 0 }, committed: { mainWarehouse: 2, downtownStore: 1, online: 0}, imageUrl: 'https://picsum.photos/seed/p5/200/200', flags: { price_below_cost: false } },
@@ -700,3 +700,18 @@ export class ApiService {
     const outstandingInvoice = MOCK_INVOICES
       .filter(inv => inv.customerName === data.customer.name && (inv.status === 'Pending' || inv.status === 'Overdue'))
       .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())[0];
+
+    if (outstandingInvoice) {
+      await this.createReceipt({
+        invoiceId: outstandingInvoice.id,
+        amount: data.amount, // Applying the full payment amount to this invoice
+        method: data.paymentMethod,
+        paymentDate: data.paymentDate,
+      });
+    } else {
+      // Handle as credit or unapplied payment if needed, for now we log it.
+      console.log('No outstanding invoice found for customer. Payment recorded as credit.');
+      // You could create a receipt without an invoiceId here if your model supports it.
+    }
+  }
+}

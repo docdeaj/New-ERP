@@ -1,12 +1,14 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit, OnDestroy, computed } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { UiStateService, DrawerContext } from '../../services/ui-state.service';
 import { ApiService } from '../../services/api.service';
 import { Kpi, Product, CashflowSnapshot, TopProductReport } from '../../models/types';
 import { SimpleBarChartComponent } from '../../components/simple-bar-chart/simple-bar-chart.component';
 import { CalendarWidgetComponent } from '../../components/calendar-widget/calendar-widget.component';
 import { SparklineChartComponent } from '../../components/sparkline-chart/sparkline-chart.component';
+import { AnalyticsService } from '../../services/analytics.service';
 
 interface QuickAction {
   icon: string;
@@ -31,11 +33,12 @@ interface WeatherDetails {
   templateUrl: './dashboard.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, RouterLink, SimpleBarChartComponent, CalendarWidgetComponent, SparklineChartComponent, DatePipe],
+  imports: [CommonModule, RouterLink, SimpleBarChartComponent, CalendarWidgetComponent, SparklineChartComponent, DatePipe, ScrollingModule],
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   private uiStateService = inject(UiStateService);
   private api = inject(ApiService);
+  private analytics = inject(AnalyticsService);
 
   salesKpi = signal<Kpi | null>(null);
   expensesKpi = signal<Kpi | null>(null);
@@ -94,7 +97,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.expensesTrend.set(expensesTrendData);
     this.arApSummary.set(arApData);
     this.cashflowSnapshot.set(cashflow);
-    this.weatherDetails.set({
+    
+    const weatherData = {
       temperature: 28,
       condition: 'Partly Cloudy',
       icon: 'fa-solid fa-cloud-sun',
@@ -104,7 +108,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
       rainChance: 20,
       windSpeed: 10,
       location: 'Colombo',
-    });
+    };
+    this.weatherDetails.set(weatherData);
+    this.analytics.emitEvent('weather_load', { location: weatherData.location, temp: weatherData.temperature });
   }
   
   onQuickAction(context: DrawerContext) {

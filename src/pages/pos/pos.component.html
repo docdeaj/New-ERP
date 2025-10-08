@@ -79,6 +79,11 @@
               }
             </h3>
             <p class="text-xs text-charcoal-400">{{ product.sku }}</p>
+             @if(product.dimensions; as dims) {
+                <p class="text-[10px] text-charcoal-500 tabular-nums">
+                    {{dims.w}} x {{dims.h}} x {{dims.t}} cm
+                </p>
+            }
             <p class="mt-1 font-bold text-primary-400 tabular-nums">LKR {{ product.price | currency:'':'':'1.0-0' }}</p>
           </div>
         }

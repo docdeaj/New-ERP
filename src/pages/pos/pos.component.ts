@@ -5,6 +5,7 @@ import { ApiService } from '../../services/api.service';
 import { Product, CartItem, ReceiptPaymentMethod, LineItem, Contact } from '../../models/types';
 import { CheckoutModalComponent } from '../../components/checkout-modal/checkout-modal.component';
 import { CustomerPickerComponent } from '../../components/customer-picker/customer-picker.component';
+import { AnalyticsService } from '../../services/analytics.service';
 
 type SortOption = 'Popular' | 'Name A-Z' | 'Price High-Low' | 'Price Low-High';
 
@@ -21,6 +22,7 @@ type SortOption = 'Popular' | 'Name A-Z' | 'Price High-Low' | 'Price Low-High';
 })
 export class PosComponent {
   private api = inject(ApiService);
+  private analytics = inject(AnalyticsService);
   
   // State
   products = signal<Product[]>([]);
@@ -46,6 +48,18 @@ export class PosComponent {
   constructor() {
     afterNextRender(() => this.searchInput()?.nativeElement.focus());
     this.loadProducts();
+
+    effect(() => {
+        const discount = this.cartDiscount();
+        if (discount > 0) {
+            this.analytics.emitEvent('pos_discount_apply', {
+                discount_type: this.discountType(),
+                discount_value: this.discountValue(),
+                calculated_discount: discount,
+                cart_total: this.cartTotal()
+            });
+        }
+    }, { allowSignalWrites: true });
   }
 
   filteredAndSortedProducts = computed(() => {

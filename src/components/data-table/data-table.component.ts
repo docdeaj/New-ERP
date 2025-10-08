@@ -3,6 +3,7 @@ import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { UiStateService } from '../../services/ui-state.service';
 import { QuickPeekComponent } from '../quick-peek/quick-peek.component';
+import { AnalyticsService } from '../../services/analytics.service';
 
 export interface ColumnDefinition<T> {
   key: keyof T;
@@ -77,6 +78,7 @@ export class DataTableComponent<T extends { id: any, amount?: number }> {
   private isLongPress = false; // This flag prevents click event after a long press
 
   private uiStateService = inject(UiStateService);
+  private analytics = inject(AnalyticsService);
   
   // Accessibility IDs
   titleId = computed(() => `dt-title-${this.context()}`);
@@ -264,12 +266,24 @@ export class DataTableComponent<T extends { id: any, amount?: number }> {
 
   onMenuButtonClick(event: MouseEvent, itemId: number | string) {
     event.stopPropagation();
+    const willOpen = this.isActionMenuOpen() !== itemId;
+    if (willOpen) {
+      this.analytics.emitEvent('menu_open', {
+        context: this.context(),
+        entity_id: itemId
+      });
+    }
     this.isActionMenuOpen.update(current => current === itemId ? null : itemId);
   }
   
   onActionClick(event: MouseEvent, action: string, item: T) {
     event.stopPropagation();
     this.isActionMenuOpen.set(null);
+    this.analytics.emitEvent('menu_action', {
+      context: this.context(),
+      action: action,
+      entity_id: item.id,
+    });
     this.rowAction.emit({ action, item });
   }
   
