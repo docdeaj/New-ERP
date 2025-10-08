@@ -27,7 +27,7 @@ import { SignupComponent } from './pages/signup/signup.component';
 export const APP_ROUTES: Routes = [
   { path: 'login', component: LoginComponent, title: 'Login' },
   { path: 'signup', component: SignupComponent, title: 'Sign Up' },
-  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'dashboard', component: DashboardComponent, title: 'Dashboard', canActivate: [authGuard] },
   { path: 'pos', component: PosComponent, title: 'Point of Sale', canActivate: [authGuard] },
   { path: 'expenses', component: ExpensesComponent, title: 'Expenses', canActivate: [authGuard] },
@@ -52,5 +52,5 @@ export const APP_ROUTES: Routes = [
     canActivate: [authGuard] 
   },
   { path: 'recurring', component: RecurringExpensesComponent, title: 'Recurring Expenses', canActivate: [authGuard] },
-  { path: '**', redirectTo: 'dashboard' } 
+  { path: '**', redirectTo: 'login' } 
 ];

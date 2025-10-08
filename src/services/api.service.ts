@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import {
-  Invoice, Product, Contact, Kpi, InventoryItem, Quotation, Receipt, Cheque, PurchaseOrder, MediaItem, Expense, ReceiptPaymentMethod, LineItem, RecurringExpense, LocationKey, ReportSummary, SalesTrend, TopProductReport, ArAgingRow, ApAgingRow, InventorySnapshot, RecurringForecastRow, TaxSummaryRow, ReportView, ReportQuery, ReportResult, ReportSchema, LogEntry, LogSeverity, CashflowSnapshot, QuotationStatus, ContactType
+  Invoice, Product, Contact, Kpi, InventoryItem, Quotation, Receipt, Cheque, PurchaseOrder, MediaItem, Expense, ReceiptPaymentMethod, LineItem, RecurringExpense, LocationKey, ReportSummary, SalesTrend, TopProductReport, ArAgingRow, ApAgingRow, InventorySnapshot, RecurringForecastRow, TaxSummaryRow, ReportView, ReportQuery, ReportResult, ReportSchema, LogEntry, LogSeverity, CashflowSnapshot, QuotationStatus, ContactType, SalesByCustomerRow
 } from '../models/types';
 import {
   SEED_PRODUCTS, SEED_CONTACTS, SEED_INVOICES, SEED_EXPENSES, SEED_QUOTATIONS, SEED_PURCHASE_ORDERS, SEED_RECEIPTS, SEED_MEDIA
@@ -168,6 +168,35 @@ export class ApiService {
           row.total = row.bucket_0_30 + row.bucket_31_60 + row.bucket_61_90 + row.bucket_90_plus;
       });
       return agingData;
+    },
+    getSalesByCustomer: async (): Promise<SalesByCustomerRow[]> => {
+      await this.delay(400);
+      const customerSales: { [customerId: string]: { totalSales: number; invoiceCount: number; lastSaleDate: string; customer: Contact } } = {};
+
+      this._invoices().forEach(invoice => {
+        if (!customerSales[invoice.party_id]) {
+          const customer = this._contacts().find(c => c.id === invoice.party_id);
+          if (customer) {
+            customerSales[invoice.party_id] = { totalSales: 0, invoiceCount: 0, lastSaleDate: '', customer };
+          }
+        }
+        if (customerSales[invoice.party_id]) {
+          customerSales[invoice.party_id].totalSales += invoice.total_lkr;
+          customerSales[invoice.party_id].invoiceCount++;
+          if (!customerSales[invoice.party_id].lastSaleDate || new Date(invoice.issue_date) > new Date(customerSales[invoice.party_id].lastSaleDate)) {
+            customerSales[invoice.party_id].lastSaleDate = invoice.issue_date;
+          }
+        }
+      });
+      
+      return Object.values(customerSales).map(cs => ({
+        id: cs.customer.id,
+        customerName: cs.customer.name,
+        customerAvatarUrl: cs.customer.avatar_url || '',
+        totalSales: cs.totalSales,
+        invoiceCount: cs.invoiceCount,
+        lastSaleDate: cs.lastSaleDate,
+      })).sort((a,b) => b.totalSales - a.totalSales);
     },
     // Add other report methods if needed
     getSummary: (): Promise<ReportSummary> => Promise.resolve({} as ReportSummary),

@@ -1,6 +1,7 @@
 
 
 
+
 import { Component, ChangeDetectionStrategy, signal, effect, inject, computed } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -14,6 +15,7 @@ import { DocumentPreviewModalComponent } from './components/document-preview-mod
 import { Invoice, Quotation, PurchaseOrder, Receipt, PrintableDocument } from './models/types';
 import { NotificationsDropdownComponent } from './components/notifications-dropdown/notifications-dropdown.component';
 import { AuthService } from './services/auth.service';
+import { ToastContainerComponent } from './components/toast-container/toast-container.component';
 
 
 @Component({
@@ -31,6 +33,7 @@ import { AuthService } from './services/auth.service';
     ConfirmationModalComponent,
     DocumentPreviewModalComponent,
     NotificationsDropdownComponent,
+    ToastContainerComponent,
   ],
   host: {
     '(window:keydown)': 'handleKeyboardEvent($event)',

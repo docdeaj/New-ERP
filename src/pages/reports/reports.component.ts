@@ -4,7 +4,7 @@ import { Component, ChangeDetectionStrategy, inject, signal, OnInit, computed } 
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
-import { ReportView, ArAgingRow } from '../../models/types';
+import { ReportView, ArAgingRow, SalesByCustomerRow } from '../../models/types';
 import { UiStateService } from '../../services/ui-state.service';
 import { DataTableComponent, ColumnDefinition } from '../../components/data-table/data-table.component';
 import { PdfGenerationService } from '../../services/pdf.service';
@@ -33,6 +33,10 @@ export class ReportsComponent implements OnInit {
   arAgingData = signal<ArAgingRow[]>([]);
   isArAgingLoading = signal(true);
 
+  // Sales by Customer Report State
+  salesByCustomerData = signal<SalesByCustomerRow[]>([]);
+  isSalesByCustomerLoading = signal(true);
+
   activeTimeRange = signal<'this-month' | 'last-month' | 'this-quarter' | 'year-to-date'>('this-month');
 
   reportTemplates: ReportTemplate[] = [
@@ -60,10 +64,18 @@ export class ReportsComponent implements OnInit {
     { key: 'total', label: 'Total Due', type: 'currency' },
   ];
   
+  salesByCustomerColumns: ColumnDefinition<SalesByCustomerRow>[] = [
+    { key: 'customerName', label: 'Customer', type: 'avatar', avatarUrlKey: 'customerAvatarUrl' },
+    { key: 'invoiceCount', label: '# Invoices', type: 'number' },
+    { key: 'lastSaleDate', label: 'Last Sale', type: 'date' },
+    { key: 'totalSales', label: 'Total Sales', type: 'currency' },
+  ];
+  
   constructor() {}
 
   ngOnInit() {
     this.loadArAgingData();
+    this.loadSalesByCustomerData();
   }
 
   async loadArAgingData() {
@@ -71,6 +83,13 @@ export class ReportsComponent implements OnInit {
     const data = await this.api.reports.getArAging();
     this.arAgingData.set(data);
     this.isArAgingLoading.set(false);
+  }
+
+  async loadSalesByCustomerData() {
+    this.isSalesByCustomerLoading.set(true);
+    const data = await this.api.reports.getSalesByCustomer();
+    this.salesByCustomerData.set(data);
+    this.isSalesByCustomerLoading.set(false);
   }
 
   exportReport(format: 'pdf' | 'csv' | 'xlsx', reportId: string) {

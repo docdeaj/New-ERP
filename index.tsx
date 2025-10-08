@@ -12,6 +12,7 @@ import { SettingsService } from './src/services/settings.service';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { NotificationService } from './src/services/notification.service';
 import { AuthService } from './src/services/auth.service';
+import { ToastService } from './src/services/toast.service';
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -22,6 +23,7 @@ bootstrapApplication(AppComponent, {
     SettingsService,
     NotificationService,
     AuthService,
+    ToastService,
   ],
 }).catch((err) => console.error(err));
 

@@ -290,6 +290,15 @@ export interface ArAgingRow {
   total: number;
 }
 
+export interface SalesByCustomerRow {
+  id: string;
+  customerName: string;
+  customerAvatarUrl: string;
+  totalSales: number;
+  invoiceCount: number;
+  lastSaleDate: string;
+}
+
 export interface ApAgingRow {
   id: string;
   supplierName: string;

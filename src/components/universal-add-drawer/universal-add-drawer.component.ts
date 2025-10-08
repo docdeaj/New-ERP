@@ -1,6 +1,7 @@
 
 
 
+
 import { Component, ChangeDetectionStrategy, input, output, computed, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormArray, FormGroup } from '@angular/forms';
@@ -17,6 +18,7 @@ import { DatePickerComponent } from '../date-picker/date-picker.component';
 import { ProductPickerComponent } from '../product-picker/product-picker.component';
 import { SupplierPickerComponent } from '../supplier-picker/supplier-picker.component';
 import { AnalyticsService } from '../../services/analytics.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-universal-add-drawer',
@@ -35,6 +37,7 @@ export class UniversalAddDrawerComponent {
   private geminiService = inject(GeminiService);
   private settingsService = inject(SettingsService);
   private analytics = inject(AnalyticsService);
+  private toastService = inject(ToastService);
 
   isMediaBrowserOpen = signal(false);
   mediaFieldContext = signal<'expense-attachment' | 'product-image' | 'contact-avatar' | null>(null);
@@ -372,16 +375,25 @@ export class UniversalAddDrawerComponent {
       const payload = getPayload();
       const currentItem = this.currentItem();
 
+      let successMessage = 'Item saved successfully!';
+
       if (this.isEditMode() && currentItem) {
         switch(this.context()) {
-          case 'new-invoice': await this.api.invoices.update(currentItem.id, payload); break;
-          case 'new-product': await this.api.products.update(currentItem.id, payload); break;
+          case 'new-invoice': 
+            await this.api.invoices.update(currentItem.id, payload); 
+            successMessage = `Invoice ${currentItem.number} updated.`;
+            break;
+          case 'new-product': 
+            await this.api.products.update(currentItem.id, payload); 
+            successMessage = `Product ${currentItem.name} updated.`;
+            break;
           // ... other update cases
         }
       } else {
         switch(this.context()) {
           case 'new-invoice': 
             const newInvoice = await this.api.createInvoice(payload); 
+            successMessage = `Invoice ${newInvoice.number} created.`;
             this.analytics.emitEvent('invoice_create_save', {
                 invoice_id: newInvoice.id,
                 amount: newInvoice.total_lkr,
@@ -391,23 +403,47 @@ export class UniversalAddDrawerComponent {
           case 'new-expense': 
             if (payload.isRecurring) {
               await this.api.createRecurringExpense(payload);
+              successMessage = 'Recurring expense created.';
             } else {
               await this.api.createExpense(payload);
+              successMessage = 'Expense created.';
             }
             break;
-          case 'new-product': await this.api.createProduct(payload); break;
-          case 'new-contact': await this.api.createContact(payload); break;
-          case 'new-po': await this.api.createPurchaseOrder(payload); break;
-          case 'new-quotation': await this.api.createQuotation(payload); break;
-          case 'new-cheque': await this.api.createCheque(payload); break;
-          case 'record-sale': await this.api.createSale(payload); break;
-          case 'record-payment': await this.api.createCustomerPayment(payload); break;
+          case 'new-product': 
+            const newProduct = await this.api.createProduct(payload); 
+            successMessage = `Product ${newProduct.name} created.`;
+            break;
+          case 'new-contact': 
+            const newContact = await this.api.createContact(payload); 
+            successMessage = `Contact ${newContact.name} created.`;
+            break;
+          case 'new-po': 
+            const newPO = await this.api.createPurchaseOrder(payload); 
+            successMessage = `Purchase Order ${newPO.number} created.`;
+            break;
+          case 'new-quotation': 
+            const newQuotation = await this.api.createQuotation(payload); 
+            successMessage = `Quotation ${newQuotation.number} created.`;
+            break;
+          case 'new-cheque': 
+            await this.api.createCheque(payload); 
+            successMessage = 'Cheque recorded.';
+            break;
+          case 'record-sale': 
+            await this.api.createSale(payload); 
+            successMessage = 'Sale recorded.';
+            break;
+          case 'record-payment': 
+            await this.api.createCustomerPayment(payload); 
+            successMessage = 'Payment recorded.';
+            break;
         }
       }
+      this.toastService.show({ type: 'success', message: successMessage });
       this.onClose();
     } catch (e) {
       console.error("Save failed", e);
-      // In a real app, show an error toast
+      this.toastService.show({ type: 'error', message: 'Failed to save. Please try again.' });
     } finally {
       this.isSaving.set(false);
     }
