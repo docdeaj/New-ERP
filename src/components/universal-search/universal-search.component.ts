@@ -1,7 +1,9 @@
+
 import { Component, ChangeDetectionStrategy, output, signal, ElementRef, viewChild, afterNextRender, effect, computed, inject } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 import { HighlightPipe } from '../../pipes/highlight.pipe';
+// FIX: Imported missing RecurringExpense type.
 import { Invoice, Product, PurchaseOrder, RecurringExpense, Quotation } from '../../models/types';
 import { InvoicePdfComponent } from '../invoice-pdf/invoice-pdf.component';
 import { PdfGenerationService } from '../../services/pdf.service';
@@ -197,10 +199,10 @@ export class UniversalSearchComponent {
      switch(type) {
       case 'nav': return { ...item, id };
       case 'action': return { ...item, id };
-      case 'invoice': return { id, type, icon: 'fa-solid fa-file-invoice-dollar', title: item.invoiceNumber, secondary: item.customerName, meta: { amount: item.amount, status: item.status, date: item.dueDate }, data: item };
-      case 'quotation': return { id, type, icon: 'fa-solid fa-file-lines', title: item.quotationNumber, secondary: item.customerName, meta: { amount: item.amount, status: item.status, date: item.expiryDate }, data: item };
-      case 'product': return { id, type, icon: 'fa-solid fa-box', title: item.name, secondary: `SKU: ${item.sku}`, meta: { price: item.price }, data: item };
-      case 'po': return { id, type, icon: 'fa-solid fa-cart-shopping', title: item.poNumber, secondary: item.supplierName, meta: { amount: item.amount, status: item.status, date: item.expectedDate }, data: item };
+      case 'invoice': return { id, type, icon: 'fa-solid fa-file-invoice-dollar', title: item.number, secondary: item.partyName, meta: { amount: item.total_lkr, status: item.status, date: item.due_date }, data: item };
+      case 'quotation': return { id, type, icon: 'fa-solid fa-file-lines', title: item.number, secondary: item.partyName, meta: { amount: item.total_lkr, status: item.status, date: item.due_date }, data: item };
+      case 'product': return { id, type, icon: 'fa-solid fa-box', title: item.name, secondary: `SKU: ${item.sku}`, meta: { price: item.price_lkr }, data: item };
+      case 'po': return { id, type, icon: 'fa-solid fa-cart-shopping', title: item.number, secondary: item.partyName, meta: { amount: item.total_lkr, status: item.status, date: item.due_date }, data: item };
       case 'recurring': return { id, type, icon: 'fa-solid fa-sync', title: item.description, secondary: `Next: ${new Date(item.nextDueDate).toLocaleDateString()}`, meta: { amount: item.amount, cadence: item.cadence }, data: item };
       default: return { id, type: 'unknown', icon: 'fa-solid fa-question-circle', title: 'Unknown Item', data: item };
      }

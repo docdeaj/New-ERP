@@ -19,32 +19,38 @@ import { RecurringExpensesComponent } from './pages/recurring-expenses/recurring
 import { ReportBuilderComponent } from './pages/reports/report-builder.component';
 import { NotificationsComponent } from './pages/notifications/notifications.component';
 import { LogsComponent } from './pages/logs/logs.component';
+import { LoginComponent } from './pages/login/login.component';
+import { authGuard } from './guards/auth.guard';
+import { SignupComponent } from './pages/signup/signup.component';
 
 
 export const APP_ROUTES: Routes = [
+  { path: 'login', component: LoginComponent, title: 'Login' },
+  { path: 'signup', component: SignupComponent, title: 'Sign Up' },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-  { path: 'dashboard', component: DashboardComponent, title: 'Dashboard' },
-  { path: 'pos', component: PosComponent, title: 'Point of Sale' },
-  { path: 'expenses', component: ExpensesComponent, title: 'Expenses' },
-  { path: 'invoices', component: InvoicesComponent, title: 'Invoices' },
-  { path: 'payment-workspace/:invoiceId', component: PaymentWorkspaceComponent, title: 'Payment Workspace' },
-  { path: 'quotations', component: QuotationsComponent, title: 'Quotations' },
-  { path: 'receipts', component: ReceiptsComponent, title: 'Receipts' },
-  { path: 'cheques', component: ChequesComponent, title: 'Cheques' },
-  { path: 'purchase-orders', component: PurchaseOrdersComponent, title: 'Purchase Orders' },
-  { path: 'inventory', component: InventoryComponent, title: 'Inventory' },
-  { path: 'contacts', component: ContactsComponent, title: 'Contacts' },
-  { path: 'media', component: MediaLibraryComponent, title: 'Media Library' },
-  { path: 'reports', component: ReportsComponent, title: 'Reports' },
-  { path: 'reports/builder', component: ReportBuilderComponent, title: 'Report Builder' },
-  { path: 'reports/builder/:id', component: ReportBuilderComponent, title: 'Report Builder' },
-  { path: 'notifications', component: NotificationsComponent, title: 'Notifications' },
-  { path: 'logs', component: LogsComponent, title: 'Logs' },
+  { path: 'dashboard', component: DashboardComponent, title: 'Dashboard', canActivate: [authGuard] },
+  { path: 'pos', component: PosComponent, title: 'Point of Sale', canActivate: [authGuard] },
+  { path: 'expenses', component: ExpensesComponent, title: 'Expenses', canActivate: [authGuard] },
+  { path: 'invoices', component: InvoicesComponent, title: 'Invoices', canActivate: [authGuard] },
+  { path: 'payment-workspace/:invoiceId', component: PaymentWorkspaceComponent, title: 'Payment Workspace', canActivate: [authGuard] },
+  { path: 'quotations', component: QuotationsComponent, title: 'Quotations', canActivate: [authGuard] },
+  { path: 'receipts', component: ReceiptsComponent, title: 'Receipts', canActivate: [authGuard] },
+  { path: 'cheques', component: ChequesComponent, title: 'Cheques', canActivate: [authGuard] },
+  { path: 'purchase-orders', component: PurchaseOrdersComponent, title: 'Purchase Orders', canActivate: [authGuard] },
+  { path: 'inventory', component: InventoryComponent, title: 'Inventory', canActivate: [authGuard] },
+  { path: 'contacts', component: ContactsComponent, title: 'Contacts', canActivate: [authGuard] },
+  { path: 'media', component: MediaLibraryComponent, title: 'Media Library', canActivate: [authGuard] },
+  { path: 'reports', component: ReportsComponent, title: 'Reports', canActivate: [authGuard] },
+  { path: 'reports/builder', component: ReportBuilderComponent, title: 'Report Builder', canActivate: [authGuard] },
+  { path: 'reports/builder/:id', component: ReportBuilderComponent, title: 'Report Builder', canActivate: [authGuard] },
+  { path: 'notifications', component: NotificationsComponent, title: 'Notifications', canActivate: [authGuard] },
+  { path: 'logs', component: LogsComponent, title: 'Logs', canActivate: [authGuard] },
   { 
     path: 'settings', 
     title: 'Settings',
-    loadChildren: () => import('./pages/settings/settings.routes').then(m => m.SETTINGS_ROUTES) 
+    loadChildren: () => import('./pages/settings/settings.routes').then(m => m.SETTINGS_ROUTES),
+    canActivate: [authGuard] 
   },
-  { path: 'recurring', component: RecurringExpensesComponent, title: 'Recurring Expenses' },
+  { path: 'recurring', component: RecurringExpensesComponent, title: 'Recurring Expenses', canActivate: [authGuard] },
   { path: '**', redirectTo: 'dashboard' } 
 ];

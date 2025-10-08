@@ -1,3 +1,5 @@
+
+
 import { Component, ChangeDetectionStrategy, input, output, computed, viewChild, ElementRef, signal, effect, afterNextRender, inject } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { Invoice, Quotation, PurchaseOrder, LineItem, Receipt } from '../../models/types';
@@ -39,16 +41,20 @@ export class DocumentPreviewModalComponent {
     });
   }
 
+  // FIX: Corrected type guards to properly distinguish document types and prevent unsafe property access.
   normalizedData = computed<NormalizedDocumentData>(() => {
     const doc = this.data();
-    if ('invoiceNumber' in doc && 'dueDate' in doc) {
-      return { type: 'Invoice', number: doc.invoiceNumber, customerName: doc.customerName, status: doc.status, balance: doc.balance };
-    } else if ('quotationNumber' in doc) {
-      return { type: 'Quotation', number: doc.quotationNumber, customerName: doc.customerName, status: doc.status };
-    } else if ('poNumber' in doc) { // PurchaseOrder
-      return { type: 'Purchase Order', number: doc.poNumber, customerName: doc.supplierName, status: doc.status };
+    if ('balance_lkr' in doc) { // Invoice
+      return { type: 'Invoice', number: doc.number, customerName: doc.partyName || 'N/A', status: doc.status, balance: doc.balance_lkr };
+    } else if ('party_id' in doc && doc.number?.startsWith('QUO')) { // Quotation
+      const quo = doc as Quotation;
+      return { type: 'Quotation', number: quo.number, customerName: quo.partyName || 'N/A', status: quo.status };
+    } else if ('party_id' in doc && doc.number?.startsWith('PO')) { // PurchaseOrder
+      const po = doc as PurchaseOrder;
+      return { type: 'Purchase Order', number: po.number, customerName: po.partyName || 'N/A', status: po.status };
     } else { // Receipt
-      return { type: 'Receipt', number: doc.receiptNumber, customerName: doc.customerName, status: 'Paid' };
+      const receipt = doc as Receipt;
+      return { type: 'Receipt', number: receipt.number, customerName: receipt.partyName || 'N/A', status: 'Paid' };
     }
   });
 

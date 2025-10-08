@@ -1,3 +1,4 @@
+
 import { Component, ChangeDetectionStrategy, input, computed } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { Invoice, Quotation, LineItem, PurchaseOrder, Receipt } from '../../models/types';
@@ -34,85 +35,89 @@ interface NormalizedPdfData {
 export class InvoicePdfComponent {
   data = input.required<PdfSourceData>();
 
+  // FIX: Corrected all property access to use snake_case from the base models.
   pdfData = computed<NormalizedPdfData>(() => {
     const doc = this.data();
-    if ('invoiceNumber' in doc && 'dueDate' in doc) { // Invoice
+    if ('balance_lkr' in doc) { // Invoice
       return {
         type: 'Invoice',
-        number: doc.invoiceNumber,
+        number: doc.number,
         customerLabel: 'Bill To',
-        customerName: doc.customerName,
-        issueDate: doc.issueDate,
+        customerName: doc.partyName || 'N/A',
+        issueDate: doc.issue_date,
         dueDateLabel: 'Due Date',
-        dueDate: doc.dueDate,
+        dueDate: doc.due_date,
         status: doc.status,
-        lineItems: doc.lineItems ?? [],
-        subtotal: doc.subtotal ?? (doc.amount - (doc.tax ?? 0)),
-        tax: doc.tax ?? 0,
-        amount: doc.amount,
-        totalPaid: doc.totalPaid,
-        balance: doc.balance,
+        lineItems: doc.items ?? [],
+        subtotal: doc.subtotal_lkr,
+        tax: doc.tax_lkr,
+        amount: doc.total_lkr,
+        totalPaid: doc.paid_lkr,
+        balance: doc.balance_lkr,
         accentColor: doc.status === 'Paid' ? 'green' : 'blue',
-        notes: (doc as any).notes,
+        notes: doc.notes,
       };
-    } else if ('quotationNumber' in doc) { // Quotation
+    } else if ('party_id' in doc && !('balance_lkr' in doc) && doc.number.startsWith('QUO')) { // Quotation
+      const quo = doc as Quotation;
       return {
         type: 'Quotation',
-        number: doc.quotationNumber,
+        number: quo.number,
         customerLabel: 'Prepared For',
-        customerName: doc.customerName,
-        issueDate: doc.issueDate,
+        customerName: quo.partyName || 'N/A',
+        issueDate: quo.issue_date,
         dueDateLabel: 'Valid Until',
-        dueDate: doc.expiryDate,
-        status: doc.status,
-        lineItems: doc.lineItems ?? [],
-        subtotal: doc.subtotal ?? (doc.amount - (doc.tax ?? 0)),
-        tax: doc.tax ?? 0,
-        amount: doc.amount,
+        dueDate: quo.due_date,
+        status: quo.status,
+        lineItems: quo.items ?? [],
+        subtotal: quo.subtotal_lkr,
+        tax: quo.tax_lkr,
+        amount: quo.total_lkr,
         accentColor: 'yellow',
-        notes: (doc as any).notes,
+        notes: quo.notes,
       };
-    } else if ('poNumber' in doc) { // Purchase Order
+    } else if ('party_id' in doc && !('balance_lkr' in doc) && doc.number.startsWith('PO')) { // Purchase Order
+        const po = doc as PurchaseOrder;
         return {
             type: 'Purchase Order',
-            number: doc.poNumber,
+            number: po.number,
             customerLabel: 'Supplier',
-            customerName: doc.supplierName,
-            issueDate: doc.orderDate,
+            customerName: po.partyName || 'N/A',
+            issueDate: po.issue_date,
             dueDateLabel: 'Expected Date',
-            dueDate: doc.expectedDate,
-            status: doc.status,
-            lineItems: doc.lineItems ?? [],
-            subtotal: doc.subtotal ?? (doc.amount - (doc.tax ?? 0)),
-            tax: doc.tax ?? 0,
-            amount: doc.amount,
-            accentColor: doc.status === 'Received' ? 'green' : 'gray',
-            notes: (doc as any).notes,
+            dueDate: po.due_date,
+            status: po.status,
+            lineItems: po.items ?? [],
+            subtotal: po.subtotal_lkr,
+            tax: po.tax_lkr,
+            amount: po.total_lkr,
+            accentColor: po.status === 'Received' ? 'green' : 'gray',
+            notes: po.notes,
         };
     } else { // Receipt
+        const receipt = doc as Receipt;
         return {
             type: 'Receipt',
-            number: doc.receiptNumber,
+            number: receipt.number,
             customerLabel: 'Received From',
-            customerName: doc.customerName,
-            issueDate: doc.paymentDate,
+            customerName: receipt.partyName || 'N/A',
+            issueDate: receipt.issue_date,
             dueDateLabel: 'For Invoice',
-            dueDate: doc.invoiceNumber,
+            dueDate: receipt.invoice_number || 'N/A',
             status: 'Paid',
             lineItems: [{ 
-              productId: doc.invoiceId, 
-              productName: `Payment for Invoice ${doc.invoiceNumber}`, 
-              quantity: 1, 
-              unitPrice: doc.amount, 
-              total: doc.amount 
+              product_id: receipt.invoice_id, 
+              name: `Payment for Invoice ${receipt.invoice_number}`, 
+              sku: '',
+              qty: 1, 
+              unit_price_lkr: receipt.amount_lkr, 
             }],
-            subtotal: doc.amount,
+            subtotal: receipt.amount_lkr,
             tax: 0,
-            amount: doc.amount,
-            totalPaid: doc.amount,
+            amount: receipt.amount_lkr,
+            totalPaid: receipt.amount_lkr,
             balance: 0,
             accentColor: 'green',
-            paymentMethod: doc.method
+            paymentMethod: receipt.method
         };
     }
   });

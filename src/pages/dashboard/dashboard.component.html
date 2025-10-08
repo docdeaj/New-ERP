@@ -16,7 +16,7 @@
                   <i class="fa-solid fa-dollar-sign text-green-400 transition-transform duration-300 group-hover:scale-110"></i>
                 </div>
               </div>
-              <p class="text-3xl font-bold mt-2 tabular-nums">LKR {{ kpi.value.toLocaleString() }}</p>
+              <p class="text-3xl font-bold mt-2 tabular-nums">{{ (kpi.value / 100) | currency:'LKR ' }}</p>
               <div 
                   class="inline-flex items-center gap-1.5 text-sm font-semibold px-2 py-0.5 rounded-full mt-2"
                   [class.bg-green-500/10]="kpi.delta >= 0" [class.text-green-400]="kpi.delta >= 0"
@@ -54,7 +54,7 @@
                 <i class="fa-solid fa-arrow-down-long text-red-400 transition-transform duration-300 group-hover:scale-110"></i>
               </div>
             </div>
-            <p class="text-3xl font-bold mt-2 tabular-nums">LKR {{ kpi.value.toLocaleString() }}</p>
+            <p class="text-3xl font-bold mt-2 tabular-nums">{{ (kpi.value / 100) | currency:'LKR ' }}</p>
             <div 
               class="inline-flex items-center gap-1.5 text-sm font-semibold px-2 py-0.5 rounded-full mt-2"
               [class.bg-red-500/10]="kpi.delta >= 0" [class.text-red-400]="kpi.delta >= 0"
@@ -133,15 +133,15 @@
                     <p class="font-semibold text-charcoal-300">Invoices</p>
                     <div class="p-3 bg-surface-raised rounded-lg">
                         <p class="text-xs text-charcoal-400">Issued</p>
-                        <p class="font-bold text-lg tabular-nums">{{ cashflow.invoices.issued.value | currency:'LKR ':'symbol':'1.0-0' }}</p>
+                        <p class="font-bold text-lg tabular-nums">{{ (cashflow.invoices.issued.value / 100) | currency:'LKR ':'symbol':'1.0-0' }}</p>
                     </div>
                     <div class="p-3 bg-surface-raised rounded-lg">
                         <p class="text-xs text-charcoal-400">Paid</p>
-                        <p class="font-bold text-lg tabular-nums text-green-400">{{ cashflow.invoices.paid.value | currency:'LKR ':'symbol':'1.0-0' }}</p>
+                        <p class="font-bold text-lg tabular-nums text-green-400">{{ (cashflow.invoices.paid.value / 100) | currency:'LKR ':'symbol':'1.0-0' }}</p>
                     </div>
                     <div class="p-3 bg-surface-raised rounded-lg">
                         <p class="text-xs text-charcoal-400">Outstanding</p>
-                        <p class="font-bold text-lg tabular-nums text-red-400">{{ cashflow.invoices.outstanding.value | currency:'LKR ':'symbol':'1.0-0' }}</p>
+                        <p class="font-bold text-lg tabular-nums text-red-400">{{ (cashflow.invoices.outstanding.value / 100) | currency:'LKR ':'symbol':'1.0-0' }}</p>
                     </div>
                 </div>
                 <!-- Middle column: Expenses & Net -->
@@ -149,12 +149,12 @@
                     <p class="font-semibold text-charcoal-300">Expenses</p>
                     <div class="p-3 bg-red-900/50 rounded-lg h-24 flex flex-col justify-center">
                         <p class="text-xs text-red-300">Total Expenses</p>
-                        <p class="font-bold text-xl tabular-nums text-red-200">{{ cashflow.expenses.value | currency:'LKR ':'symbol':'1.0-0' }}</p>
+                        <p class="font-bold text-xl tabular-nums text-red-200">{{ (cashflow.expenses.value / 100) | currency:'LKR ':'symbol':'1.0-0' }}</p>
                     </div>
                     <p class="font-semibold text-charcoal-300 pt-3">Net</p>
                     <div class="p-3 bg-green-900/50 rounded-lg h-24 flex flex-col justify-center">
                         <p class="text-xs text-green-300">Net Cashflow</p>
-                        <p class="font-bold text-xl tabular-nums text-green-200">{{ cashflow.net.value | currency:'LKR ':'symbol':'1.0-0' }}</p>
+                        <p class="font-bold text-xl tabular-nums text-green-200">{{ (cashflow.net.value / 100) | currency:'LKR ':'symbol':'1.0-0' }}</p>
                     </div>
                 </div>
                 <!-- Right column: Chart -->
@@ -189,12 +189,12 @@
             <div class="flex-1">
               <div class="flex justify-between items-center text-sm">
                 <span class="font-semibold text-charcoal-300">A/R Due</span>
-                <span class="font-bold text-lg tabular-nums text-green-400">{{ summary.ar.total | currency:'LKR ':'symbol':'1.0-0' }}</span>
+                <span class="font-bold text-lg tabular-nums text-green-400">{{ (summary.ar.total / 100) | currency:'LKR ':'symbol':'1.0-0' }}</span>
               </div>
               @if(summary.ar.overdue > 0) {
                 <div class="flex items-center gap-2 mt-0.5">
                   <span class="px-2 py-0.5 text-xs font-semibold bg-red-900/80 text-red-300 rounded-full inline-flex items-center gap-1"><i class="fa-solid fa-fire-flame-curved text-xs"></i>Overdue</span>
-                  <span class="text-xs text-red-400">{{ summary.ar.overdue | currency:'LKR ':'symbol':'1.0-0' }}</span>
+                  <span class="text-xs text-red-400">{{ (summary.ar.overdue / 100) | currency:'LKR ':'symbol':'1.0-0' }}</span>
                 </div>
               }
             </div>
@@ -207,12 +207,12 @@
             <div class="flex-1">
               <div class="flex justify-between items-center text-sm">
                 <span class="font-semibold text-charcoal-300">A/P Payable</span>
-                <span class="font-bold text-lg tabular-nums text-red-400">{{ summary.ap.total | currency:'LKR ':'symbol':'1.0-0' }}</span>
+                <span class="font-bold text-lg tabular-nums text-red-400">{{ (summary.ap.total / 100) | currency:'LKR ':'symbol':'1.0-0' }}</span>
               </div>
                @if(summary.ap.overdue > 0) {
                 <div class="flex items-center gap-2 mt-0.5">
                   <span class="px-2 py-0.5 text-xs font-semibold bg-amber-900/80 text-amber-300 rounded-full">Overdue</span>
-                  <span class="text-xs text-amber-400">{{ summary.ap.overdue | currency:'LKR ':'symbol':'1.0-0' }}</span>
+                  <span class="text-xs text-amber-400">{{ (summary.ap.overdue / 100) | currency:'LKR ':'symbol':'1.0-0' }}</span>
                 </div>
               }
             </div>
@@ -275,10 +275,10 @@
                 <tbody>
                     <tr *cdkVirtualFor="let product of topSellingProducts()" class="hover:bg-surface-raised hover:-translate-y-px transition-all duration-150 h-[56px]">
                       <td class="p-2 font-semibold flex items-center gap-3 w-1/2">
-                        <img [src]="product.imageUrl" [alt]="product.name" class="w-10 h-10 rounded-md object-cover">
+                        <img [src]="product.image_url" [alt]="product.name" class="w-10 h-10 rounded-md object-cover">
                         <span>{{product.name}}</span>
                       </td>
-                      <td class="p-2 text-right tabular-nums w-1/6">LKR {{product.price.toLocaleString()}}</td>
+                      <td class="p-2 text-right tabular-nums w-1/6">{{ (product.price_lkr / 100) | currency:'LKR '}}</td>
                       <td class="p-2 text-right tabular-nums font-bold w-1/6">{{product.quantity}}</td>
                       <td class="p-2 text-right font-mono text-xs w-1/6">{{product.sku}}</td>
                     </tr>

@@ -1,3 +1,4 @@
+
 import { Component, ChangeDetectionStrategy, input, output, signal, computed, inject, effect, ElementRef, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -79,7 +80,8 @@ export class SupplierPickerComponent {
   async fetchAllSuppliers() {
     this.isLoading.set(true);
     const contacts = await this.api.contacts.list();
-    this.allSuppliers.set(contacts.filter(c => c.type === 'Supplier'));
+    // FIX: Compare contact type to lowercase 'supplier'.
+    this.allSuppliers.set(contacts.filter(c => c.type === 'supplier'));
     this.results.set(this.allSuppliers().slice(0, 10));
     this.isLoading.set(false);
   }

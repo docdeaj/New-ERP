@@ -1,3 +1,5 @@
+
+
 import { Component, ChangeDetectionStrategy, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -18,21 +20,20 @@ export class InvoicesComponent {
   
   private api = inject(ApiService);
   private uiStateService = inject(UiStateService);
-  // FIX: Explicitly type injected services to resolve type inference issues.
-  private router: Router = inject(Router);
-  // FIX: Explicitly type injected services to resolve type inference issues.
-  private route: ActivatedRoute = inject(ActivatedRoute);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private pdfService = inject(PdfGenerationService);
   invoices = signal<Invoice[]>([]);
   isLoading = signal(true);
   initialQuery = signal<string | null>(null);
 
+  // FIX: Corrected column definition keys to match the Invoice model (snake_case).
   columns: ColumnDefinition<Invoice>[] = [
-    { key: 'invoiceNumber', label: 'Invoice #', type: 'string' },
-    { key: 'customerName', label: 'Customer', type: 'avatar', avatarUrlKey: 'customerAvatarUrl' },
-    { key: 'issueDate', label: 'Issue Date', type: 'date' },
-    { key: 'dueDate', label: 'Due Date', type: 'date' },
-    { key: 'amount', label: 'Amount', type: 'currency' },
+    { key: 'number', label: 'Invoice #', type: 'string' },
+    { key: 'partyName', label: 'Customer', type: 'avatar', avatarUrlKey: 'partyAvatarUrl' },
+    { key: 'issue_date', label: 'Issue Date', type: 'date' },
+    { key: 'due_date', label: 'Due Date', type: 'date' },
+    { key: 'total_lkr', label: 'Amount', type: 'currency' },
     { key: 'status', label: 'Status', type: 'chip' },
   ];
 

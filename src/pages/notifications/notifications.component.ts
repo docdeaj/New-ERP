@@ -1,3 +1,4 @@
+
 import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { NotificationService } from '../../services/notification.service';
@@ -37,6 +38,7 @@ export class NotificationsComponent {
       case 'mention': return 'fa-solid fa-at';
       case 'cheque': return 'fa-solid fa-money-check-dollar';
       case 'quotation': return 'fa-solid fa-file-lines';
+      case 'billing': return 'fa-solid fa-credit-card';
       default: return 'fa-solid fa-bell';
     }
   }
@@ -50,6 +52,7 @@ export class NotificationsComponent {
   }
 
   handleNotificationClick(notification: Notification) {
+    // FIX: Use string id and correct link property.
     this.notificationService.markAsRead(notification.id);
     if (notification.link) {
       this.router.navigateByUrl(notification.link);

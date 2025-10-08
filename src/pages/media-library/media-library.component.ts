@@ -1,3 +1,4 @@
+
 // FIX: Import `effect` from `@angular/core` to resolve compilation error.
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit, computed, effect, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
@@ -147,7 +148,6 @@ export class MediaLibraryComponent implements OnInit {
         console.error("Failed to save details", e);
     } finally {
         this.isSavingDetails.set(false);
-        this.cdr.detectChanges();
     }
   }
   

@@ -55,13 +55,13 @@
             }
 
             <div class="relative w-full aspect-square">
-              <img [src]="product.imageUrl" [alt]="product.name" class="w-full h-full object-cover rounded-lg">
+              <img [src]="product.image_url" [alt]="product.name" class="w-full h-full object-cover rounded-lg">
               <!-- Vignette -->
               <div class="absolute top-0 right-0 w-28 h-28 bg-[radial-gradient(ellipse_at_top_right,rgba(0,0,0,0.6)_0%,rgba(0,0,0,0)_70%)] opacity-90"></div>
               <!-- Stock Ring -->
               <div class="absolute top-1.5 right-1.5 w-12 h-12" [title]="'Stock Available: ' + availableStock">
                  <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                  <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="5" />
+                  <circle cx="18" cy="18" r="15" fill="none" class="stroke-black/40" stroke-width="5" />
                   <circle cx="18" cy="18" r="15" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"
                           [class]="getStockRingColor(product)"
                           stroke-dasharray="94.2" [style.stroke-dashoffset]="getStockRingDashOffset(product)">
@@ -74,17 +74,17 @@
             </div>
             <h3 class="mt-2 font-semibold text-sm text-charcoal-100 truncate w-full flex items-center justify-center gap-1">
               <span>{{ product.name }}</span>
-              @if (product.flags?.price_below_cost) {
+              @if (isPriceBelowCost(product)) {
                 <i class="fa-solid fa-circle-exclamation text-yellow-500" title="Price is below cost"></i>
               }
             </h3>
             <p class="text-xs text-charcoal-400">{{ product.sku }}</p>
-             @if(product.dimensions; as dims) {
+             @if(product.width_mm && product.height_mm) {
                 <p class="text-[10px] text-charcoal-500 tabular-nums">
-                    {{dims.w}} x {{dims.h}} x {{dims.t}} cm
+                    {{product.width_mm}}w x {{product.height_mm}}h x {{product.depth_mm}}d mm
                 </p>
             }
-            <p class="mt-1 font-bold text-primary-400 tabular-nums">LKR {{ product.price | currency:'':'':'1.0-0' }}</p>
+            <p class="mt-1 font-bold text-primary-400 tabular-nums">LKR {{ (product.price_lkr / 100) | currency:'':'':'1.2-2' }}</p>
           </div>
         }
       </div>
@@ -101,10 +101,10 @@
         placeholder="Walk-in Customer...">
       </app-customer-picker>
       
-      @if (selectedCustomer()?.stats?.balance_lkr && selectedCustomer()!.stats!.balance_lkr! > 0) {
+      @if (selectedCustomer()?.stats?.balance_lkr && selectedCustomer()!.stats!.balance_lkr > 0) {
         <div class="p-2 text-sm bg-red-900/50 text-red-300 rounded-lg flex items-center gap-2 animate-[fade-in_200ms_ease-in-out]">
           <i class="fa-solid fa-circle-exclamation"></i>
-          <span>Outstanding balance: <span class="font-bold">{{ selectedCustomer()?.stats?.balance_lkr | currency:'LKR '}}</span></span>
+          <span>Outstanding balance: <span class="font-bold">{{ (selectedCustomer()?.stats?.balance_lkr || 0) / 100 | currency:'LKR '}}</span></span>
         </div>
       }
     </div>
@@ -114,10 +114,10 @@
         <div class="space-y-2">
           @for (item of cart(); track item.id) {
             <div class="flex items-center gap-3 p-2 rounded-lg bg-surface-inset shadow-md">
-              <img [src]="item.imageUrl" [alt]="item.name" class="w-12 h-12 rounded-md object-cover">
+              <img [src]="item.image_url" [alt]="item.name" class="w-12 h-12 rounded-md object-cover">
               <div class="flex-1">
-                <p class="font-semibold text-sm truncate flex items-center gap-1.5">{{ item.name }} @if(item.flags?.price_below_cost){ <i class="fa-solid fa-circle-exclamation text-yellow-500" title="Price is below cost"></i> }</p>
-                <p class="text-xs text-charcoal-400">{{ item.price | currency:'LKR ' }}</p>
+                <p class="font-semibold text-sm truncate flex items-center gap-1.5">{{ item.name }} @if(item.price_lkr < item.cost_lkr){ <i class="fa-solid fa-circle-exclamation text-yellow-500" title="Price is below cost"></i> }</p>
+                <p class="text-xs text-charcoal-400">{{ (item.price_lkr / 100) | currency:'LKR ' }}</p>
               </div>
               <div class="flex items-center gap-2">
                 <button (click)="updateQuantity(item.id, item.quantity - 1)" class="w-6 h-6 rounded-lg bg-surface hover:bg-surface-raised transition-colors shadow-inner-sm">-</button>
@@ -135,7 +135,7 @@
     </div>
     <div class="p-4 space-y-4">
       <div class="bg-surface-inset p-4 rounded-lg shadow-inner-sm space-y-2">
-        <div class="flex justify-between text-sm"><span class="text-charcoal-400">Subtotal</span><span class="font-semibold tabular-nums">{{ cartSubtotal() | currency:'LKR ' }}</span></div>
+        <div class="flex justify-between text-sm"><span class="text-charcoal-400">Subtotal</span><span class="font-semibold tabular-nums">{{ (cartSubtotal() / 100) | currency:'LKR ' }}</span></div>
         <!-- Discount Row -->
         <div class="flex items-center gap-2">
           <span class="text-sm text-charcoal-400 flex-1">Discount</span>
@@ -146,10 +146,10 @@
           </select>
         </div>
         @if(cartDiscount() > 0) {
-          <div class="flex justify-between text-sm text-green-400"><span class="pl-4">Discount Applied</span><span class="font-semibold tabular-nums">-{{ cartDiscount() | currency:'LKR ' }}</span></div>
+          <div class="flex justify-between text-sm text-green-400"><span class="pl-4">Discount Applied</span><span class="font-semibold tabular-nums">-{{ (cartDiscount() / 100) | currency:'LKR ' }}</span></div>
         }
-        <div class="flex justify-between text-sm"><span class="text-charcoal-400">Tax (10%)</span><span class="font-semibold tabular-nums">{{ cartTax() | currency:'LKR ' }}</span></div>
-        <div class="flex justify-between text-lg font-bold pt-2 mt-2 border-t border-charcoal-700"><span>Total</span><span class="tabular-nums">{{ cartTotal() | currency:'LKR ' }}</span></div>
+        <div class="flex justify-between text-sm"><span class="text-charcoal-400">Tax (10%)</span><span class="font-semibold tabular-nums">{{ (cartTax() / 100) | currency:'LKR ' }}</span></div>
+        <div class="flex justify-between text-lg font-bold pt-2 mt-2 border-t border-charcoal-700"><span>Total</span><span class="tabular-nums">{{ (cartTotal() / 100) | currency:'LKR ' }}</span></div>
       </div>
       @if(cartHasWarning()) { <div class="!mt-3 p-2 text-xs bg-yellow-900/50 text-yellow-300 rounded-lg flex items-center gap-2"><i class="fa-solid fa-circle-exclamation"></i><span>Cart contains items priced below cost.</span></div> }
       <button (click)="isCheckoutVisible.set(true)" [disabled]="cart().length === 0" class="aurora-button-success inline-flex items-center justify-center gap-2 font-bold text-white px-4 h-11 rounded-xl transition-all duration-150 ease-in-out w-full"><i class="fa-solid fa-lock"></i><span>Pay Now</span></button>
@@ -173,7 +173,7 @@
               <div class="p-3 rounded-lg bg-surface-raised flex items-center justify-between shadow-md">
                 <div>
                   <p class="font-semibold">Order #{{i + 1}} <span class="text-xs text-charcoal-400">({{order.length}} items)</span></p>
-                  <p class="font-bold tabular-nums">{{ getHeldOrderTotal(order) | currency:'LKR ' }}</p>
+                  <p class="font-bold tabular-nums">{{ (getHeldOrderTotal(order) / 100) | currency:'LKR ' }}</p>
                 </div>
                 <button (click)="restoreOrder(i)" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-3 py-1.5 text-sm rounded-xl transition-all duration-150 ease-in-out">Restore</button>
               </div>

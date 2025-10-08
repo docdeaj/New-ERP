@@ -1,6 +1,8 @@
+
 import { Component, ChangeDetectionStrategy, input, output, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+// FIX: Imported missing report schema types.
 import { ReportSchema, SchemaField } from '../../models/types';
 import { HighlightPipe } from '../../pipes/highlight.pipe';
 

@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { Invoice, Quotation, PurchaseOrder, Receipt } from '../models/types';
+import { PrintableDocument } from '../models/types';
 
 export type DrawerContext = 
   | 'new-invoice' 
@@ -13,8 +13,6 @@ export type DrawerContext =
   | 'new-product'
   | 'new-cheque'
   | 'new-recurring-expense';
-
-type PrintableDocument = Invoice | Quotation | PurchaseOrder | Receipt;
 
 @Injectable({
   providedIn: 'root'

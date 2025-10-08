@@ -1,3 +1,5 @@
+
+
 import { Component, ChangeDetectionStrategy, inject, signal, effect, computed } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -15,29 +17,28 @@ import { PdfGenerationService } from '../../services/pdf.service';
   imports: [CommonModule, RouterLink, PaymentFormComponent, DataTableComponent, CurrencyPipe, DatePipe],
 })
 export class PaymentWorkspaceComponent {
-  // FIX: Explicitly type injected service to resolve type inference issues.
-  private route: ActivatedRoute = inject(ActivatedRoute);
+  private route = inject(ActivatedRoute);
   private api = inject(ApiService);
   private pdfService = inject(PdfGenerationService);
 
-  invoiceId = signal<number | null>(null);
+  invoiceId = signal<string | number | null>(null);
   invoice = signal<Invoice | null>(null);
   receipts = signal<Receipt[]>([]);
   isLoading = signal(true);
   
   receiptColumns: ColumnDefinition<Receipt>[] = [
-    { key: 'receiptNumber', label: 'Receipt #', type: 'string' },
-    { key: 'paymentDate', label: 'Payment Date', type: 'date' },
+    { key: 'number', label: 'Receipt #', type: 'string' },
+    { key: 'issue_date', label: 'Payment Date', type: 'date' },
     { key: 'method', label: 'Method', type: 'chip' },
-    { key: 'amount', label: 'Amount', type: 'currency' },
+    { key: 'amount_lkr', label: 'Amount', type: 'currency' },
   ];
 
   constructor() {
     this.route.paramMap.subscribe(params => {
       const id = params.get('invoiceId');
       if (id) {
-        this.invoiceId.set(+id);
-        this.loadData(+id);
+        this.invoiceId.set(id);
+        this.loadData(id);
       }
     });
 
@@ -51,7 +52,7 @@ export class PaymentWorkspaceComponent {
     });
   }
 
-  async loadData(invoiceId: number) {
+  async loadData(invoiceId: string | number) {
     this.isLoading.set(true);
     const [invoiceData, receiptsData] = await Promise.all([
       this.api.invoices.getById(invoiceId),
@@ -68,7 +69,7 @@ export class PaymentWorkspaceComponent {
 
     await this.api.createReceipt({
       invoiceId: inv.id,
-      amount: inv.balance, // Pay the remaining balance
+      amount: inv.balance_lkr, // Pay the remaining balance
       method: paymentDetails.method,
       paymentDate: new Date().toISOString(),
     });

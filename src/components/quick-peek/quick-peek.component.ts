@@ -1,6 +1,9 @@
+
+
 import { Component, ChangeDetectionStrategy, input, output, computed, inject, viewChild, ElementRef, signal, effect } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
+// FIX: Imported missing RecurringExpense type.
 import { Invoice, Product, Quotation, Expense, PurchaseOrder, Contact, Receipt, Cheque, ArAgingRow, ApAgingRow, RecurringExpense, LocationKey } from '../../models/types';
 import { InvoicePdfComponent } from '../invoice-pdf/invoice-pdf.component';
 import { PdfGenerationService } from '../../services/pdf.service';
@@ -68,13 +71,13 @@ export class QuickPeekComponent {
 
   profitMargin = computed(() => {
     const p = this.product();
-    if (p && p.price > 0 && p.cost) {
-      return ((p.price - p.cost) / p.price) * 100;
+    if (p && p.price_lkr > 0 && p.cost_lkr) {
+      return ((p.price_lkr - p.cost_lkr) / p.price_lkr) * 100;
     }
     return 0;
   });
 
-  isLoss = computed(() => (this.product()?.price ?? 0) < (this.product()?.cost ?? 0));
+  isLoss = computed(() => (this.product()?.price_lkr ?? 0) < (this.product()?.cost_lkr ?? 0));
 
   stockLocations = computed(() => {
     const p = this.product();
@@ -87,7 +90,7 @@ export class QuickPeekComponent {
     ];
 
     return locations.map(loc => {
-        const onHand = p.stock?.[loc.key] ?? 0;
+        const onHand = p.onHand?.[loc.key] ?? 0;
         const committed = p.committed?.[loc.key] ?? 0;
         const available = onHand - committed;
         return {
@@ -207,11 +210,11 @@ export class QuickPeekComponent {
     const p = this.product();
     if (!p) return;
     this.uiStateService.openDrawer('new-po', { 
-        lineItems: [{ 
-            productId: p.id, 
-            productName: p.name, 
-            quantity: 1, 
-            unitPrice: p.cost 
+        items: [{ 
+            product_id: p.id, 
+            name: p.name, 
+            qty: 1, 
+            unit_price_lkr: p.cost_lkr 
         }]
     });
     this.onClose();
@@ -219,22 +222,22 @@ export class QuickPeekComponent {
 
   onNewInvoiceForContact() {
     const contact = this.item() as Contact;
-    if (!contact || contact.type !== 'Customer') return;
+    if (!contact || contact.type !== 'customer') return;
     this.uiStateService.openDrawer('new-invoice', { customer: contact });
     this.onClose();
   }
 
   onRecordPaymentForContact() {
       const contact = this.item() as Contact;
-      if (!contact || contact.type !== 'Customer') return;
+      if (!contact || contact.type !== 'customer') return;
       this.uiStateService.openDrawer('record-payment', { customer: contact });
       this.onClose();
   }
 
   onNewPurchaseOrderForContact() {
       const contact = this.item() as Contact;
-      if (!contact || contact.type !== 'Supplier') return;
-      this.uiStateService.openDrawer('new-po', { supplierName: contact.name });
+      if (!contact || contact.type !== 'supplier') return;
+      this.uiStateService.openDrawer('new-po', { supplier: contact });
       this.onClose();
   }
 

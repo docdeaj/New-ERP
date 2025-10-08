@@ -1,3 +1,4 @@
+
 import { Component, ChangeDetectionStrategy, input, output, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder } from '@angular/forms';
@@ -71,8 +72,9 @@ export class PaymentFormComponent {
     this.isSaving.set(true);
     // Simulate API call
     setTimeout(() => {
+      // FIX: Convert activeTab to lowercase to match ReceiptPaymentMethod type.
       this.paymentSuccess.emit({
-        method: this.activeTab(),
+        method: this.activeTab().toLowerCase() as ReceiptPaymentMethod,
         amountTendered: this.amountTendered()
       });
       this.isSaving.set(false);

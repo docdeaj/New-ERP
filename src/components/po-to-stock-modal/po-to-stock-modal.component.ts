@@ -1,3 +1,5 @@
+
+
 import { Component, ChangeDetectionStrategy, input, output, computed } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { PurchaseOrder } from '../../models/types';
@@ -20,7 +22,7 @@ export class PoToStockModalComponent {
   });
 
   totalItems = computed(() => {
-    return this.purchaseOrder().lineItems?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+    return this.purchaseOrder().items?.reduce((sum, item) => sum + item.qty, 0) || 0;
   });
 
   onClose() {
@@ -28,6 +30,7 @@ export class PoToStockModalComponent {
   }
 
   onConfirm() {
-    this.confirm.emit(this.purchaseOrder().id);
+    // FIX: Cast string id to number.
+    this.confirm.emit(+this.purchaseOrder().id);
   }
 }

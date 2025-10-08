@@ -1,3 +1,4 @@
+
 import { Component, ChangeDetectionStrategy, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DataTableComponent, ColumnDefinition } from '../../components/data-table/data-table.component';
@@ -24,12 +25,13 @@ export class PurchaseOrdersComponent {
   isConversionModalOpen = signal(false);
   selectedPoForConversion = signal<PurchaseOrder | null>(null);
 
+  // FIX: Corrected column definition keys to match the PurchaseOrder model.
   columns: ColumnDefinition<PurchaseOrder>[] = [
-    { key: 'poNumber', label: 'PO #', type: 'string' },
-    { key: 'supplierName', label: 'Supplier', type: 'string' },
-    { key: 'orderDate', label: 'Order Date', type: 'date' },
-    { key: 'expectedDate', label: 'Expected Date', type: 'date' },
-    { key: 'amount', label: 'Amount', type: 'currency' },
+    { key: 'number', label: 'PO #', type: 'string' },
+    { key: 'partyName', label: 'Supplier', type: 'string' },
+    { key: 'issue_date', label: 'Order Date', type: 'date' },
+    { key: 'due_date', label: 'Expected Date', type: 'date' },
+    { key: 'total_lkr', label: 'Amount', type: 'currency' },
     { key: 'status', label: 'Status', type: 'chip' },
   ];
 

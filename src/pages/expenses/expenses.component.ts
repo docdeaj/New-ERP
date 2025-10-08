@@ -1,3 +1,5 @@
+
+
 import { Component, ChangeDetectionStrategy, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
@@ -17,19 +19,18 @@ export class ExpensesComponent {
   
   private api = inject(ApiService);
   private uiStateService = inject(UiStateService);
-  // FIX: Explicitly type injected service to resolve type inference issues.
-  private route: ActivatedRoute = inject(ActivatedRoute);
+  private route = inject(ActivatedRoute);
   expenses = signal<Expense[]>([]);
   isLoading = signal(true);
   initialQuery = signal<string | null>(null);
 
-  // FIX: Completed the column definitions for the data table.
+  // FIX: Completed the column definitions for the data table to match the Expense type.
   columns: ColumnDefinition<Expense>[] = [
     { key: 'category', label: 'Category', type: 'string' },
     { key: 'vendor', label: 'Vendor', type: 'string' },
-    { key: 'notes', label: 'Notes', type: 'string' },
+    { key: 'note', label: 'Notes', type: 'string' },
     { key: 'date', label: 'Date', type: 'date' },
-    { key: 'amount', label: 'Amount', type: 'currency' },
+    { key: 'amount_lkr', label: 'Amount', type: 'currency' },
     { key: 'status', label: 'Status', type: 'chip' },
   ];
 

@@ -1,6 +1,8 @@
+
 import { Component, ChangeDetectionStrategy, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DataTableComponent, ColumnDefinition } from '../../components/data-table/data-table.component';
+// FIX: Imported missing RecurringExpense type.
 import { RecurringExpense } from '../../models/types';
 import { ApiService } from '../../services/api.service';
 import { UiStateService } from '../../services/ui-state.service';
@@ -19,6 +21,7 @@ export class RecurringExpensesComponent {
   recurringExpenses = signal<RecurringExpense[]>([]);
   isLoading = signal(true);
 
+  // FIX: Corrected column definitions to match RecurringExpense type.
   columns: ColumnDefinition<RecurringExpense>[] = [
     { key: 'description', label: 'Description', type: 'string' },
     { key: 'vendor', label: 'Vendor', type: 'string' },

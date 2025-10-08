@@ -1,7 +1,9 @@
+
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit, computed } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+// FIX: Imported all missing report-related types.
 import { ReportQuery, ReportResult, ReportSchema, ReportView, SchemaField } from '../../models/types';
 import { DataTableComponent, ColumnDefinition } from '../../components/data-table/data-table.component';
 import { SchemaExplorerComponent } from '../../components/schema-explorer/schema-explorer.component';
@@ -111,7 +113,7 @@ export class ReportBuilderComponent implements OnInit {
       }
     } else {
       // Set a default query for new reports
-      this.reportQuery.set({ dimensions: ['customer.name'], metrics: ['net_sales'], filters: [], sortBy: [] });
+      this.reportQuery.set({ dimensions: ['partyName'], metrics: ['total_lkr'], filters: [], sortBy: [] });
       this.activeVisualization.set('table');
     }
 

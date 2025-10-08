@@ -1,3 +1,4 @@
+
 import { Component, ChangeDetectionStrategy, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DataTableComponent, ColumnDefinition } from '../../components/data-table/data-table.component';
@@ -18,8 +19,9 @@ export class ContactsComponent {
   contacts = signal<Contact[]>([]);
   isLoading = signal(true);
 
+  // FIX: Changed avatarUrlKey to avatar_url to match the Contact type.
   columns: ColumnDefinition<Contact>[] = [
-    { key: 'name', label: 'Name', type: 'avatar', avatarUrlKey: 'avatarUrl' },
+    { key: 'name', label: 'Name', type: 'avatar', avatarUrlKey: 'avatar_url' },
     { key: 'email', label: 'Email', type: 'string' },
     { key: 'phone', label: 'Phone', type: 'string' },
     { key: 'type', label: 'Type', type: 'chip' },

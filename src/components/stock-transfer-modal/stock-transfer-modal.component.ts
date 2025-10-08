@@ -1,3 +1,4 @@
+
 import { Component, ChangeDetectionStrategy, input, output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, ValidatorFn, AbstractControl } from '@angular/forms';
@@ -21,8 +22,7 @@ export class StockTransferModalComponent {
   close = output<void>();
   confirmTransfer = output<{ from: LocationKey, to: LocationKey, quantity: number | 'All' }>();
 
-  // FIX: Explicitly type injected service to resolve type inference issues.
-  private fb: FormBuilder = inject(FormBuilder);
+  private fb = inject(FormBuilder);
   
   locations: { key: LocationKey, name: string }[] = [
     { key: 'mainWarehouse', name: 'Main Warehouse' },

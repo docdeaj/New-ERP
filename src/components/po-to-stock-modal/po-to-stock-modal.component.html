@@ -16,8 +16,8 @@
     <div class="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
       <p class="text-sm text-charcoal-300">
         You are about to receive items from Purchase Order 
-        <span class="font-bold text-primary-400">{{ purchaseOrder().poNumber }}</span> 
-        from supplier <span class="font-bold">{{ purchaseOrder().supplierName }}</span>.
+        <span class="font-bold text-primary-400">{{ purchaseOrder().number }}</span> 
+        from supplier <span class="font-bold">{{ purchaseOrder().partyName }}</span>.
       </p>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -27,7 +27,7 @@
         </div>
         <div class="bg-surface-inset p-3 rounded-lg shadow-inner">
           <p class="text-xs text-charcoal-400">Total Value</p>
-          <p class="font-bold text-lg tabular-nums">{{ purchaseOrder().amount | currency:'LKR ' }}</p>
+          <p class="font-bold text-lg tabular-nums">{{ (purchaseOrder().total_lkr / 100) | currency:'LKR ' }}</p>
         </div>
         <div class="bg-primary-900/50 p-3 rounded-lg">
           <p class="text-xs text-primary-300">New Stock Lot #</p>
@@ -46,11 +46,11 @@
             </tr>
           </thead>
           <tbody>
-            @for (item of purchaseOrder().lineItems; track item.productId) {
+            @for (item of purchaseOrder().items; track item.product_id) {
               <tr class="hover:bg-surface-raised">
-                <td class="px-4 py-2 font-medium text-charcoal-100">{{ item.productName }}</td>
-                <td class="px-4 py-2 text-right font-semibold tabular-nums">{{ item.quantity }}</td>
-                <td class="px-4 py-2 text-right tabular-nums">{{ item.unitPrice | currency:'LKR ' }}</td>
+                <td class="px-4 py-2 font-medium text-charcoal-100">{{ item.name }}</td>
+                <td class="px-4 py-2 text-right font-semibold tabular-nums">{{ item.qty }}</td>
+                <td class="px-4 py-2 text-right tabular-nums">{{ (item.unit_price_lkr / 100) | currency:'LKR ' }}</td>
               </tr>
             }
           </tbody>

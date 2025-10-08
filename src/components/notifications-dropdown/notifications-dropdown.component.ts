@@ -1,3 +1,4 @@
+
 import { Component, ChangeDetectionStrategy, inject, output, computed, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
@@ -23,6 +24,7 @@ export class NotificationsDropdownComponent {
 
   activeTab = signal<NotificationTab>('All');
   
+  // FIX: Corrected types to match NotificationType.
   billingTypes: NotificationType[] = ['invoice', 'quotation', 'cheque', 'billing'];
 
   filteredNotifications = computed(() => {
@@ -33,6 +35,7 @@ export class NotificationsDropdownComponent {
       return notifications.filter(n => n.type === 'system');
     }
     if (tab === 'Billing') {
+      // FIX: Use correct NotificationType for filtering.
       return notifications.filter(n => this.billingTypes.includes(n.type));
     }
     return notifications; // 'All'
@@ -53,6 +56,7 @@ export class NotificationsDropdownComponent {
   }
 
   handleNotificationClick(notification: Notification) {
+    // FIX: Use string id and correct link property.
     this.notificationService.markAsRead(notification.id);
     if (notification.link) {
       this.router.navigateByUrl(notification.link);

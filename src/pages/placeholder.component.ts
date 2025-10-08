@@ -1,3 +1,4 @@
+
 import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
@@ -21,7 +22,6 @@ import { ActivatedRoute } from '@angular/router';
   imports: [CommonModule],
 })
 export class PlaceholderComponent {
-  // FIX: Explicitly type injected service to resolve type inference issues.
-  route: ActivatedRoute = inject(ActivatedRoute);
+  route = inject(ActivatedRoute);
   pageTitle = this.route.snapshot.title || 'Page';
 }

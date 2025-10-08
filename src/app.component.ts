@@ -1,4 +1,6 @@
 
+
+
 import { Component, ChangeDetectionStrategy, signal, effect, inject, computed } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -9,10 +11,10 @@ import { UniversalAddDrawerComponent } from './components/universal-add-drawer/u
 import { UiStateService, DrawerContext } from './services/ui-state.service';
 import { ConfirmationModalComponent } from './components/confirmation-modal/confirmation-modal.component';
 import { DocumentPreviewModalComponent } from './components/document-preview-modal/document-preview-modal.component';
-import { Invoice, Quotation, PurchaseOrder, Receipt } from './models/types';
+import { Invoice, Quotation, PurchaseOrder, Receipt, PrintableDocument } from './models/types';
 import { NotificationsDropdownComponent } from './components/notifications-dropdown/notifications-dropdown.component';
+import { AuthService } from './services/auth.service';
 
-type PrintableDocument = Invoice | Quotation | PurchaseOrder | Receipt;
 
 @Component({
   selector: 'app-root',
@@ -36,6 +38,9 @@ type PrintableDocument = Invoice | Quotation | PurchaseOrder | Receipt;
 })
 export class AppComponent {
   uiStateService = inject(UiStateService);
+  authService = inject(AuthService);
+
+  isAuthenticated = this.authService.isAuthenticated;
   isSidebarCollapsed = this.uiStateService.isSidebarCollapsed;
   isSearchOpen = this.uiStateService.isSearchOpen;
   isNotificationsOpen = this.uiStateService.isNotificationsOpen;
@@ -85,17 +90,18 @@ export class AppComponent {
     this.uiStateService.hideDocumentPreview();
   }
   
+  // FIX: Use robust type guards to determine document type for editing.
   onEditDocument(doc: PrintableDocument) {
     this.uiStateService.hideDocumentPreview();
     let context: DrawerContext | null = null;
 
-    if ('invoiceNumber' in doc && 'dueDate' in doc) {
+    if ('balance_lkr' in doc) { // Invoice
       context = 'new-invoice';
-    } else if ('quotationNumber' in doc) {
+    } else if ('number' in doc && doc.number?.startsWith('QUO')) { // Quotation
       context = 'new-quotation';
-    } else if ('poNumber' in doc) {
+    } else if ('number' in doc && doc.number?.startsWith('PO')) { // Purchase Order
       context = 'new-po';
-    } else if ('receiptNumber' in doc) {
+    } else if ('invoice_id' in doc) { // Receipt
       // Per spec, receipts are not editable.
       console.log('Editing receipts is not supported.');
       return; 

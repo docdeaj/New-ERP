@@ -1,8 +1,10 @@
+
+
 import { Component, ChangeDetectionStrategy, input, output, signal, computed, inject, effect, ElementRef, viewChild } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
-import { Contact, MediaItem } from '../../models/types';
+import { Contact, MediaItem, ContactType } from '../../models/types';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { MiniMediaBrowserComponent } from '../mini-media-browser/mini-media-browser.component';
 
@@ -29,7 +31,7 @@ export class CustomerPickerComponent {
 
   // --- State Signals ---
   private api = inject(ApiService);
-  private fb: FormBuilder = inject(FormBuilder);
+  private fb = inject(FormBuilder);
   
   query = signal('');
   isDropdownOpen = signal(false);
@@ -96,7 +98,8 @@ export class CustomerPickerComponent {
         if (q) {
           this.isLoading.set(true);
           const allContacts = await this.api.contacts.list({ query: q });
-          this.rawResults.set(allContacts.filter(c => c.type === 'Customer'));
+          // FIX: Compare contact type to lowercase 'customer'.
+          this.rawResults.set(allContacts.filter(c => c.type === 'customer'));
           this.isLoading.set(false);
         } else {
           this.rawResults.set(this.recents());
@@ -171,7 +174,8 @@ export class CustomerPickerComponent {
 
   async fetchRecents() {
     const contacts = await this.api.contacts.list();
-    const recents = contacts.filter(c => c.type === 'Customer').slice(0, 5);
+    // FIX: Compare contact type to lowercase 'customer'.
+    const recents = contacts.filter(c => c.type === 'customer').slice(0, 5);
     this.recents.set(recents);
     this.rawResults.set(recents); // Initially show recents
   }
@@ -230,7 +234,8 @@ export class CustomerPickerComponent {
     // Check for existing customer (case/space insensitive)
     const allCustomers = await this.api.contacts.list();
     const normalizedNewName = (newName || '').toLowerCase().trim();
-    const existingCustomer = allCustomers.find(c => c.type === 'Customer' && (c.name || '').toLowerCase().trim() === normalizedNewName);
+    // FIX: Compare contact type to lowercase 'customer'.
+    const existingCustomer = allCustomers.find(c => c.type === 'customer' && (c.name || '').toLowerCase().trim() === normalizedNewName);
 
     if (existingCustomer) {
       this.liveRegionMessage.set(`Customer ${existingCustomer.name} already exists. Selecting.`);
@@ -243,8 +248,9 @@ export class CustomerPickerComponent {
       name: this.quickCreateForm.value.name || '',
       phone: this.quickCreateForm.value.phone || '',
       email: this.quickCreateForm.value.email || '',
-      avatarUrl: this.quickCreateForm.value.avatarUrl || '',
-      type: 'Customer',
+      avatar_url: this.quickCreateForm.value.avatarUrl || '',
+      // FIX: Use lowercase 'customer' for ContactType.
+      type: 'customer',
     };
     try {
       const newContact = await this.api.createContact(newContactData);

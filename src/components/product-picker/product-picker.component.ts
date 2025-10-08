@@ -1,3 +1,4 @@
+
 import { Component, ChangeDetectionStrategy, input, output, signal, computed, inject, effect, ElementRef, viewChild } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -17,7 +18,7 @@ import { HighlightPipe } from '../../pipes/highlight.pipe';
   }
 })
 export class ProductPickerComponent {
-  value = input<number | null>(null); // Expecting product ID
+  value = input<string | null>(null); // Expecting product ID
   onSelect = output<Product>();
 
   private api = inject(ApiService);
@@ -41,6 +42,7 @@ export class ProductPickerComponent {
     effect(() => {
         const selectedId = this.value();
         if (selectedId && this.allProducts().length > 0) {
+            // FIX: Compare string IDs
             const product = this.allProducts().find(p => p.id === selectedId);
             this.selectedProduct.set(product || null);
         } else {
@@ -130,7 +132,8 @@ export class ProductPickerComponent {
   }
 
   getAvailableStock(product: Product): number {
-    const onHand = Object.values(product.stock).reduce((a, b) => a + b, 0);
+    // FIX: Correctly calculate stock from onHand and committed location maps.
+    const onHand = Object.values(product.onHand).reduce((a, b) => a + b, 0);
     const committed = Object.values(product.committed).reduce((a, b) => a + b, 0);
     return onHand - committed;
   }

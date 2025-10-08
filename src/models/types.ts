@@ -1,169 +1,201 @@
-export type InvoiceStatus = 'Paid' | 'Pending' | 'Overdue' | 'Draft';
-export type QuotationStatus = 'Sent' | 'Accepted' | 'Declined' | 'Draft';
-export type PurchaseOrderStatus = 'Ordered' | 'Shipped' | 'Received' | 'Cancelled' | 'Partial';
-export type ChequeStatus = 'Pending' | 'Cleared' | 'Bounced' | 'Deposited';
-export type ReceiptPaymentMethod = 'Cash' | 'Card' | 'Cheque';
-export type ExpenseStatus = 'Paid' | 'Unpaid';
-export type LocationKey = 'mainWarehouse' | 'downtownStore' | 'online';
+// --- CORE ENTITIES ---
 
-export interface LineItem {
-  productId: number;
-  productName: string;
-  quantity: number;
-  unitPrice: number;
-  total: number;
+export type ContactType = 'customer' | 'supplier';
+export interface Contact {
+  id: string;
+  tenant_id: string;
+  type: ContactType;
+  name: string;
+  company?: string;
+  email?: string;
+  phone?: string;
+  avatar_url?: string;
+  stats?: {
+    open_invoices?: number;
+    balance_lkr?: number; // In cents
+  };
+  tags?: string[];
+  created_at: string;
+  updated_at: string;
 }
 
-export interface Invoice {
-  id: number;
-  invoiceNumber: string;
-  customerName: string;
-  amount: number; // This will be the grand total
-  issueDate: string; // ISO string format
-  dueDate: string;   // ISO string format
+export type LocationKey = 'mainWarehouse' | 'downtownStore' | 'online';
+
+export interface Product {
+  id: string;
+  tenant_id: string;
+  sku: string;
+  name: string;
+  price_lkr: number; // In cents
+  cost_lkr: number; // In cents
+  image_url?: string;
+  width_mm?: number;
+  height_mm?: number;
+  depth_mm?: number;
+  onHand: { [key in LocationKey]: number };
+  committed: { [key in LocationKey]: number };
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LineItem {
+  product_id: string;
+  name: string;
+  sku: string;
+  qty: number;
+  unit_price_lkr: number; // In cents
+  line_discount_lkr?: number; // In cents
+}
+
+export interface DocBase {
+  id: string;
+  tenant_id: string;
+  number: string;
+  party_id: string;
+  issue_date: string; // ISO string
+  status: string;
+  currency: 'LKR';
+  tax_rate: number; // e.g., 10 for 10%
+  discount_lkr?: number; // In cents
+  items: LineItem[];
+  subtotal_lkr: number; // In cents
+  tax_lkr: number; // In cents
+  total_lkr: number; // In cents
+  notes?: string;
+  created_by: string; // User ID
+  created_at: string; // ISO string
+  updated_at: string; // ISO string
+
+  // Denormalized fields for UI convenience
+  partyName?: string;
+  partyAvatarUrl?: string;
+}
+
+export type InvoiceStatus = 'Paid' | 'Pending' | 'Overdue' | 'Draft';
+export interface Invoice extends DocBase {
+  due_date: string; // ISO string
+  paid_lkr: number; // In cents
+  balance_lkr: number; // In cents
   status: InvoiceStatus;
-  customerAvatarUrl?: string;
-  lineItems?: LineItem[];
-  subtotal?: number;
-  tax?: number;
-  totalPaid: number;
-  balance: number;
+}
+
+export type QuotationStatus = 'Sent' | 'Accepted' | 'Declined' | 'Draft';
+export interface Quotation extends DocBase {
+  due_date: string; // Expiry date
+  status: QuotationStatus;
+}
+
+export type PurchaseOrderStatus = 'Ordered' | 'Shipped' | 'Received' | 'Cancelled' | 'Partial';
+export interface PurchaseOrder extends DocBase {
+  due_date: string; // Expected date
+  status: PurchaseOrderStatus;
+}
+
+export type ReceiptPaymentMethod = 'cash' | 'card' | 'cheque';
+export interface Receipt {
+  id: string;
+  tenant_id: string;
+  invoice_id: string;
+  amount_lkr: number; // In cents
+  method: ReceiptPaymentMethod;
+  created_at: string;
+  created_by: string;
+
+  // Denormalized fields
+  invoice_number?: string;
+  partyName?: string;
+  number: string; // receipt number
+  issue_date: string; // payment date
 }
 
 export interface Expense {
-  id: number;
-  category: string;
-  amount: number;
+  id: string;
+  tenant_id: string;
   date: string;
-  vendor: string;
-  status: ExpenseStatus;
-  notes?: string;
+  category: string;
+  amount_lkr: number; // In cents
+  tax_lkr?: number; // In cents
+  note?: string;
+  vendor?: string;
+  status?: string; // e.g. 'reimbursed'
+  attachment_id?: string;
+  created_at: string;
 }
 
+export type RecurringCadence = 'daily' | 'weekly' | 'monthly' | 'yearly';
 export interface RecurringExpense {
-  id: number;
+  id: string;
+  tenant_id: string;
   description: string;
+  vendor?: string;
   category: string;
   amount: number;
-  cadence: 'Daily' | 'Weekly' | 'Monthly' | 'Yearly';
+  cadence: RecurringCadence;
   nextDueDate: string;
-  vendor: string;
+  enabled: boolean;
 }
 
-export interface Quotation {
-  id: number;
-  quotationNumber: string;
-  customerName: string;
-  amount: number; // This will be the grand total
-  issueDate: string;
-  expiryDate: string;
-  status: QuotationStatus;
-  customerAvatarUrl?: string;
-  lineItems?: LineItem[];
-  subtotal?: number;
-  tax?: number;
+export interface Recurring {
+  id: string;
+  tenant_id: string;
+  kind: 'invoice' | 'expense';
+  cadence: RecurringCadence;
+  next_due: string;
+  template: any; // Invoice or Expense draft
+  enabled: boolean;
 }
 
-export interface Receipt {
-  id: number;
-  receiptNumber: string;
-  invoiceId: number;
-  invoiceNumber: string;
-  customerName: string;
-  amount: number;
-  paymentDate: string;
-  method: ReceiptPaymentMethod;
+export type NotificationPriority = 'high' | 'medium' | 'low';
+export type NotificationType = 'invoice' | 'stock' | 'system' | 'purchase_order' | 'mention' | 'cheque' | 'quotation' | 'billing';
+
+export interface Notification {
+  id: string;
+  tenant_id: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  read: boolean;
+  created_at: string;
+  link?: string;
+  priority: NotificationPriority;
 }
 
+export type ChequeStatus = 'Pending' | 'Cleared' | 'Bounced' | 'Deposited';
 export interface Cheque {
-  id: number;
+  id: string;
   chequeNumber: string;
   bank: string;
   payee: string; // From
   payer: string; // To
-  amount: number;
+  amount_lkr: number;
   chequeDate: string;
   status: ChequeStatus;
 }
 
-export interface PurchaseOrder {
-  id: number;
-  poNumber: string;
-  supplierName: string;
-  amount: number; // This will be the grand total
-  orderDate: string;
-  expectedDate: string;
-  status: PurchaseOrderStatus;
-  lineItems?: LineItem[];
-  subtotal?: number;
-  tax?: number;
-}
 
-export type ContactType = 'Customer' | 'Supplier';
-export interface Contact {
-  id: number;
-  name: string;
-  type: ContactType;
-  email: string;
-  phone: string;
-  avatarUrl: string;
-  tags?: string[];
-  stats?: {
-    open_invoices?: number;
-    balance_lkr?: number;
-    total_sales_lkr?: number;
-    open_pos?: number;
-    total_purchases_lkr?: number;
-  };
-}
-
-export interface Product {
-  id: number;
-  name: string;
-  sku: string;
-  category: string;
-  price: number;
-  cost: number;
-  imageUrl: string;
-  description?: string;
-  dimensions?: { w: number; h: number; t: number; };
-  stock: {
-    [key in LocationKey]: number;
-  };
-  committed: {
-    [key in LocationKey]: number;
-  };
-  flags?: {
-    price_below_cost?: boolean;
-  };
-}
+// --- UI & TRANSIENT TYPES ---
 
 export interface CartItem {
-  id: number;
+  id: string;
   name: string;
   sku: string;
-  price: number;
-  imageUrl: string;
+  price_lkr: number; // In cents
+  image_url?: string;
   quantity: number;
+  cost_lkr: number; // In cents
   flags?: {
     price_below_cost?: boolean;
   };
-  dimensions?: { w: number; h: number; t: number; };
 }
 
 export interface InventoryItem {
-  id: number;
-  productId: number;
+  id: string;
+  productId: string;
   productName: string;
   sku: string;
   imageUrl: string;
-  description?: string;
-  onHand: {
-    [key in LocationKey]: number;
-  };
-  committed: {
-    [key in LocationKey]: number;
-  };
+  onHand: { [key in LocationKey]: number };
+  committed: { [key in LocationKey]: number };
 }
 
 export interface Kpi {
@@ -196,21 +228,9 @@ export interface MediaItem {
   tags?: string[];
 }
 
-export interface DailyReport {
-  totalSales: number;
-  totalExpenses: number;
-  net: number;
-  cashSales: number;
-  nonCashSales: number;
-  chequesPending: number;
-}
-
 // --- Notifications ---
-export type NotificationType = 'invoice' | 'stock' | 'system' | 'purchase_order' | 'mention' | 'cheque' | 'quotation' | 'billing';
-export type NotificationPriority = 'high' | 'medium' | 'low';
-
-export interface Notification {
-  id: number;
+export interface AppNotification {
+  id: string;
   type: NotificationType;
   title: string;
   body: string;
@@ -225,49 +245,42 @@ export type CalendarEventType = 'receivable' | 'recurring_expense' | 'cheque' | 
 export type CalendarEventColor = 'emerald' | 'orange' | 'violet' | 'blue' | 'slate' | 'cyan';
 
 export interface CalendarEvent {
-  id: string; // e.g., 'invoice-2', 'recurring-1'
+  id: string;
   type: CalendarEventType;
-  date: string; // ISO string for the date part YYYY-MM-DD
+  date: string; // YYYY-MM-DD
   title: string;
-  secondary?: string; // customer/supplier/category etc.
+  secondary?: string;
   amount_lkr?: number;
   color_hint: CalendarEventColor;
-  meta?: {
-    invoice_id?: number;
-    po_id?: number;
-    // ... other metadata
-  };
+  meta?: { [key: string]: any };
 }
 
 // --- Reports Page Types ---
+
 export interface ReportSummary {
-  grossSales: Kpi;
-  netSales: Kpi;
-  cogs: Kpi;
-  grossMargin: Kpi & { percentage: number };
-  netProfit: Kpi;
-  expenses: Kpi;
-  paymentMix: { label: string; value: number; }[];
-  arToday: { count: number; amount: number; overdueCount: number; };
+  totalSales: number;
+  totalExpenses: number;
+  netIncome: number;
+  topCustomer: { name: string; value: number };
 }
 
 export interface SalesTrend {
   labels: string[];
-  datasets: { label: string, data: number[] }[];
+  datasets: { label: string; data: number[] }[];
 }
 
 export interface TopProductReport {
-  id: number;
+  id: string;
   name: string;
   sku: string;
   imageUrl: string;
   quantity: number;
-  revenue: number;
-  price: number;
+  revenue_lkr: number;
+  price_lkr: number;
 }
 
 export interface ArAgingRow {
-  id: number;
+  id: string;
   customerName: string;
   customerAvatarUrl: string;
   bucket_0_30: number;
@@ -278,7 +291,7 @@ export interface ArAgingRow {
 }
 
 export interface ApAgingRow {
-  id: number;
+  id: string;
   supplierName: string;
   supplierAvatarUrl: string;
   bucket_0_30: number;
@@ -288,48 +301,51 @@ export interface ApAgingRow {
   total: number;
 }
 
-export interface SlowMover {
-  id: number;
-  productName: string;
-  sku: string;
-  imageUrl: string;
-  daysSinceLastSale: number;
-  onHand: number;
-}
-
 export interface InventorySnapshot {
-  valuationLkr: Kpi;
-  turnProxy: Kpi;
+  totalValue: number;
+  totalItems: number;
   slowMovers: SlowMover[];
 }
 
-export interface RecurringForecastRow {
-  id: number;
+export interface SlowMover {
+  id: string;
   name: string;
-  cadence: 'Daily' | 'Weekly' | 'Monthly' | 'Yearly';
-  nextDueDate: string;
-  amount: number;
+  sku: string;
+  daysSinceLastSale: number;
+}
+
+export interface RecurringForecastRow {
+  month: string;
+  expense_total: number;
+  invoice_total: number;
+  net: number;
 }
 
 export interface TaxSummaryRow {
-  id: number;
-  rate: string;
-  taxableSales: number;
-  taxCollected: number;
+  period: string;
+  taxable_sales: number;
+  tax_collected: number;
+  taxable_purchases: number;
+  tax_paid: number;
+  net_tax_due: number;
 }
 
-// --- NEW DYNAMIC REPORTING TYPES ---
-
-export interface SchemaField {
-  key: string;
-  label: string;
-  group: string;
-  type: 'string' | 'currency' | 'date' | 'number';
+export interface ReportView {
+  id: string;
+  name: string;
+  description: string;
+  owner: { name: string; avatarUrl: string };
+  lastRun: string;
+  isFavorite: boolean;
+  query: ReportQuery;
+  visualizationType: 'table' | 'bar' | 'pivot' | 'donut' | 'line';
 }
 
-export interface ReportSchema {
-  dimensions: SchemaField[];
-  metrics: SchemaField[];
+export interface ReportQuery {
+  dimensions: string[];
+  metrics: string[];
+  filters: any[];
+  sortBy: SortDefinition[];
 }
 
 export interface SortDefinition {
@@ -337,34 +353,25 @@ export interface SortDefinition {
   direction: 'asc' | 'desc';
 }
 
-// Represents a user-defined query
-export interface ReportQuery {
-  dimensions: string[]; // e.g., ['customer.name', 'date.month']
-  metrics: string[];    // e.g., ['net_sales', 'cogs']
-  filters: { field: string; operator: string; value: any; }[];
-  sortBy: SortDefinition[];
-}
-
-// Represents a saved report configuration
-export interface ReportView {
-  id: string;
-  name: string;
-  description: string;
-  query: ReportQuery;
-  visualizationType: 'table' | 'bar' | 'pivot' | 'donut' | 'line';
-  owner: {
-    name: string;
-    avatarUrl: string;
-  };
-  lastRun: string; // ISO string
-  isFavorite: boolean;
-}
-
-// Represents the API response for a report run
 export interface ReportResult {
-  meta: { columns: { key: string; label: string; type: 'string' | 'currency' | 'date' | 'number' }[] };
+  query: ReportQuery;
+  meta: {
+    columns: { key: string; label: string; type: 'string' | 'currency' | 'date' | 'number' }[];
+  };
   data: Record<string, any>[];
-  queryExecutionTime: number;
+}
+
+export interface ReportSchema {
+  dimensions: SchemaField[];
+  metrics: SchemaField[];
+}
+
+export interface SchemaField {
+  key: string;
+  label: string;
+  group: string;
+  type: 'string' | 'number' | 'date' | 'boolean';
+  description: string;
 }
 
 // --- LOGS ---
@@ -372,12 +379,14 @@ export type LogSeverity = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'FATAL';
 
 export interface LogEntry {
   id: string;
-  timestamp: string; // ISO string
+  timestamp: string;
   severity: LogSeverity;
   message: string;
-  source: string; // e.g., 'api-gateway', 'database', 'frontend'
-  service: string; // e.g., 'auth-service', 'payment-processor'
+  source: string;
+  service: string;
   attributes: Record<string, any>;
   traceId?: string;
   spanId?: string;
 }
+
+export type PrintableDocument = Invoice | Quotation | PurchaseOrder | Receipt;

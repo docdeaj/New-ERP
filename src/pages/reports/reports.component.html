@@ -1,98 +1,87 @@
-<div class="space-y-6">
-  <!-- Header -->
-  <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-    <div>
-      <h1 class="text-3xl font-bold text-brand-text">Reports</h1>
-      <p class="text-charcoal-400 mt-1">Manage and run your saved business reports.</p>
-    </div>
-    <div class="flex items-center gap-2 w-full sm:w-auto">
-      <div class="relative flex-1 sm:flex-none">
-        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-400"></i>
-        <input 
-          type="text" 
-          placeholder="Search reports..." 
-          class="aurora-input w-full bg-surface-inset text-brand-text rounded-lg py-2 pl-10 pr-4 sm:text-sm"
-          [value]="searchQuery()"
-          (input)="onSearch($event)">
+<div class="space-y-8">
+  <!-- Sticky Header -->
+  <header class="sticky top-[76px] z-20 bg-surface/80 backdrop-blur-xl rounded-2xl p-4 shadow-lg h-24 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <h1 class="text-2xl font-bold text-brand-text">Reports Hub</h1>
+       <!-- Time Range Chips -->
+      <div class="flex items-center gap-2 p-1 bg-surface-inset rounded-lg">
+        <button (click)="activeTimeRange.set('this-month')" [class]="'px-3 py-1.5 text-sm font-semibold rounded-md transition-colors ' + (activeTimeRange() === 'this-month' ? 'bg-surface-raised shadow-sm text-charcoal-100' : 'text-charcoal-400 hover:text-charcoal-200')">This Month</button>
+        <button (click)="activeTimeRange.set('last-month')" [class]="'px-3 py-1.5 text-sm font-semibold rounded-md transition-colors ' + (activeTimeRange() === 'last-month' ? 'bg-surface-raised shadow-sm text-charcoal-100' : 'text-charcoal-400 hover:text-charcoal-200')">Last Month</button>
+        <button (click)="activeTimeRange.set('this-quarter')" [class]="'px-3 py-1.5 text-sm font-semibold rounded-md transition-colors ' + (activeTimeRange() === 'this-quarter' ? 'bg-surface-raised shadow-sm text-charcoal-100' : 'text-charcoal-400 hover:text-charcoal-200')">This Quarter</button>
+        <button (click)="activeTimeRange.set('year-to-date')" [class]="'px-3 py-1.5 text-sm font-semibold rounded-md transition-colors ' + (activeTimeRange() === 'year-to-date' ? 'bg-surface-raised shadow-sm text-charcoal-100' : 'text-charcoal-400 hover:text-charcoal-200')">Year to Date</button>
       </div>
-      <button (click)="onNewReport()" class="aurora-button-primary inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-2 rounded-xl">
-        <i class="fa-solid fa-plus"></i>
-        <span>New Report</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <button (click)="exportReport('pdf', 'ar-aging')" class="group flex items-center gap-2 px-3 h-10 rounded-xl bg-red-900/50 hover:bg-red-900/80 text-red-300 font-semibold transition-colors shadow-md">
+        <i class="fa-solid fa-file-pdf text-red-400"></i><span>Export PDF</span>
+      </button>
+      <button (click)="exportReport('csv', 'ar-aging')" class="group flex items-center gap-2 px-3 h-10 rounded-xl bg-green-900/50 hover:bg-green-900/80 text-green-300 font-semibold transition-colors shadow-md">
+        <i class="fa-solid fa-file-csv text-green-400"></i><span>Export CSV</span>
+      </button>
+      <button (click)="exportReport('xlsx', 'ar-aging')" class="group flex items-center gap-2 px-3 h-10 rounded-xl bg-teal-900/50 hover:bg-teal-900/80 text-teal-300 font-semibold transition-colors shadow-md">
+        <i class="fa-solid fa-file-excel text-teal-400"></i><span>Export XLSX</span>
       </button>
     </div>
-  </div>
+  </header>
 
-  <!-- Tabs -->
-  <div class="border-b border-charcoal-800/50">
-    <nav class="-mb-px flex space-x-6" aria-label="Tabs">
-      <button (click)="activeTab.set('my-reports')"
-              class="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors"
-              [class]="activeTab() === 'my-reports' ? 'border-primary text-primary' : 'border-transparent text-charcoal-400 hover:text-charcoal-200 hover:border-charcoal-500'">
-        My Reports
-      </button>
-      <button (click)="activeTab.set('shared')"
-              class="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors"
-              [class]="activeTab() === 'shared' ? 'border-primary text-primary' : 'border-transparent text-charcoal-400 hover:text-charcoal-200 hover:border-charcoal-500'">
-        Shared with Me
-      </button>
-      <button (click)="activeTab.set('favorites')"
-              class="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors"
-              [class]="activeTab() === 'favorites' ? 'border-primary text-primary' : 'border-transparent text-charcoal-400 hover:text-charcoal-200 hover:border-charcoal-500'">
-        Favorites
-      </button>
-    </nav>
-  </div>
+  <!-- Financial Reports -->
+  <section id="ar-aging-table">
+    <app-data-table
+      [isLoading]="isArAgingLoading()"
+      title="Accounts Receivable Aging"
+      description="A summary of unpaid customer invoices, bucketed by how long they have been outstanding."
+      [columns]="arAgingColumns"
+      [data]="arAgingData()"
+      context="ar-aging">
+    </app-data-table>
+  </section>
 
-  <!-- Reports Grid -->
-  @if (isLoading()) {
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
-      @for (_ of [1,2,3]; track $index) {
-        <div class="h-48 bg-surface-raised rounded-2xl"></div>
-      }
-    </div>
-  } @else {
-    @if (filteredReports().length > 0) {
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        @for (report of filteredReports(); track report.id) {
-          <a [routerLink]="['/reports/builder', report.id]" class="group bg-surface rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-200 flex flex-col">
-            <div class="p-5 flex-1">
-              <div class="flex items-start justify-between">
-                @switch (report.visualizationType) {
-                  @case ('table') { <i class="fa-solid fa-table-cells text-xl text-blue-400"></i> }
-                  @case ('bar') { <i class="fa-solid fa-chart-column text-xl text-teal-400"></i> }
-                  @case ('pivot') { <i class="fa-solid fa-table-cells-large text-xl text-indigo-400"></i> }
+  <!-- Placeholder Sections for Other Reports -->
+  <section>
+    <div class="bg-surface rounded-2xl shadow-lg p-6">
+        <h3 class="text-xl font-bold mb-4">Other Financial Reports</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            @for (report of financialReports(); track report.id) {
+                @if (report.id !== 'ar-aging') {
+                    <div class="p-4 bg-surface-raised rounded-lg">
+                        <h4 class="font-semibold">{{ report.name }}</h4>
+                        <p class="text-sm text-charcoal-400 mt-1">{{ report.description }}</p>
+                        <button class="text-sm font-semibold text-primary mt-3 hover:underline">Run Report</button>
+                    </div>
                 }
-                <button (click)="toggleFavorite(report, $event)" 
-                        class="text-charcoal-500 hover:text-amber-400 transition-colors z-10"
-                        [class.text-amber-400]="report.isFavorite"
-                        [title]="report.isFavorite ? 'Remove from favorites' : 'Add to favorites'">
-                  <i class="fa-star" [class.fa-solid]="report.isFavorite" [class.fa-regular]="!report.isFavorite"></i>
-                </button>
-              </div>
-              <h3 class="mt-3 text-lg font-semibold text-brand-text">{{ report.name }}</h3>
-              <p class="text-sm text-charcoal-400 mt-1 line-clamp-2">{{ report.description }}</p>
-            </div>
-            <div class="p-5 border-t border-charcoal-800/50 flex items-center justify-between text-xs">
-              <div class="flex items-center gap-2">
-                <img [src]="report.owner.avatarUrl" [alt]="report.owner.name" class="w-6 h-6 rounded-full">
-                <span>{{ report.owner.name }}</span>
-              </div>
-              <div class="flex items-center gap-2">
-                  <span class="text-charcoal-500">Last run: {{ report.lastRun | date:'short' }}</span>
-                  <button (click)="deleteReport(report, $event)" class="text-charcoal-500 hover:text-red-400 p-1 rounded-full hover:bg-charcoal-700 transition-colors z-10" title="Delete Report">
-                    <i class="fa-solid fa-trash-can"></i>
-                  </button>
-              </div>
-            </div>
-          </a>
-        }
-      </div>
-    } @else {
-      <div class="text-center py-16 bg-surface rounded-2xl shadow-md">
-        <i class="fa-solid fa-folder-open text-5xl text-charcoal-500 mb-4"></i>
-        <h3 class="text-xl font-bold">No Reports Found</h3>
-        <p class="text-charcoal-400 mt-1">No reports match your current filters.</p>
-      </div>
-    }
-  }
+            }
+        </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="bg-surface rounded-2xl shadow-lg p-6">
+        <h3 class="text-xl font-bold mb-4">Sales Reports</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            @for (report of salesReports(); track report.id) {
+                <div class="p-4 bg-surface-raised rounded-lg">
+                    <h4 class="font-semibold">{{ report.name }}</h4>
+                    <p class="text-sm text-charcoal-400 mt-1">{{ report.description }}</p>
+                    <button class="text-sm font-semibold text-primary mt-3 hover:underline">Run Report</button>
+                </div>
+            }
+        </div>
+    </div>
+  </section>
+  
+  <section>
+    <div class="bg-surface rounded-2xl shadow-lg p-6">
+        <h3 class="text-xl font-bold mb-4">Inventory Reports</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            @for (report of inventoryReports(); track report.id) {
+                <div class="p-4 bg-surface-raised rounded-lg">
+                    <h4 class="font-semibold">{{ report.name }}</h4>
+                    <p class="text-sm text-charcoal-400 mt-1">{{ report.description }}</p>
+                    <button class="text-sm font-semibold text-primary mt-3 hover:underline">Run Report</button>
+                </div>
+            }
+        </div>
+    </div>
+  </section>
+
 </div>

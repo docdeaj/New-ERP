@@ -58,7 +58,7 @@
               @for (item of group.items; track item.id; let i = $index) {
                 <li (mouseover)="setActive(g, i)" (click)="handleSelect()"
                     [id]="item.id"
-                    [class]="'flex items-center gap-4 py-2 cursor-pointer transition-all duration-150 group border-l-2 ' + (activeGroupIndex() === g && activeItemIndex() === i ? 'bg-primary/10 border-primary pl-3 pr-4' : 'border-transparent pl-4 pr-4 hover:bg-surface-raised hover:shadow-sm')"
+                    [class]="'flex items-center gap-4 py-2 cursor-pointer transition-all duration-150 group border-l-2 ' + (activeGroupIndex() === g && activeItemIndex() === i ? 'bg-primary/20 border-primary pl-3 pr-4' : 'border-transparent pl-4 pr-4 hover:bg-surface-raised hover:shadow-sm')"
                     role="option" [attr.aria-selected]="activeGroupIndex() === g && activeItemIndex() === i">
                   <div class="flex items-center justify-center w-8 h-8 text-lg bg-surface-inset rounded-lg text-charcoal-300 shadow-inner-sm">
                     <i [class]="item.icon"></i>
@@ -71,7 +71,7 @@
                   </div>
                   @if(item.meta) {
                     <div class="text-right text-xs whitespace-nowrap text-charcoal-400">
-                      @if(item.meta.amount) { <span class="font-semibold tabular-nums">{{ item.meta.amount | currency:'LKR '}}</span> }
+                      @if(item.meta.amount_lkr) { <span class="font-semibold tabular-nums">{{ (item.meta.amount_lkr / 100) | currency:'LKR '}}</span> }
                       @if(item.meta.status) { <span class="font-bold mx-1">•</span> <span class="font-semibold">{{item.meta.status}}</span> }
                     </div>
                   }
@@ -110,9 +110,9 @@
                 </div>
               </div>
               <div class="grid grid-cols-3 gap-2">
-                <div class="bg-surface-raised p-2 rounded-lg text-center shadow-md"><p class="text-xs text-charcoal-400">Total</p><p class="font-bold tabular-nums">{{ invoice.amount | currency:'LKR ' }}</p></div>
-                <div class="bg-green-900/50 p-2 rounded-lg text-center shadow-md"><p class="text-xs text-green-400">Paid</p><p class="font-bold tabular-nums">{{ invoice.totalPaid | currency:'LKR ' }}</p></div>
-                <div class="bg-red-900/50 p-2 rounded-lg text-center shadow-md"><p class="text-xs text-red-400">Balance</p><p class="font-bold tabular-nums">{{ invoice.balance | currency:'LKR ' }}</p></div>
+                <div class="bg-surface-raised p-2 rounded-lg text-center shadow-md"><p class="text-xs text-charcoal-400">Total</p><p class="font-bold tabular-nums">{{ (invoice.amount_lkr / 100) | currency:'LKR ' }}</p></div>
+                <div class="bg-green-900/50 p-2 rounded-lg text-center shadow-md"><p class="text-xs text-green-400">Paid</p><p class="font-bold tabular-nums">{{ (invoice.totalPaid_lkr / 100) | currency:'LKR ' }}</p></div>
+                <div class="bg-red-900/50 p-2 rounded-lg text-center shadow-md"><p class="text-xs text-red-400">Balance</p><p class="font-bold tabular-nums">{{ (invoice.balance_lkr / 100) | currency:'LKR ' }}</p></div>
               </div>
             </div>
           }
@@ -130,7 +130,7 @@
                 </div>
               </div>
               <div class="grid grid-cols-1 gap-2">
-                <div class="bg-surface-raised p-2 rounded-lg text-center shadow-md"><p class="text-xs text-charcoal-400">Total</p><p class="font-bold tabular-nums">{{ quotation.amount | currency:'LKR ' }}</p></div>
+                <div class="bg-surface-raised p-2 rounded-lg text-center shadow-md"><p class="text-xs text-charcoal-400">Total</p><p class="font-bold tabular-nums">{{ (quotation.amount_lkr / 100) | currency:'LKR ' }}</p></div>
               </div>
             </div>
           }
@@ -146,15 +146,15 @@
               }
              </div>
              <div class="grid grid-cols-3 gap-2 text-center text-sm">
-                <div class="bg-surface-raised p-2 rounded-lg shadow-md"><p class="text-xs text-charcoal-400">Cost</p><p class="font-bold tabular-nums">{{ p.cost | currency:'LKR ' }}</p></div>
-                <div class="bg-surface-raised p-2 rounded-lg shadow-md"><p class="text-xs text-charcoal-400">Price</p><p class="font-bold tabular-nums">{{ p.price | currency:'LKR ' }}</p></div>
-                <div class="bg-surface-raised p-2 rounded-lg shadow-md"><p class="text-xs text-charcoal-400">Margin</p><p class="font-bold tabular-nums">{{ ((p.price - p.cost) / p.price) * 100 | number:'1.0-0' }}%</p></div>
+                <div class="bg-surface-raised p-2 rounded-lg shadow-md"><p class="text-xs text-charcoal-400">Cost</p><p class="font-bold tabular-nums">{{ (p.cost_lkr / 100) | currency:'LKR ' }}</p></div>
+                <div class="bg-surface-raised p-2 rounded-lg shadow-md"><p class="text-xs text-charcoal-400">Price</p><p class="font-bold tabular-nums">{{ (p.price_lkr / 100) | currency:'LKR ' }}</p></div>
+                <div class="bg-surface-raised p-2 rounded-lg shadow-md"><p class="text-xs text-charcoal-400">Margin</p><p class="font-bold tabular-nums">{{ ((p.price_lkr - p.cost_lkr) / p.price_lkr) * 100 | number:'1.0-0' }}%</p></div>
              </div>
           }
            @case ('po') {
             @let po = asPurchaseOrder(item.data);
             <p class="text-sm text-charcoal-400 mb-4">{{po.supplierName}} • Expected: {{po.expectedDate | date:'mediumDate'}}</p>
-            <div class="bg-surface-raised p-3 rounded-lg mb-4 shadow-md"><p class="text-xs text-charcoal-400">Total Value</p><p class="font-bold text-2xl tabular-nums">{{ po.amount | currency:'LKR ' }}</p></div>
+            <div class="bg-surface-raised p-3 rounded-lg mb-4 shadow-md"><p class="text-xs text-charcoal-400">Total Value</p><p class="font-bold text-2xl tabular-nums">{{ (po.amount_lkr / 100) | currency:'LKR ' }}</p></div>
             <p class="text-xs font-semibold uppercase text-charcoal-400 mb-2">Items ({{po.lineItems?.length}})</p>
             <ul class="text-sm space-y-1">
               @for(line of po.lineItems; track line.productId) {
@@ -165,7 +165,7 @@
           @case ('recurring') {
             @let expense = asRecurringExpense(item.data);
             <p class="text-sm text-charcoal-400 mb-4">Cadence: <span class="font-semibold">{{expense.cadence}}</span> • Next Due: <span class="font-semibold">{{expense.nextDueDate | date:'mediumDate'}}</span></p>
-            <div class="bg-surface-raised p-3 rounded-lg shadow-md"><p class="text-xs text-charcoal-400">Amount</p><p class="font-bold text-3xl tabular-nums">{{ expense.amount | currency:'LKR ' }}</p></div>
+            <div class="bg-surface-raised p-3 rounded-lg shadow-md"><p class="text-xs text-charcoal-400">Amount</p><p class="font-bold text-3xl tabular-nums">{{ (expense.amount_lkr / 100) | currency:'LKR ' }}</p></div>
           }
           @default {
              <div class="flex flex-col items-center justify-center h-full text-center text-charcoal-500">

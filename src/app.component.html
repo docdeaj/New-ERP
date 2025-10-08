@@ -1,66 +1,70 @@
-<div class="relative min-h-screen">
-  <app-sidebar 
-    [isCollapsed]="isSidebarCollapsed()" 
-    (toggleCollapse)="toggleSidebar()">
-  </app-sidebar>
+@if (isAuthenticated()) {
+  <div class="relative min-h-screen">
+    <app-sidebar 
+      [isCollapsed]="isSidebarCollapsed()" 
+      (toggleCollapse)="toggleSidebar()">
+    </app-sidebar>
 
-  <main [class]="'transition-all duration-300 ease-in-out ' + mainContentMargin()">
-    <div>
-      <app-topbar (openSearch)="isSearchOpen.set(true)"></app-topbar>
-      <div class="mt-6">
-        <router-outlet></router-outlet>
+    <main [class]="'transition-all duration-300 ease-in-out ' + mainContentMargin()">
+      <div>
+        <app-topbar (openSearch)="isSearchOpen.set(true)"></app-topbar>
+        <div class="mt-6">
+          <router-outlet></router-outlet>
+        </div>
       </div>
-    </div>
-  </main>
-  
-  @if (isSearchOpen()) {
-    <app-universal-search (close)="closeSearch()"></app-universal-search>
-  }
+    </main>
+    
+    @if (isSearchOpen()) {
+      <app-universal-search (close)="closeSearch()"></app-universal-search>
+    }
 
-  @if (isNotificationsOpen()) {
-    <app-notifications-dropdown (close)="isNotificationsOpen.set(false)"></app-notifications-dropdown>
-  }
+    @if (isNotificationsOpen()) {
+      <app-notifications-dropdown (close)="isNotificationsOpen.set(false)"></app-notifications-dropdown>
+    }
 
-  @if (isDrawerOpen()) {
-    <app-universal-add-drawer 
-      [context]="drawerContext()"
-      (close)="closeDrawer()">
-    </app-universal-add-drawer>
-  }
+    @if (isDrawerOpen()) {
+      <app-universal-add-drawer 
+        [context]="drawerContext()"
+        (close)="closeDrawer()">
+      </app-universal-add-drawer>
+    }
 
-  @if (confirmationState(); as state) {
-    <app-confirmation-modal
-      [title]="state.title"
-      [message]="state.message"
-      (confirm)="onConfirm()"
-      (cancel)="onCancel()">
-    </app-confirmation-modal>
-  }
+    @if (confirmationState(); as state) {
+      <app-confirmation-modal
+        [title]="state.title"
+        [message]="state.message"
+        (confirm)="onConfirm()"
+        (cancel)="onCancel()">
+      </app-confirmation-modal>
+    }
 
-  @if (documentPreviewState(); as state) {
-    <app-document-preview-modal
-      [data]="state.document"
-      (close)="onCloseDocumentPreview()"
-      (edit)="onEditDocument($event)">
-    </app-document-preview-modal>
-  }
+    @if (documentPreviewState(); as state) {
+      <app-document-preview-modal
+        [data]="state.document"
+        (close)="onCloseDocumentPreview()"
+        (edit)="onEditDocument($event)">
+      </app-document-preview-modal>
+    }
 
-  @if (progressState(); as state) {
-    <div class="fixed bottom-4 right-4 z-50 w-full max-w-sm bg-surface/90 backdrop-blur-xl rounded-2xl shadow-2xl p-4 animate-[slide-up_220ms_cubic-bezier(0.2,0.8,0.2,1)]">
-        <div class="flex justify-between items-center">
-          <div>
-            <p class="text-sm font-semibold text-charcoal-200">{{ state.title }}</p>
-            <p class="text-xs text-charcoal-400 mb-2">Processing {{ state.progress }} of {{ state.total }} documents...</p>
+    @if (progressState(); as state) {
+      <div class="fixed bottom-4 right-4 z-50 w-full max-w-sm bg-surface/90 backdrop-blur-xl rounded-2xl shadow-2xl p-4 animate-[slide-up_220ms_cubic-bezier(0.2,0.8,0.2,1)]">
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="text-sm font-semibold text-charcoal-200">{{ state.title }}</p>
+              <p class="text-xs text-charcoal-400 mb-2">Processing {{ state.progress }} of {{ state.total }} documents...</p>
+            </div>
+            @if(state.cancellable) {
+              <button (click)="uiStateService.cancelProgress()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-inset text-charcoal-400 hover:text-white transition-colors" title="Cancel (Esc)">
+                <i class="fa-solid fa-times"></i>
+              </button>
+            }
           </div>
-          @if(state.cancellable) {
-            <button (click)="uiStateService.cancelProgress()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-inset text-charcoal-400 hover:text-white transition-colors" title="Cancel (Esc)">
-              <i class="fa-solid fa-times"></i>
-            </button>
-          }
-        </div>
-        <div class="w-full bg-surface-inset rounded-full h-2.5">
-            <div class="bg-primary h-2.5 rounded-full transition-all duration-300" [style.width.%]="(state.progress / state.total) * 100"></div>
-        </div>
-    </div>
-  }
-</div>
+          <div class="w-full bg-surface-inset rounded-full h-2.5">
+              <div class="bg-primary h-2.5 rounded-full transition-all duration-300" [style.width.%]="(state.progress / state.total) * 100"></div>
+          </div>
+      </div>
+    }
+  </div>
+} @else {
+  <router-outlet></router-outlet>
+}

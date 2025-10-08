@@ -1,3 +1,4 @@
+
 // FIX: This file was corrupted and incomplete. It has been recreated based on the structure of other page components.
 import { Component, ChangeDetectionStrategy, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -25,7 +26,8 @@ export class ChequesComponent {
     { key: 'payer', label: 'Payer', type: 'string' },
     { key: 'bank', label: 'Bank', type: 'string' },
     { key: 'chequeDate', label: 'Cheque Date', type: 'date' },
-    { key: 'amount', label: 'Amount', type: 'currency' },
+    // FIX: Changed key from 'amount' to 'amount_lkr' to match the Cheque type.
+    { key: 'amount_lkr', label: 'Amount', type: 'currency' },
     { key: 'status', label: 'Status', type: 'chip' },
   ];
 

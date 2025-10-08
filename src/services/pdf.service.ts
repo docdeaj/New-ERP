@@ -1,3 +1,4 @@
+
 import { Injectable, createComponent, ApplicationRef, EnvironmentInjector, inject } from '@angular/core';
 import { Invoice, Quotation, PurchaseOrder, Receipt } from '../models/types';
 import { InvoicePdfComponent } from '../components/invoice-pdf/invoice-pdf.component';
@@ -20,22 +21,23 @@ export class PdfGenerationService {
   private uiState = inject(UiStateService);
   private scriptsReadyPromise: Promise<void> | null = null;
 
+  // FIX: Correctly check for properties to determine document type and number.
   private getDocumentInfo(data: PrintableDocument): DocumentInfo {
-    if ('invoiceNumber' in data && 'dueDate' in data) return { type: 'Invoice', typePlural: 'Invoices', number: data.invoiceNumber };
-    if ('quotationNumber' in data) return { type: 'Quotation', typePlural: 'Quotations', number: data.quotationNumber };
-    if ('poNumber' in data) return { type: 'Purchase Order', typePlural: 'Purchase Orders', number: data.poNumber };
-    if ('receiptNumber' in data) return { type: 'Receipt', typePlural: 'Receipts', number: data.receiptNumber };
+    if ('balance_lkr' in data) return { type: 'Invoice', typePlural: 'Invoices', number: data.number };
+    if (data.number?.startsWith('QUO')) return { type: 'Quotation', typePlural: 'Quotations', number: data.number };
+    if (data.number?.startsWith('PO')) return { type: 'Purchase Order', typePlural: 'Purchase Orders', number: data.number };
+    if ('invoice_id' in data) return { type: 'Receipt', typePlural: 'Receipts', number: data.number };
     return { type: 'Document', typePlural: 'Documents', number: String((data as any).id) };
   }
 
   private getFilename(data: PrintableDocument): string {
-    const { type, number } = this.getDocumentInfo(data);
+    const docInfo = this.getDocumentInfo(data);
     const now = new Date();
-    const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    const time = `${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
-    const safeNumber = number.replace(/[^a-z0-9-]/gi, '_');
-    const safeType = type.replace(' ', '-');
-    return `${safeType}-${safeNumber}_${date}_${time}.pdf`;
+    const pad = (num: number) => String(num).padStart(2, '0');
+    const date = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}`;
+    const time = `${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+    const safeNumber = docInfo.number.replace(/[^a-z0-9-]/gi, '_');
+    return `${safeNumber}_${date}-${time}.pdf`;
   }
 
   private ensureScriptsLoaded(): Promise<void> {

@@ -17,8 +17,8 @@
         <div class="bg-surface rounded-2xl shadow-md p-6">
             <div class="flex justify-between items-start">
               <div>
-                <h3 class="text-xl font-bold text-charcoal-100">{{ inv.invoiceNumber }}</h3>
-                <p class="text-charcoal-400">{{ inv.customerName }}</p>
+                <h3 class="text-xl font-bold text-charcoal-100">{{ inv.number }}</h3>
+                <p class="text-charcoal-400">{{ inv.partyName }}</p>
               </div>
               <div class="flex items-center gap-2">
                 <button (click)="downloadInvoicePdf()" class="flex items-center justify-center w-9 h-9 bg-surface-raised rounded-full hover:bg-surface-inset transition-colors" title="Download PDF">
@@ -30,28 +30,28 @@
             <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
               <div>
                 <p class="text-sm text-charcoal-400">Total Amount</p>
-                <p class="font-bold text-lg tabular-nums">{{ inv.amount | currency:'LKR ' }}</p>
+                <p class="font-bold text-lg tabular-nums">{{ (inv.total_lkr / 100) | currency:'LKR ' }}</p>
               </div>
               <div>
                 <p class="text-sm text-charcoal-400">Paid Amount</p>
-                <p class="font-bold text-lg tabular-nums text-green-400">{{ inv.totalPaid | currency:'LKR ' }}</p>
+                <p class="font-bold text-lg tabular-nums text-green-400">{{ (inv.paid_lkr / 100) | currency:'LKR ' }}</p>
               </div>
                <div>
                 <p class="text-sm text-charcoal-400">Balance Due</p>
-                <p class="font-bold text-lg tabular-nums text-red-400">{{ inv.balance | currency:'LKR ' }}</p>
+                <p class="font-bold text-lg tabular-nums text-red-400">{{ (inv.balance_lkr / 100) | currency:'LKR ' }}</p>
               </div>
                <div>
                 <p class="text-sm text-charcoal-400">Due Date</p>
-                <p class="font-bold text-lg">{{ inv.dueDate | date:'mediumDate' }}</p>
+                <p class="font-bold text-lg">{{ inv.due_date | date:'mediumDate' }}</p>
               </div>
             </div>
         </div>
         
         <!-- Payment Form Card -->
-        @if (inv.balance > 0) {
+        @if (inv.balance_lkr > 0) {
           <div class="bg-surface rounded-2xl shadow-md">
             <app-payment-form 
-              [totalAmount]="inv.balance"
+              [totalAmount]="inv.balance_lkr / 100"
               (paymentSuccess)="handlePaymentSuccess($event)">
             </app-payment-form>
           </div>

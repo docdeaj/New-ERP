@@ -1,3 +1,4 @@
+
 import { Component, ChangeDetectionStrategy, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
@@ -23,8 +24,7 @@ interface DisplayInventoryItem extends InventoryItem {
 export class InventoryComponent {
   private api = inject(ApiService);
   private uiStateService = inject(UiStateService);
-  // FIX: Explicitly type injected service to resolve type inference issues.
-  private route: ActivatedRoute = inject(ActivatedRoute);
+  private route = inject(ActivatedRoute);
   inventory = signal<DisplayInventoryItem[]>([]);
   isLoading = signal(true);
   isTransferModalOpen = signal(false);

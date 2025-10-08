@@ -1,5 +1,7 @@
+
 import { Component, ChangeDetectionStrategy, input, output, signal, effect, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+// FIX: Imported missing report query types.
 import { ReportQuery, SortDefinition } from '../../models/types';
 import { CdkDragDrop, moveItemInArray, CdkDropList, CdkDrag } from '@angular/cdk/drag-drop';
 

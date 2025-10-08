@@ -1,3 +1,4 @@
+
 import { Component, ChangeDetectionStrategy, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DataTableComponent, ColumnDefinition } from '../../components/data-table/data-table.component';
@@ -20,12 +21,13 @@ export class ReceiptsComponent {
   receipts = signal<Receipt[]>([]);
   isLoading = signal(true);
 
+  // FIX: Corrected column definition keys to match the Receipt model.
   columns: ColumnDefinition<Receipt>[] = [
-    { key: 'receiptNumber', label: 'Receipt #', type: 'string' },
-    { key: 'invoiceNumber', label: 'Invoice #', type: 'string' },
-    { key: 'customerName', label: 'Customer', type: 'string' },
-    { key: 'paymentDate', label: 'Payment Date', type: 'date' },
-    { key: 'amount', label: 'Amount', type: 'currency' },
+    { key: 'number', label: 'Receipt #', type: 'string' },
+    { key: 'invoice_number', label: 'Invoice #', type: 'string' },
+    { key: 'partyName', label: 'Customer', type: 'string' },
+    { key: 'issue_date', label: 'Payment Date', type: 'date' },
+    { key: 'amount_lkr', label: 'Amount', type: 'currency' },
     { key: 'method', label: 'Method', type: 'chip' },
   ];
 

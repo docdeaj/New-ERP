@@ -1,7 +1,6 @@
 import '@angular/compiler';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter, withHashLocation } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { APP_ROUTES } from './src/app.routes';
 import { AppComponent } from './src/app.component';
@@ -12,16 +11,17 @@ import { CalendarDataService } from './src/services/calendar-data.service';
 import { SettingsService } from './src/services/settings.service';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { NotificationService } from './src/services/notification.service';
+import { AuthService } from './src/services/auth.service';
 
 bootstrapApplication(AppComponent, {
   providers: [
     provideZonelessChangeDetection(),
     provideRouter(APP_ROUTES, withHashLocation()),
-    provideHttpClient(),
     importProvidersFrom(ScrollingModule, FormsModule, ReactiveFormsModule, DragDropModule),
     CalendarDataService,
     SettingsService,
     NotificationService,
+    AuthService,
   ],
 }).catch((err) => console.error(err));
 

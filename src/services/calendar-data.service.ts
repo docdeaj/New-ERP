@@ -1,7 +1,7 @@
+
 import { Injectable, inject } from '@angular/core';
 import { ApiService } from './api.service';
-import { CalendarEvent, CalendarEventType, CalendarEventColor } from '../models/types';
-import { RecurringExpense } from '../models/types';
+import { CalendarEvent, CalendarEventType, CalendarEventColor, RecurringExpense } from '../models/types';
 
 const SRI_LANKAN_HOLIDAYS_2024 = [
     { month: 0, day: 15, name: 'Tamil Thai Pongal Day', type: 'Public' },
@@ -60,13 +60,14 @@ export class CalendarDataService {
     // 1. Process Invoices (Receivables)
     invoices.forEach(inv => {
       if (inv.status === 'Pending' || inv.status === 'Overdue') {
+        // FIX: Use correct snake_case properties from Invoice model.
         addEvent({
           id: `invoice-${inv.id}`,
           type: 'receivable',
-          date: inv.dueDate.split('T')[0],
-          title: `Invoice #${inv.invoiceNumber}`,
-          secondary: inv.customerName,
-          amount_lkr: inv.balance,
+          date: inv.due_date.split('T')[0],
+          title: `Invoice #${inv.number}`,
+          secondary: inv.partyName,
+          amount_lkr: inv.balance_lkr,
           color_hint: 'emerald',
           meta: { invoice_id: inv.id }
         });
@@ -80,26 +81,28 @@ export class CalendarDataService {
 
     // 3. Process Cheques
     cheques.forEach(chq => {
+      // FIX: Use correct property `amount_lkr`.
       addEvent({
         id: `cheque-${chq.id}`,
         type: 'cheque',
         date: chq.chequeDate.split('T')[0],
         title: `Cheque #${chq.chequeNumber}`,
         secondary: `${chq.payee} -> ${chq.payer}`,
-        amount_lkr: chq.amount,
+        amount_lkr: chq.amount_lkr,
         color_hint: 'violet'
       });
     });
     
     // 4. Process Purchase Orders
     pos.forEach(p => {
+      // FIX: Use correct snake_case properties from PurchaseOrder model.
       addEvent({
         id: `po-${p.id}`,
         type: 'po_eta',
-        date: p.expectedDate.split('T')[0],
-        title: `PO #${p.poNumber}`,
-        secondary: p.supplierName,
-        amount_lkr: p.amount,
+        date: p.due_date.split('T')[0],
+        title: `PO #${p.number}`,
+        secondary: p.partyName,
+        amount_lkr: p.total_lkr,
         color_hint: 'blue',
         meta: { po_id: p.id }
       });
@@ -128,13 +131,13 @@ export class CalendarDataService {
     });
 
     switch (expense.cadence) {
-      case 'Monthly':
+      case 'monthly':
         const eventDate = new Date(year, month, baseDate.getDate());
         if (eventDate >= startDate && eventDate <= endDate) {
             events.push(createEvent(eventDate));
         }
         break;
-      case 'Weekly':
+      case 'weekly':
         let currentDate = new Date(startDate);
         while(currentDate.getDay() !== baseDate.getDay()) {
             currentDate.setDate(currentDate.getDate() + 1);
@@ -146,12 +149,12 @@ export class CalendarDataService {
             currentDate.setDate(currentDate.getDate() + 7);
         }
         break;
-       case 'Daily':
+       case 'daily':
         for(let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
            events.push(createEvent(new Date(d)));
         }
         break;
-       case 'Yearly':
+       case 'yearly':
         if(baseDate.getMonth() === month) {
            events.push(createEvent(new Date(year, month, baseDate.getDate())));
         }

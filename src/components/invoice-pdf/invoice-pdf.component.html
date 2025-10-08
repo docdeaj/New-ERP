@@ -70,12 +70,12 @@
             </tr>
           </thead>
           <tbody>
-            @for (item of data.lineItems; track item.productId) {
+            @for (item of data.lineItems; track item.product_id) {
               <tr class="border-b border-gray-100">
-                <td class="p-3 text-gray-800">{{ item.productName }}</td>
-                <td class="p-3 text-center tabular-nums text-gray-600">{{ item.quantity }}</td>
-                <td class="p-3 text-right tabular-nums text-gray-600">{{ item.unitPrice | currency:'LKR ' }}</td>
-                <td class="p-3 text-right tabular-nums font-medium text-gray-800">{{ item.total | currency:'LKR ' }}</td>
+                <td class="p-3 text-gray-800">{{ item.name }}</td>
+                <td class="p-3 text-center tabular-nums text-gray-600">{{ item.qty }}</td>
+                <td class="p-3 text-right tabular-nums text-gray-600">{{ (item.unit_price_lkr / 100) | currency:'LKR ' }}</td>
+                <td class="p-3 text-right tabular-nums font-medium text-gray-800">{{ ((item.qty * item.unit_price_lkr) / 100) | currency:'LKR ' }}</td>
               </tr>
             } @empty {
               <tr><td colspan="4" class="p-8 text-center text-gray-400">No items listed.</td></tr>
@@ -96,30 +96,30 @@
           @if (data.type !== 'Receipt') {
             <div class="flex justify-between">
               <span class="text-gray-500">Subtotal</span>
-              <span class="font-medium tabular-nums text-gray-800">{{ data.subtotal | currency:'LKR ' }}</span>
+              <span class="font-medium tabular-nums text-gray-800">{{ (data.subtotal / 100) | currency:'LKR ' }}</span>
             </div>
             @if (data.tax > 0) {
               <div class="flex justify-between">
                 <span class="text-gray-500">Tax</span>
-                <span class="font-medium tabular-nums text-gray-800">{{ data.tax | currency:'LKR ' }}</span>
+                <span class="font-medium tabular-nums text-gray-800">{{ (data.tax / 100) | currency:'LKR ' }}</span>
               </div>
             }
           }
           <div class="flex justify-between font-bold text-base border-t-2 border-gray-200 pt-2">
             <span class="text-gray-900">{{ data.type === 'Receipt' ? 'Amount Paid' : 'Total' }}</span>
-            <span class="tabular-nums text-gray-900">{{ data.amount | currency:'LKR ' }}</span>
+            <span class="tabular-nums text-gray-900">{{ (data.amount / 100) | currency:'LKR ' }}</span>
           </div>
           @if (data.type === 'Invoice') {
             <div class="flex justify-between text-green-600">
               <span class="font-medium">Paid</span>
-              <span class="font-medium tabular-nums">-{{ data.totalPaid | currency:'LKR ' }}</span>
+              <span class="font-medium tabular-nums">-{{ (data.totalPaid / 100) | currency:'LKR ' }}</span>
             </div>
             <div 
               class="flex justify-between font-bold text-lg p-3 rounded-lg"
               [class.bg-blue-100]="data.balance && data.balance > 0" [class.text-blue-800]="data.balance && data.balance > 0"
               [class.bg-green-100]="!data.balance || data.balance <= 0" [class.text-green-800]="!data.balance || data.balance <= 0">
               <span>Balance Due</span>
-              <span class="tabular-nums">{{ data.balance | currency:'LKR ' }}</span>
+              <span class="tabular-nums">{{ (data.balance / 100) | currency:'LKR ' }}</span>
             </div>
           }
         </div>

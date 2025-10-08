@@ -1,3 +1,4 @@
+
 import { Component, ChangeDetectionStrategy, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DataTableComponent, ColumnDefinition } from '../../components/data-table/data-table.component';
@@ -20,12 +21,13 @@ export class QuotationsComponent {
   quotations = signal<Quotation[]>([]);
   isLoading = signal(true);
 
+  // FIX: Corrected column definition keys to match the Quotation model.
   columns: ColumnDefinition<Quotation>[] = [
-    { key: 'quotationNumber', label: 'Quotation #', type: 'string' },
-    { key: 'customerName', label: 'Customer', type: 'avatar', avatarUrlKey: 'customerAvatarUrl' },
-    { key: 'issueDate', label: 'Issue Date', type: 'date' },
-    { key: 'expiryDate', label: 'Expiry Date', type: 'date' },
-    { key: 'amount', label: 'Amount', type: 'currency' },
+    { key: 'number', label: 'Quotation #', type: 'string' },
+    { key: 'partyName', label: 'Customer', type: 'avatar', avatarUrlKey: 'partyAvatarUrl' },
+    { key: 'issue_date', label: 'Issue Date', type: 'date' },
+    { key: 'due_date', label: 'Expiry Date', type: 'date' },
+    { key: 'total_lkr', label: 'Amount', type: 'currency' },
     { key: 'status', label: 'Status', type: 'chip' },
   ];
 
@@ -52,7 +54,8 @@ export class QuotationsComponent {
     switch (event.action) {
       case 'convert-to-invoice':
         this.uiStateService.openDrawer('new-invoice', event.item);
-        this.api.updateQuotationStatus(event.item.id, 'Accepted');
+        // FIX: Cast string id to number for API call.
+        this.api.updateQuotationStatus(+event.item.id, 'Accepted');
         break;
       case 'edit':
         this.uiStateService.openDrawer('new-quotation', event.item);

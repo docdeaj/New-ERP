@@ -1,8 +1,11 @@
+
+
 import { Component, ChangeDetectionStrategy, output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { NotificationService } from '../../services/notification.service';
 import { UiStateService } from '../../services/ui-state.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-topbar',
@@ -13,9 +16,10 @@ import { UiStateService } from '../../services/ui-state.service';
 })
 export class TopbarComponent {
   openSearch = output<void>();
-  private router: Router = inject(Router);
+  private router = inject(Router);
   private notificationService = inject(NotificationService);
   private uiStateService = inject(UiStateService);
+  private authService = inject(AuthService);
 
   unreadCount = this.notificationService.unreadCount;
 
@@ -32,13 +36,6 @@ export class TopbarComponent {
   }
 
   onLogout() {
-    this.uiStateService.showConfirmation(
-      'Logout',
-      'Are you sure you want to log out?',
-      () => {
-        console.log('User logged out.');
-        // In a real app, you would call an authentication service here.
-      }
-    );
+    this.authService.logout();
   }
 }

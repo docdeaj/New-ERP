@@ -3,7 +3,7 @@
   <div class="aurora-backdrop absolute inset-0 animate-[fade-in_180ms_ease-in-out]" (click)="onClose()"></div>
 
   <!-- Drawer Panel -->
-  <div class="absolute top-3 right-3 bottom-3 w-full max-w-2xl bg-charcoal-900/90 backdrop-blur-xl shadow-2xl flex flex-col rounded-2xl animate-slide-in-spring">
+  <div class="absolute top-3 right-3 bottom-3 w-full max-w-2xl bg-charcoal-900/90 backdrop-blur-xl shadow-2xl flex flex-col rounded-2xl animate-slide-in-drawer-spring">
     <!-- Sticky Header -->
     <header class="flex items-center justify-between p-4 bg-surface-raised/80 backdrop-blur-md sticky top-0 z-10 rounded-t-2xl">
       <h2 class="text-xl font-semibold text-brand-text">{{ title() }}</h2>
@@ -46,7 +46,7 @@
                   @for(item of itemsFormArray?.controls; track item; let i = $index) {
                     <div [formGroupName]="i" class="grid grid-cols-12 gap-x-4 gap-y-2 items-end p-3 bg-surface-raised rounded-xl shadow-md">
                       <!-- Product Picker -->
-                      <div class="col-span-12 sm:col-span-6">
+                      <div class="col-span-12 sm:col-span-5">
                         <label class="block text-xs font-medium text-charcoal-300">Product</label>
                          <app-product-picker 
                            [value]="item.value.productId"
@@ -59,13 +59,18 @@
                         <input type="number" formControlName="quantity" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
                       </div>
                       <!-- Price -->
-                      <div class="col-span-5 sm:col-span-3">
+                      <div class="col-span-4 sm:col-span-2">
                          <label class="block text-xs font-medium text-charcoal-300">Unit Price</label>
                          <input type="number" formControlName="unitPrice" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
                       </div>
+                      <!-- Discount -->
+                      <div class="col-span-4 sm:col-span-2">
+                         <label class="block text-xs font-medium text-charcoal-300">Discount</label>
+                         <input type="number" formControlName="lineDiscount" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
+                      </div>
                       <!-- Remove -->
-                      <div class="col-span-3 sm:col-span-1">
-                         <button (click)="removeLineItem(i)" [disabled]="itemsFormArray?.controls.length <= 1" type="button" class="w-full h-10 flex items-center justify-center text-charcoal-500 hover:text-red-400 disabled:opacity-50 disabled:hover:text-charcoal-500 transition-colors rounded-lg hover:bg-charcoal-800">
+                      <div class="col-span-12 sm:col-span-1 text-right">
+                         <button (click)="removeLineItem(i)" [disabled]="itemsFormArray?.controls.length <= 1" type="button" class="w-10 h-10 flex items-center justify-center text-charcoal-500 hover:text-red-400 disabled:opacity-50 disabled:hover:text-charcoal-500 transition-colors rounded-lg hover:bg-charcoal-800">
                             <i class="fa-solid fa-trash-can"></i>
                          </button>
                       </div>
@@ -82,7 +87,7 @@
               <div class="w-full max-w-sm space-y-2 text-sm p-4 bg-surface-inset rounded-lg shadow-inner-sm">
                 <div class="flex justify-between">
                   <span class="text-charcoal-400">Subtotal</span>
-                  <span class="font-medium tabular-nums">{{ subtotal() | currency:'LKR ' }}</span>
+                  <span class="font-medium tabular-nums">{{ (subtotal() / 100) | currency:'LKR ' }}</span>
                 </div>
                 <!-- Discount -->
                 <div class="flex justify-between items-center">
@@ -98,16 +103,16 @@
                  @if(discountAmount() > 0) {
                     <div class="flex justify-between text-green-400">
                         <span class="pl-4">Discount Applied</span>
-                        <span class="font-medium tabular-nums">-{{ discountAmount() | currency:'LKR ' }}</span>
+                        <span class="font-medium tabular-nums">-{{ (discountAmount() / 100) | currency:'LKR ' }}</span>
                     </div>
                  }
                 <div class="flex justify-between">
                   <span class="text-charcoal-400">Tax ({{ taxRate() }}%)</span>
-                  <span class="font-medium tabular-nums">{{ tax() | currency:'LKR ' }}</span>
+                  <span class="font-medium tabular-nums">{{ (tax() / 100) | currency:'LKR ' }}</span>
                 </div>
                 <div class="flex justify-between font-bold text-base pt-2 border-t border-charcoal-700 mt-2">
                   <span class="text-brand-text">Grand Total</span>
-                  <span class="text-primary tabular-nums">{{ total() | currency:'LKR ' }}</span>
+                  <span class="text-primary tabular-nums">{{ (total() / 100) | currency:'LKR ' }}</span>
                 </div>
               </div>
             </div>
@@ -130,7 +135,7 @@
                     <i class="fa-solid fa-dollar-sign w-4 text-center text-charcoal-400"></i>
                     <span>Amount (LKR)</span>
                   </label>
-                  <input type="number" id="amount" formControlName="amount" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
+                  <input type="number" id="amount" formControlName="amount_lkr" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
                 </div>
                  <app-date-picker label="Date" formControlName="date"></app-date-picker>
             </div>
@@ -148,11 +153,11 @@
               </select>
             </div>
              <div>
-              <label for="notes" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+              <label for="note" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
                 <i class="fa-solid fa-pencil w-4 text-center text-charcoal-400"></i>
                 <span>Notes / Description</span>
               </label>
-              <textarea id="notes" formControlName="notes" rows="3" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none" placeholder="e.g., Monthly SaaS Subscription"></textarea>
+              <textarea id="note" formControlName="note" rows="3" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none" placeholder="e.g., Monthly SaaS Subscription"></textarea>
             </div>
             <div>
               <label class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
@@ -201,7 +206,7 @@
                     <option>Yearly</option>
                   </select>
                 </div>
-                <app-date-picker label="Next Due Date" formControlName="nextDueDate"></app-date-picker>
+                <app-date-picker label="Next Due Date" formControlName="next_due"></app-date-picker>
               </div>
             }
           </form>
@@ -225,7 +230,7 @@
                 <i class="fa-solid fa-dollar-sign w-4 text-center text-charcoal-400"></i>
                 <span>Total Sale Amount (LKR)</span>
               </label>
-              <input type="number" id="sale-amount" formControlName="amount" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
+              <input type="number" id="sale-amount" formControlName="amount_lkr" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
             </div>
              <div>
               <label class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
@@ -266,7 +271,7 @@
                   <i class="fa-solid fa-dollar-sign w-4 text-center text-charcoal-400"></i>
                   <span>Payment Amount (LKR)</span>
                 </label>
-                <input type="number" id="payment-amount" formControlName="amount" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
+                <input type="number" id="payment-amount" formControlName="amount_lkr" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
               </div>
               <app-date-picker label="Payment Date" formControlName="paymentDate"></app-date-picker>
             </div>
@@ -276,14 +281,14 @@
                 <span>Payment Method</span>
               </label>
               <select formControlName="paymentMethod" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
-                <option>Cash</option>
-                <option>Card</option>
-                <option>Cheque</option>
+                <option value="cash">Cash</option>
+                <option value="card">Card</option>
+                <option value="cheque">Cheque</option>
               </select>
             </div>
              @if (recordPaymentForm.get('customer')?.value?.stats?.balance_lkr) {
               <div class="p-3 text-sm bg-blue-900/50 text-blue-300 rounded-lg">
-                This customer has an outstanding balance of <span class="font-bold">{{ recordPaymentForm.get('customer')?.value?.stats?.balance_lkr | currency:'LKR '}}</span>. This payment will be applied to their oldest outstanding invoice.
+                This customer has an outstanding balance of <span class="font-bold">{{ recordPaymentForm.get('customer')?.value?.stats?.balance_lkr / 100 | currency:'LKR '}}</span>. This payment will be applied to their oldest outstanding invoice.
               </div>
             }
           </form>
@@ -319,14 +324,14 @@
                   <i class="fa-solid fa-dollar-sign w-4 text-center text-charcoal-400"></i>
                   <span>Cost (LKR)</span>
                 </label>
-                <input type="number" id="cost" formControlName="cost" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
+                <input type="number" id="cost" formControlName="cost_lkr" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
               </div>
               <div>
                 <label for="price" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
                   <i class="fa-solid fa-tag w-4 text-center text-charcoal-400"></i>
                   <span>Price (LKR)</span>
                 </label>
-                <input type="number" id="price" formControlName="price" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
+                <input type="number" id="price" formControlName="price_lkr" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
               </div>
             </div>
             <div>
@@ -354,7 +359,7 @@
               </label>
               <div class="mt-1 flex items-center gap-4">
                   <div class="w-24 h-24 bg-surface-inset rounded-lg flex items-center justify-center border-2 border-dashed border-charcoal-700 shadow-inner-sm">
-                     @if (productForm.get('imageUrl')?.value; as imageUrl) {
+                     @if (productForm.get('image_url')?.value; as imageUrl) {
                         <img [src]="imageUrl" alt="Product Preview" class="w-full h-full object-cover rounded-lg">
                      } @else {
                         <i class="fa-solid fa-image text-3xl text-charcoal-400"></i>
@@ -390,7 +395,7 @@
             <div class="flex items-center gap-6">
                <div class="relative">
                 <div class="w-24 h-24 bg-surface-inset rounded-full flex items-center justify-center border-2 border-dashed border-charcoal-700 shadow-inner-sm">
-                    @if (contactForm.get('avatarUrl')?.value; as imageUrl) {
+                    @if (contactForm.get('avatar_url')?.value; as imageUrl) {
                         <img [src]="imageUrl" alt="Avatar Preview" class="w-full h-full object-cover rounded-full">
                     } @else {
                         <i class="fa-solid fa-user text-4xl text-charcoal-400"></i>
@@ -412,8 +417,8 @@
                 <span>Type</span>
               </label>
               <select id="contact-type" formControlName="type" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
-                <option>Customer</option>
-                <option>Supplier</option>
+                <option value="customer">Customer</option>
+                <option value="supplier">Supplier</option>
               </select>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -437,7 +442,10 @@
         @case ('new-po') {
            <form [formGroup]="purchaseOrderForm" class="space-y-6">
             <div>
-              <label for="supplierName" class="block text-sm font-medium text-charcoal-300 mb-1">Supplier</label>
+              <label for="supplierName" class="flex items-center gap-2 text-sm font-medium text-charcoal-300 mb-1">
+                <i class="fa-solid fa-truck-field w-4 text-center text-charcoal-400"></i>
+                <span>Supplier</span>
+              </label>
               <app-supplier-picker
                 [value]="purchaseOrderForm.controls.supplier.value"
                 (onSelect)="purchaseOrderForm.controls.supplier.setValue($event)"
@@ -445,79 +453,101 @@
               </app-supplier-picker>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <app-date-picker label="Order Date" formControlName="orderDate"></app-date-picker>
-              <app-date-picker label="Expected Date" formControlName="expectedDate"></app-date-picker>
+              <app-date-picker label="Order Date" formControlName="issue_date"></app-date-picker>
+              <app-date-picker label="Expected Date" formControlName="due_date"></app-date-picker>
             </div>
              <div class="py-6" formArrayName="items">
                 <h3 class="text-lg font-medium text-brand-text mb-4">Items</h3>
                  <div class="space-y-4">
                   @for(item of itemsFormArray?.controls; track item; let i = $index) {
                     <div [formGroupName]="i" class="grid grid-cols-12 gap-x-4 gap-y-2 items-end p-3 bg-surface-raised rounded-xl shadow-md">
-                      <div class="col-span-12 sm:col-span-6"><label class="block text-xs font-medium text-charcoal-300">Product</label><app-product-picker [value]="item.value.productId" (onSelect)="onProductSelect($event, i)"></app-product-picker></div>
-                      <div class="col-span-4 sm:col-span-2"><label class="block text-xs font-medium text-charcoal-300">Qty</label><input type="number" formControlName="quantity" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none"></div>
-                      <div class="col-span-5 sm:col-span-3"><label class="block text-xs font-medium text-charcoal-300">Unit Price</label><input type="number" formControlName="unitPrice" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none"></div>
+                      <div class="col-span-12 sm:col-span-6"><label class="block text-xs font-medium text-charcoal-300">Product</label><app-product-picker [value]="item.value.product_id" (onSelect)="onProductSelect($event, i)"></app-product-picker></div>
+                      <div class="col-span-4 sm:col-span-2"><label class="block text-xs font-medium text-charcoal-300">Qty</label><input type="number" formControlName="qty" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none"></div>
+                      <div class="col-span-5 sm:col-span-3"><label class="block text-xs font-medium text-charcoal-300">Unit Price</label><input type="number" formControlName="unit_price_lkr" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none"></div>
                       <div class="col-span-3 sm:col-span-1"><button (click)="removeLineItem(i)" type="button" class="w-full h-10 flex items-center justify-center text-charcoal-500 hover:text-red-400"><i class="fa-solid fa-trash-can"></i></button></div>
                     </div>
                   }
                 </div>
                 <button (click)="addLineItem()" type="button" class="mt-4 text-sm font-semibold text-primary hover:underline"><i class="fa-solid fa-plus mr-1"></i> Add Item</button>
             </div>
-             <div class="flex justify-end"><div class="w-full max-w-xs space-y-2 text-sm p-4 bg-surface-inset rounded-lg shadow-inner-sm"><div class="flex justify-between font-bold text-base"><span class="text-brand-text">Total</span><span class="text-primary tabular-nums">{{ total() | currency:'LKR ' }}</span></div></div></div>
+             <div class="flex justify-end"><div class="w-full max-w-xs space-y-2 text-sm p-4 bg-surface-inset rounded-lg shadow-inner-sm"><div class="flex justify-between font-bold text-base"><span class="text-brand-text">Total</span><span class="text-primary tabular-nums">{{ (total() / 100) | currency:'LKR ' }}</span></div></div></div>
           </form>
         }
         @case ('new-quotation') {
            <form [formGroup]="quotationForm" class="space-y-6">
             <div>
-              <label for="quotation-customerName" class="block text-sm font-medium text-charcoal-300">Customer</label>
-              <input type="text" id="quotation-customerName" formControlName="customerName" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
+              <label for="quotation-customerName" class="flex items-center gap-2 text-sm font-medium text-charcoal-300 mb-1">
+                <i class="fa-solid fa-user w-4 text-center text-charcoal-400"></i>
+                <span>Customer</span>
+              </label>
+              <app-customer-picker 
+                [value]="quotationForm.controls.customer.value"
+                (onSelect)="quotationForm.controls.customer.setValue($event)"
+                (onClear)="quotationForm.controls.customer.setValue(null)">
+              </app-customer-picker>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <app-date-picker label="Issue Date" formControlName="issueDate"></app-date-picker>
-              <app-date-picker label="Expiry Date" formControlName="expiryDate"></app-date-picker>
+              <app-date-picker label="Issue Date" formControlName="issue_date"></app-date-picker>
+              <app-date-picker label="Expiry Date" formControlName="due_date"></app-date-picker>
             </div>
             <div class="py-6" formArrayName="items">
                 <h3 class="text-lg font-medium text-brand-text mb-4">Items</h3>
                  <div class="space-y-4">
                   @for(item of itemsFormArray?.controls; track item; let i = $index) {
                     <div [formGroupName]="i" class="grid grid-cols-12 gap-x-4 gap-y-2 items-end p-3 bg-surface-raised rounded-xl shadow-md">
-                      <div class="col-span-12 sm:col-span-6"><label class="block text-xs font-medium text-charcoal-300">Product</label><app-product-picker [value]="item.value.productId" (onSelect)="onProductSelect($event, i)"></app-product-picker></div>
-                      <div class="col-span-4 sm:col-span-2"><label class="block text-xs font-medium text-charcoal-300">Qty</label><input type="number" formControlName="quantity" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none"></div>
-                      <div class="col-span-5 sm:col-span-3"><label class="block text-xs font-medium text-charcoal-300">Unit Price</label><input type="number" formControlName="unitPrice" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none"></div>
+                      <div class="col-span-12 sm:col-span-6"><label class="block text-xs font-medium text-charcoal-300">Product</label><app-product-picker [value]="item.value.product_id" (onSelect)="onProductSelect($event, i)"></app-product-picker></div>
+                      <div class="col-span-4 sm:col-span-2"><label class="block text-xs font-medium text-charcoal-300">Qty</label><input type="number" formControlName="qty" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none"></div>
+                      <div class="col-span-5 sm:col-span-3"><label class="block text-xs font-medium text-charcoal-300">Unit Price</label><input type="number" formControlName="unit_price_lkr" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none"></div>
                       <div class="col-span-3 sm:col-span-1"><button (click)="removeLineItem(i)" type="button" class="w-full h-10 flex items-center justify-center text-charcoal-500 hover:text-red-400"><i class="fa-solid fa-trash-can"></i></button></div>
                     </div>
                   }
                 </div>
                 <button (click)="addLineItem()" type="button" class="mt-4 text-sm font-semibold text-primary hover:underline"><i class="fa-solid fa-plus mr-1"></i> Add Item</button>
             </div>
-             <div class="flex justify-end"><div class="w-full max-w-xs space-y-2 text-sm p-4 bg-surface-inset rounded-lg shadow-inner-sm"><div class="flex justify-between"><span>Subtotal</span><span class="font-medium tabular-nums">{{ subtotal() | currency:'LKR ' }}</span></div><div class="flex justify-between"><span>Tax (10%)</span><span class="font-medium tabular-nums">{{ tax() | currency:'LKR ' }}</span></div><div class="flex justify-between font-bold text-base pt-2"><span>Total</span><span class="text-primary tabular-nums">{{ total() | currency:'LKR ' }}</span></div></div></div>
+             <div class="flex justify-end"><div class="w-full max-w-xs space-y-2 text-sm p-4 bg-surface-inset rounded-lg shadow-inner-sm"><div class="flex justify-between"><span>Subtotal</span><span class="font-medium tabular-nums">{{ (subtotal() / 100) | currency:'LKR ' }}</span></div><div class="flex justify-between"><span>Tax (10%)</span><span class="font-medium tabular-nums">{{ (tax() / 100) | currency:'LKR ' }}</span></div><div class="flex justify-between font-bold text-base pt-2"><span>Total</span><span class="text-primary tabular-nums">{{ (total() / 100) | currency:'LKR ' }}</span></div></div></div>
           </form>
         }
         @case ('new-cheque') {
           <form [formGroup]="chequeForm" class="space-y-6">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
-                <label for="chequeNumber" class="block text-sm font-medium text-charcoal-300">Cheque Number</label>
-                <input type="text" id="chequeNumber" formControlName="chequeNumber" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
+                <label for="chequeNumber" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                  <i class="fa-solid fa-hashtag w-4 text-center text-charcoal-400"></i>
+                  <span>Cheque Number</span>
+                </label>
+                <input type="text" id="chequeNumber" formControlName="chequeNumber" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm">
               </div>
               <div>
-                <label for="bank" class="block text-sm font-medium text-charcoal-300">Bank</label>
-                <input type="text" id="bank" formControlName="bank" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
+                <label for="bank" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                  <i class="fa-solid fa-building-columns w-4 text-center text-charcoal-400"></i>
+                  <span>Bank</span>
+                </label>
+                <input type="text" id="bank" formControlName="bank" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm">
               </div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
-                <label for="payee" class="block text-sm font-medium text-charcoal-300">Payee (From)</label>
-                <input type="text" id="payee" formControlName="payee" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
+                <label for="payee" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                  <i class="fa-solid fa-user-pen w-4 text-center text-charcoal-400"></i>
+                  <span>Payee (From)</span>
+                </label>
+                <input type="text" id="payee" formControlName="payee" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm">
               </div>
               <div>
-                <label for="payer" class="block text-sm font-medium text-charcoal-300">Payer (To)</label>
-                <input type="text" id="payer" formControlName="payer" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
+                <label for="payer" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                  <i class="fa-solid fa-hand-holding-dollar w-4 text-center text-charcoal-400"></i>
+                  <span>Payer (To)</span>
+                </label>
+                <input type="text" id="payer" formControlName="payer" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm">
               </div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <label for="cheque-amount" class="block text-sm font-medium text-charcoal-300">Amount (LKR)</label>
-                  <input type="number" id="cheque-amount" formControlName="amount" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm transition-all duration-150 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-inset focus:outline-none">
+                  <label for="cheque-amount" class="flex items-center gap-2 text-sm font-medium text-charcoal-300">
+                    <i class="fa-solid fa-dollar-sign w-4 text-center text-charcoal-400"></i>
+                    <span>Amount (LKR)</span>
+                  </label>
+                  <input type="number" id="cheque-amount" formControlName="amount_lkr" class="aurora-input mt-1 block w-full bg-surface-inset text-brand-text border-transparent rounded-lg py-2 px-3 sm:text-sm">
                 </div>
                  <app-date-picker label="Cheque Date" formControlName="chequeDate"></app-date-picker>
             </div>

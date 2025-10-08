@@ -1,3 +1,5 @@
+
+
 import { Component, ChangeDetectionStrategy, inject, signal, computed, afterNextRender, viewChild, ElementRef, effect } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -32,12 +34,12 @@ export class PosComponent {
   heldOrders = signal<CartItem[][]>([]);
   isCheckoutVisible = signal(false);
   isHeldOrdersVisible = signal(false);
-  editingCartItemId = signal<number | null>(null);
+  editingCartItemId = signal<string | null>(null);
   liveRegionMessage = signal('');
   isSortDropdownOpen = signal(false);
   sortOptions: SortOption[] = ['Popular', 'Name A-Z', 'Price High-Low', 'Price Low-High'];
   selectedCustomer = signal<Contact | null>(null);
-  shakingProductId = signal<number | null>(null);
+  shakingProductId = signal<string | null>(null);
   discountType = signal<'percent' | 'fixed'>('percent');
   discountValue = signal<number | null>(null);
 
@@ -71,13 +73,13 @@ export class PosComponent {
 
     switch (this.sortOption()) {
       case 'Name A-Z': return [...filtered].sort((a, b) => a.name.localeCompare(b.name));
-      case 'Price High-Low': return [...filtered].sort((a, b) => b.price - a.price);
-      case 'Price Low-High': return [...filtered].sort((a, b) => a.price - b.price);
+      case 'Price High-Low': return [...filtered].sort((a, b) => b.price_lkr - a.price_lkr);
+      case 'Price Low-High': return [...filtered].sort((a, b) => a.price_lkr - b.price_lkr);
       default: return filtered; // 'Popular' is default order
     }
   });
 
-  cartSubtotal = computed(() => this.cart().reduce((acc, item) => acc + item.price * item.quantity, 0));
+  cartSubtotal = computed(() => this.cart().reduce((acc, item) => acc + item.price_lkr * item.quantity, 0));
   cartDiscount = computed(() => {
     const type = this.discountType();
     const value = this.discountValue() || 0;
@@ -88,7 +90,7 @@ export class PosComponent {
     if (type === 'percent') {
         discount = subtotal * (value / 100);
     } else { // fixed
-        discount = value;
+        discount = value * 100; // convert fixed amount to cents
     }
     return Math.min(discount, subtotal); // Cannot discount more than the total
   });
@@ -100,6 +102,10 @@ export class PosComponent {
   // --- Core Methods ---
 
   async loadProducts() { this.products.set(await this.api.products.list()); }
+  
+  isPriceBelowCost(product: Product): boolean {
+    return product.price_lkr < product.cost_lkr;
+  }
 
   addToCart(product: Product) {
     if (this.getAvailableStock(product) <= 0) {
@@ -113,13 +119,24 @@ export class PosComponent {
     if (existingItem) {
       this.updateQuantity(existingItem.id, existingItem.quantity + 1);
     } else {
-      const cartItem: CartItem = { ...product, quantity: 1 };
+      const cartItem: CartItem = { 
+        ...product, 
+        quantity: 1, 
+        price_lkr: product.price_lkr, 
+        cost_lkr: product.cost_lkr, 
+        name: product.name, 
+        sku: product.sku, 
+        id: product.id,
+        flags: {
+          price_below_cost: this.isPriceBelowCost(product)
+        }
+      };
       this.cart.update(current => [...current, cartItem]);
     }
     this.liveRegionMessage.set(`${product.name} added to cart.`);
   }
 
-  updateQuantity(productId: number, newQuantity: number | string) {
+  updateQuantity(productId: string, newQuantity: number | string) {
     const product = this.products().find(p => p.id === productId);
     if (!product) return;
 
@@ -141,7 +158,7 @@ export class PosComponent {
     this.editingCartItemId.set(null);
   }
 
-  removeFromCart(productId: number) { this.cart.update(current => current.filter(item => item.id !== productId)); }
+  removeFromCart(productId: string) { this.cart.update(current => current.filter(item => item.id !== productId)); }
   clearCart() { 
     this.cart.set([]); 
     this.discountValue.set(null);
@@ -167,23 +184,24 @@ export class PosComponent {
     if (this.cart().length === 0) return;
     
     const customerName = paymentDetails.customer?.name || 'POS Customer';
-    const customerAvatarUrl = paymentDetails.customer?.avatarUrl;
+    const customerAvatarUrl = paymentDetails.customer?.avatar_url;
 
     const newInvoice = await this.api.createInvoice({ 
-      customerName,
-      customerAvatarUrl,
-      issueDate: new Date().toISOString(), 
-      dueDate: new Date().toISOString(), 
-      amount: this.cartTotal(), 
-      subtotal: this.cartSubtotal(), 
-      tax: this.cartTax(), 
+      partyName: customerName,
+      partyAvatarUrl: customerAvatarUrl,
+      issue_date: new Date().toISOString(), 
+      due_date: new Date().toISOString(), 
+      total_lkr: this.cartTotal(), 
+      subtotal_lkr: this.cartSubtotal(), 
+      tax_lkr: this.cartTax(), 
       status: 'Paid', 
-      lineItems: this.cart().map(item => ({ 
-        productId: item.id, 
-        productName: item.name, 
-        quantity: item.quantity, 
-        unitPrice: item.price, 
-        total: item.quantity * item.price 
+      items: this.cart().map(item => ({ 
+        product_id: item.id, 
+        name: item.name,
+        sku: item.sku,
+        qty: item.quantity, 
+        unit_price_lkr: item.price_lkr,
+        line_discount_lkr: 0
       }))
     });
 
@@ -205,10 +223,10 @@ export class PosComponent {
     this.isSortDropdownOpen.set(false);
   }
 
-  private getQuantityInCart(productId: number): number {
+  private getQuantityInCart(productId: string): number {
     return this.cart().find(item => item.id === productId)?.quantity || 0;
   }
-  private getTotalStock(p: Product): number { return Object.values(p.stock).reduce((a,b) => a+b, 0); }
+  private getTotalStock(p: Product): number { return Object.values(p.onHand).reduce((a,b) => a+b, 0); }
   private getCommittedStock(p: Product): number { return Object.values(p.committed).reduce((a,b) => a+b, 0); }
 
   getAvailableStock(p: Product): number { 
@@ -237,7 +255,7 @@ export class PosComponent {
   }
 
   getHeldOrderTotal(order: CartItem[]): number {
-    const subtotal = order.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    const subtotal = order.reduce((acc, item) => acc + item.price_lkr * item.quantity, 0);
     const tax = subtotal * 0.10;
     return subtotal + tax;
   }

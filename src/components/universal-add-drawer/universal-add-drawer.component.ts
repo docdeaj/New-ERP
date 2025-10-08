@@ -1,9 +1,13 @@
+
+
+
 import { Component, ChangeDetectionStrategy, input, output, computed, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormArray, FormGroup } from '@angular/forms';
 import { DrawerContext, UiStateService } from '../../services/ui-state.service';
 import { MiniMediaBrowserComponent } from '../mini-media-browser/mini-media-browser.component';
-import { MediaItem, Product, Quotation, Contact, ReceiptPaymentMethod, Invoice, Expense, PurchaseOrder, Cheque, RecurringExpense } from '../../models/types';
+// FIX: Imported missing RecurringExpense, RecurringCadence, and ContactType types.
+import { MediaItem, Product, Quotation, Contact, ReceiptPaymentMethod, Invoice, Expense, PurchaseOrder, Cheque, RecurringExpense, RecurringCadence, ContactType } from '../../models/types';
 import { ApiService } from '../../services/api.service';
 import { startWith } from 'rxjs/operators';
 import { CustomerPickerComponent } from '../customer-picker/customer-picker.component';
@@ -25,7 +29,7 @@ export class UniversalAddDrawerComponent {
   context = input.required<DrawerContext | null>();
   close = output<void>();
 
-  private fb: FormBuilder = inject(FormBuilder);
+  private fb = inject(FormBuilder);
   private api = inject(ApiService);
   private uiState = inject(UiStateService);
   private geminiService = inject(GeminiService);
@@ -89,7 +93,7 @@ export class UniversalAddDrawerComponent {
       const form = this.getCurrentForm();
 
       if (ctx === 'new-invoice' && !this.isEditMode()) {
-          this.analytics.emitEvent('invoice_create_start', { source: data ? ('quotation' in data ? 'from_quotation' : 'from_contact') : 'direct' });
+          this.analytics.emitEvent('invoice_create_start', { source: data ? ('quotationNumber' in data ? 'from_quotation' : 'from_contact') : 'direct' });
       }
       
       // Reset all forms first to ensure clean state
@@ -97,22 +101,24 @@ export class UniversalAddDrawerComponent {
 
       if (this.isEditMode() && data && form) {
         form.patchValue(data);
-        if ('items' in form.controls && data.lineItems) {
+        if ('items' in form.controls && data.items) {
           const items = (form as FormGroup).get('items') as FormArray;
           items.clear();
-          data.lineItems.forEach((item: any) => items.push(this.createLineItem(item)));
+          data.items.forEach((item: any) => items.push(this.createLineItem(item)));
         }
         
       } else if (ctx === 'new-invoice' && data) {
          // Special case: Converting a Quotation to an Invoice or starting with a customer
-        if ('quotationNumber' in data) { // from Quotation
+        if ('number' in data && data.number.startsWith('QUO')) { // from Quotation
             const quotation = data as Quotation;
-            const mockCustomer: Partial<Contact> = { name: quotation.customerName, avatarUrl: quotation.customerAvatarUrl };
+            // FIX: Use avatar_url, partyName, and partyAvatarUrl.
+            const mockCustomer: Partial<Contact> = { name: quotation.partyName, avatar_url: quotation.partyAvatarUrl };
             this.invoiceForm.patchValue({ customer: mockCustomer as Contact });
             
             const items = this.invoiceForm.get('items') as FormArray;
             items.clear();
-            quotation.lineItems?.forEach(item => {
+            // FIX: Use items property from DocBase.
+            quotation.items?.forEach(item => {
               const lineItemGroup = this.createLineItem();
               lineItemGroup.patchValue(item);
               items.push(lineItemGroup);
@@ -141,9 +147,9 @@ export class UniversalAddDrawerComponent {
     (this.invoiceForm.get('items') as FormArray).clear();
     (this.invoiceForm.get('items') as FormArray).push(this.createLineItem());
 
-    this.expenseForm.reset({ date: new Date().toISOString().split('T')[0], isRecurring: false, cadence: 'Monthly' });
+    this.expenseForm.reset({ date: new Date().toISOString().split('T')[0], isRecurring: false, cadence: 'monthly' });
     this.productForm.reset();
-    this.contactForm.reset({ type: 'Customer' });
+    this.contactForm.reset({ type: 'customer' });
     
     this.purchaseOrderForm.reset({ orderDate: new Date().toISOString().split('T')[0] });
     (this.purchaseOrderForm.get('items') as FormArray).clear();
@@ -154,8 +160,9 @@ export class UniversalAddDrawerComponent {
     (this.quotationForm.get('items') as FormArray).push(this.createLineItem());
     
     this.chequeForm.reset({ chequeDate: new Date().toISOString().split('T')[0] });
-    this.recordSaleForm.reset({ paymentMethod: 'Cash' });
-    this.recordPaymentForm.reset({ paymentDate: new Date().toISOString().split('T')[0], paymentMethod: 'Cash' });
+    // FIX: Use lowercase 'cash' for enum value.
+    this.recordSaleForm.reset({ paymentMethod: 'cash' });
+    this.recordPaymentForm.reset({ paymentDate: new Date().toISOString().split('T')[0], paymentMethod: 'cash' });
   }
 
   onProductSelect(product: Product, index: number) {
@@ -165,7 +172,8 @@ export class UniversalAddDrawerComponent {
       lineItem.patchValue({
         productId: product.id,
         productName: product.name,
-        unitPrice: product.price,
+        // FIX: Use price_lkr property.
+        unitPrice: product.price_lkr,
       });
     }
   }
@@ -222,7 +230,7 @@ export class UniversalAddDrawerComponent {
     notes: [''],
     attachmentUrl: [''],
     isRecurring: [false],
-    cadence: ['Monthly'],
+    cadence: ['monthly' as RecurringCadence],
     nextDueDate: [''],
   });
 
@@ -243,7 +251,7 @@ export class UniversalAddDrawerComponent {
 
   contactForm = this.fb.group({
     name: ['', Validators.required],
-    type: ['Customer', Validators.required],
+    type: ['customer' as ContactType, Validators.required],
     email: ['', [Validators.required, Validators.email]],
     phone: [''],
     avatarUrl: [''],
@@ -277,7 +285,7 @@ export class UniversalAddDrawerComponent {
   recordSaleForm = this.fb.group({
     customer: [null as Contact | null],
     amount: [null, [Validators.required, Validators.min(0.01)]],
-    paymentMethod: ['Cash' as ReceiptPaymentMethod, Validators.required],
+    paymentMethod: ['cash' as ReceiptPaymentMethod, Validators.required],
     notes: [''],
   });
 
@@ -285,7 +293,7 @@ export class UniversalAddDrawerComponent {
     customer: [null as Contact | null, Validators.required],
     amount: [null, [Validators.required, Validators.min(0.01)]],
     paymentDate: [new Date().toISOString().split('T')[0], Validators.required],
-    paymentMethod: ['Cash' as ReceiptPaymentMethod, Validators.required],
+    paymentMethod: ['cash' as ReceiptPaymentMethod, Validators.required],
   });
 
   title = computed(() => {
@@ -344,19 +352,18 @@ export class UniversalAddDrawerComponent {
         const formValue = form.getRawValue(); // Use getRawValue to include disabled fields if any
         const payload: any = { ...formValue };
         if ('items' in formValue) {
-           payload.subtotal = this.subtotal();
-           payload.tax = this.tax();
-           payload.amount = this.total();
-           payload.lineItems = payload.items; // Normalize to lineItems
-           delete payload.items;
+           payload.subtotal_lkr = this.subtotal();
+           payload.tax_lkr = this.tax();
+           payload.total_lkr = this.total();
+           // items is already correct
         }
         if ('customer' in payload && payload.customer) {
-            payload.customerName = payload.customer.name;
-            payload.customerAvatarUrl = payload.customer.avatarUrl;
+            payload.partyName = payload.customer.name;
+            payload.partyAvatarUrl = payload.customer.avatar_url;
             delete payload.customer;
         }
         if ('supplier' in payload && payload.supplier) {
-            payload.supplierName = payload.supplier.name;
+            payload.partyName = payload.supplier.name;
             delete payload.supplier;
         }
         return payload;
@@ -377,8 +384,8 @@ export class UniversalAddDrawerComponent {
             const newInvoice = await this.api.createInvoice(payload); 
             this.analytics.emitEvent('invoice_create_save', {
                 invoice_id: newInvoice.id,
-                amount: newInvoice.amount,
-                line_items_count: newInvoice.lineItems?.length || 0,
+                amount: newInvoice.total_lkr,
+                line_items_count: newInvoice.items?.length || 0,
             });
             break;
           case 'new-expense': 
