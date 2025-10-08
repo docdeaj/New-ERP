@@ -23,11 +23,15 @@ import { SignupComponent } from './pages/signup/signup.component';
 import { NotFoundComponent } from './pages/not-found/not-found.component';
 import { ServerErrorComponent } from './pages/server-error/server-error.component';
 import { OfflineComponent } from './pages/offline/offline.component';
+import { UnauthorizedComponent } from './pages/unauthorized/unauthorized.component';
+import { ForbiddenComponent } from './pages/forbidden/forbidden.component';
 
 
 export const APP_ROUTES: Routes = [
   { path: 'login', component: LoginComponent, title: 'Login' },
   { path: 'signup', component: SignupComponent, title: 'Sign Up' },
+  { path: '401', component: UnauthorizedComponent, title: 'Unauthorized' },
+  { path: '403', component: ForbiddenComponent, title: 'Forbidden' },
   { path: '500', component: ServerErrorComponent, title: 'Server Error' },
   { path: 'offline', component: OfflineComponent, title: 'Offline' },
   { path: '', redirectTo: 'login', pathMatch: 'full' },

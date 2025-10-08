@@ -372,7 +372,6 @@ export class ApiService {
     },
     getTrialBalance: async (): Promise<TrialBalanceRow[]> => {
         await this.delay(500);
-        const totalDebits = 150000000;
         return [
             { account: 'Cash', debit: 50000000, credit: 0 },
             { account: 'Accounts Receivable', debit: 4400000, credit: 0 },
@@ -385,11 +384,21 @@ export class ApiService {
     },
     getGeneralLedger: async (): Promise<GeneralLedgerEntry[]> => {
         await this.delay(700);
-        return [
-            { date: new Date().toISOString(), account: 'Cash', description: 'Initial Balance', debit: 50000000, credit: 0, balance: 50000000 },
-            { date: new Date().toISOString(), account: 'Accounts Receivable', description: 'Sale to J. Smith', debit: 1980000, credit: 0, balance: 1980000 },
-            { date: new Date().toISOString(), account: 'Cash', description: 'Payment from J. Smith', debit: 0, credit: 1980000, balance: 48020000 },
+        let balance = 0;
+        const entries = [
+            { date: new Date(Date.now() - 5 * 86400000).toISOString(), account: 'Cash', description: 'Initial Balance', debit: 50000000, credit: 0 },
+            { date: new Date(Date.now() - 4 * 86400000).toISOString(), account: 'Sales Revenue', description: 'Sale to J. Smith (INV-2024-002)', debit: 0, credit: 2750000 },
+            { date: new Date(Date.now() - 4 * 86400000).toISOString(), account: 'Accounts Receivable', description: 'Sale to J. Smith (INV-2024-002)', debit: 2750000, credit: 0 },
+            { date: new Date(Date.now() - 3 * 86400000).toISOString(), account: 'Cash', description: 'Payment from J. Smith', debit: 2750000, credit: 0 },
+            { date: new Date(Date.now() - 3 * 86400000).toISOString(), account: 'Accounts Receivable', description: 'Payment from J. Smith', debit: 0, credit: 2750000 },
+            { date: new Date(Date.now() - 2 * 86400000).toISOString(), account: 'Rent Expense', description: 'Office Rent', debit: 15000000, credit: 0 },
+            { date: new Date(Date.now() - 2 * 86400000).toISOString(), account: 'Cash', description: 'Paid Office Rent', debit: 0, credit: 15000000 },
         ];
+        
+        return entries.map(e => {
+            balance += e.debit - e.credit;
+            return { ...e, balance };
+        });
     },
     // Add other report methods if needed
     getSummary: (): Promise<ReportSummary> => Promise.resolve({} as ReportSummary),
@@ -551,16 +560,53 @@ export class ApiService {
   }
 
   createInvoice = async (data: Partial<Invoice>): Promise<Invoice> => {
+    // 1. Authoritative check for stock
+    for (const item of data.items || []) {
+      const product = this._products().find(p => p.id === item.product_id);
+      if (!product) {
+        throw new Error(`Product "${item.name}" not found.`);
+      }
+      const availableStock = Object.values(product.onHand).reduce((a, b) => a + b, 0) - Object.values(product.committed).reduce((a, b) => a + b, 0);
+      if (item.qty > availableStock) {
+        throw new Error(`Insufficient stock for ${product.name}. Only ${availableStock} available.`);
+      }
+    }
+
+    // 2. Authoritative calculation
     const totals = this.calculateTotals(data.items || [], data.tax_rate || 0, data.discount_lkr);
-    const newInvoice: Partial<Invoice> = {
+    const newInvoiceData: Partial<Invoice> = {
         ...data,
         number: `INV-2024-${String(this._invoices().length + 1).padStart(3, '0')}`,
         ...totals,
-        paid_lkr: 0,
-        balance_lkr: totals.total_lkr,
+        paid_lkr: data.paid_lkr || 0,
+        balance_lkr: totals.total_lkr - (data.paid_lkr || 0),
         status: data.status || 'Draft',
     };
-    return this.invoices.create(newInvoice);
+    
+    // 3. Atomically update stock and create invoice
+    this._products.update(products => {
+        const newProducts = [...products];
+        (data.items || []).forEach(item => {
+            const productIndex = newProducts.findIndex(p => p.id === item.product_id);
+            if (productIndex !== -1) {
+                const updatedProduct = { ...newProducts[productIndex] };
+                if (newInvoiceData.status === 'Paid') { // POS sale, decrement onHand
+                    updatedProduct.onHand = { ...updatedProduct.onHand };
+                    // Simple logic: decrement from main warehouse first
+                    updatedProduct.onHand.mainWarehouse -= item.qty; 
+                } else { // Regular invoice, increment committed
+                    updatedProduct.committed = { ...updatedProduct.committed };
+                    updatedProduct.committed.mainWarehouse += item.qty;
+                }
+                newProducts[productIndex] = updatedProduct;
+            }
+        });
+        return newProducts;
+    });
+
+    const newInvoice = await this.invoices.create(newInvoiceData);
+    this.notifyDataChange(); // Notify product and invoice changes
+    return newInvoice;
   }
   
   createQuotation = async (data: Partial<Quotation>): Promise<Quotation> => {

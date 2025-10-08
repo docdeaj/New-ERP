@@ -238,6 +238,7 @@
     }
     .animate-slide-in-drawer-spring {
       animation: slide-in-drawer-spring 450ms cubic-bezier(0.34, 1.56, 0.64, 1);
+      will-change: transform, opacity;
     }
     @keyframes slide-down-spring {
       from { opacity: 0; transform: translateY(-20px) scale(0.98); }
@@ -245,6 +246,7 @@
     }
     .animate-slide-down-spring {
       animation: slide-down-spring 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+      will-change: transform, opacity;
     }
     @keyframes shake {
       10%, 90% { transform: translate3d(-1px, 0, 0); }

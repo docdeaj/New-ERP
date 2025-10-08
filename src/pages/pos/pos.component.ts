@@ -7,6 +7,7 @@ import { CheckoutModalComponent } from '../../components/checkout-modal/checkout
 import { CustomerPickerComponent } from '../../components/customer-picker/customer-picker.component';
 import { AnalyticsService } from '../../services/analytics.service';
 import { CdkTrapFocus } from '@angular/cdk/a11y';
+import { ToastService } from '../../services/toast.service';
 
 type SortOption = 'Popular' | 'Name A-Z' | 'Price High-Low' | 'Price Low-High';
 
@@ -24,6 +25,7 @@ type SortOption = 'Popular' | 'Name A-Z' | 'Price High-Low' | 'Price Low-High';
 export class PosComponent {
   private api = inject(ApiService);
   private analytics = inject(AnalyticsService);
+  private toastService = inject(ToastService);
   
   // State
   products = signal<Product[]>([]);
@@ -182,38 +184,46 @@ export class PosComponent {
   async handleCheckoutComplete(paymentDetails: { method: ReceiptPaymentMethod, amountTendered: number | null, customer: Contact | null }) {
     if (this.cart().length === 0) return;
     
-    const customerName = paymentDetails.customer?.name || 'POS Customer';
-    const customerAvatarUrl = paymentDetails.customer?.avatar_url;
+    const customer = paymentDetails.customer || this.selectedCustomer();
 
-    const newInvoice = await this.api.createInvoice({ 
-      partyName: customerName,
-      partyAvatarUrl: customerAvatarUrl,
-      issue_date: new Date().toISOString(), 
-      due_date: new Date().toISOString(), 
-      total_lkr: this.cartTotal(), 
-      subtotal_lkr: this.cartSubtotal(), 
-      tax_lkr: this.cartTax(), 
-      status: 'Paid', 
-      items: this.cart().map(item => ({ 
-        product_id: item.id, 
-        name: item.name,
-        sku: item.sku,
-        qty: item.quantity, 
-        unit_price_lkr: item.price_lkr,
-        line_discount_lkr: 0
-      }))
-    });
+    try {
+      const newInvoice = await this.api.createInvoice({ 
+        party_id: customer?.id,
+        partyName: customer?.name || 'POS Customer',
+        partyAvatarUrl: customer?.avatar_url,
+        issue_date: new Date().toISOString(), 
+        due_date: new Date().toISOString(), 
+        status: 'Paid', 
+        items: this.cart().map(item => ({ 
+          product_id: item.id, 
+          name: item.name,
+          sku: item.sku,
+          qty: item.quantity, 
+          unit_price_lkr: item.price_lkr,
+          line_discount_lkr: 0
+        })),
+        discount_lkr: this.cartDiscount(),
+        tax_rate: 10,
+        paid_lkr: this.cartTotal() // Mark as fully paid
+      });
 
-    await this.api.createReceipt({ 
-      invoiceId: newInvoice.id, 
-      amount: this.cartTotal(), 
-      method: paymentDetails.method, 
-      paymentDate: new Date().toISOString() 
-    });
-    
-    this.clearCart();
-    this.isCheckoutVisible.set(false);
-    this.liveRegionMessage.set('Checkout complete. New sale recorded.');
+      await this.api.createReceipt({ 
+        invoiceId: newInvoice.id, 
+        amount: newInvoice.total_lkr, 
+        method: paymentDetails.method, 
+        paymentDate: new Date().toISOString() 
+      });
+      
+      this.clearCart();
+      this.isCheckoutVisible.set(false);
+      this.toastService.show({type: 'success', message: 'Checkout complete. New sale recorded.'});
+      this.liveRegionMessage.set('Checkout complete. New sale recorded.');
+      
+    } catch (e: any) {
+      console.error('Checkout failed:', e);
+      this.toastService.show({type: 'error', message: `Checkout failed: ${e.message}`});
+      this.liveRegionMessage.set(`Checkout failed: ${e.message}`);
+    }
   }
   
   // --- UI Helpers ---
