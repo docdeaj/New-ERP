@@ -3,7 +3,8 @@
   <div class="aurora-backdrop absolute inset-0 animate-[fade-in_180ms_ease-in-out]" (click)="onClose()"></div>
 
   <!-- Modal Content -->
-  <div cdkTrapFocus class="relative w-full max-w-sm bg-surface/90 backdrop-blur-xl rounded-2xl shadow-2xl animate-[slide-down_180ms_cubic-bezier(0.2,0.8,0.2,1)]"
+  <div cdkTrapFocus class="relative w-full bg-surface/90 backdrop-blur-xl rounded-2xl shadow-2xl animate-[slide-down_180ms_cubic-bezier(0.2,0.8,0.2,1)]"
+       [class]="normalizedItemType() === 'contact' ? 'max-w-xl' : 'max-w-sm'"
        role="dialog" aria-modal="true">
     
     @if (item()) {
@@ -276,32 +277,51 @@
                 <div class="flex items-center gap-3 bg-surface-inset p-2 rounded-lg"><i class="fa-solid fa-phone w-4 text-center text-charcoal-400"></i><span class="text-sm text-charcoal-200">{{ contact.phone }}</span></div>
               </div>
               <!-- Stats -->
-              <div class="grid grid-cols-2 gap-3 text-center">
-                @if (contact.type === 'customer') {
-                  <div class="bg-surface-inset p-3 rounded-lg shadow-inner">
-                    <p class="text-xs text-charcoal-400">Balance Due</p>
-                    <p class="font-bold text-xl tabular-nums" [class.text-red-400]="(contact.stats?.balance_lkr || 0) > 0">{{ (contact.stats?.balance_lkr || 0) / 100 | currency:'LKR ':'symbol':'1.0-0' }}</p>
-                  </div>
-                }
-              </div>
+              @if (contact.type === 'customer' && contact.stats?.balance_lkr) {
+                <div class="bg-surface-inset p-3 rounded-lg shadow-inner">
+                  <p class="text-xs text-charcoal-400">Balance Due</p>
+                  <p class="font-bold text-xl tabular-nums" [class.text-red-400]="contact.stats.balance_lkr > 0">{{ (contact.stats.balance_lkr / 100) | currency:'LKR ':'symbol':'1.0-0' }}</p>
+                </div>
+              }
               <!-- Recent Activity -->
               <div>
                 <h4 class="text-sm font-semibold text-charcoal-300 mb-2">Recent Activity</h4>
                 @if (isActivityLoading()) {
                   <div class="space-y-2 animate-pulse">
-                    <div class="h-10 bg-surface-inset rounded-lg"></div><div class="h-10 bg-surface-inset rounded-lg"></div>
+                    <div class="h-12 bg-surface-inset rounded-lg"></div>
+                    <div class="h-12 bg-surface-inset rounded-lg"></div>
+                    <div class="h-12 bg-surface-inset rounded-lg"></div>
                   </div>
                 } @else if (recentActivity().length > 0) {
-                  <div class="space-y-2">
-                    @for(activity of recentActivity(); track activity.id) {
-                      <div class="flex justify-between items-center bg-surface-inset p-2 rounded-lg text-sm">
-                        <div class="flex items-center gap-2">
-                            <span class="font-mono text-xs px-1.5 py-0.5 rounded bg-surface shadow-inner">{{ activity.number }}</span>
-                            <span [class]="'font-semibold text-xs px-1.5 py-0.5 rounded ' + getStatusColor(activity.status)">{{ activity.status }}</span>
-                        </div>
-                        <span class="font-bold tabular-nums text-charcoal-200">{{ (activity.total_lkr / 100) | currency:'LKR ' }}</span>
-                      </div>
-                    }
+                  <div class="flow-root">
+                    <ul role="list" class="-mb-8">
+                      @for(activity of recentActivity(); track activity.id; let i = $index) {
+                        <li>
+                          <div class="relative pb-8">
+                            @if (i !== recentActivity().length - 1) {
+                              <span class="absolute left-4 top-4 -ml-px h-full w-0.5 bg-charcoal-700" aria-hidden="true"></span>
+                            }
+                            <div class="relative flex space-x-3 items-center">
+                              <div>
+                                <span class="h-8 w-8 rounded-full bg-surface-inset flex items-center justify-center ring-4 ring-surface">
+                                  <i [class]="getIconForActivity(activity) + ' text-base'"></i>
+                                </span>
+                              </div>
+                              <div class="flex min-w-0 flex-1 justify-between space-x-4">
+                                <div>
+                                  <p class="text-sm text-charcoal-200 font-semibold">{{ activity.number }}</p>
+                                  <p class="text-xs text-charcoal-400">{{ activity.issue_date | date:'mediumDate' }}</p>
+                                </div>
+                                <div class="text-right text-sm whitespace-nowrap text-charcoal-400 flex items-center gap-3">
+                                   <span [class]="'font-semibold text-xs px-2 py-1 rounded-full ' + getStatusColor(getActivityStatus(activity))">{{ getActivityStatus(activity) }}</span>
+                                   <span class="font-bold tabular-nums text-charcoal-200 w-24 text-right">{{ (getActivityAmount(activity) / 100) | currency:'LKR ' }}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </li>
+                      }
+                    </ul>
                   </div>
                 } @else {
                   <div class="text-center text-sm text-charcoal-500 py-4 bg-surface-inset rounded-lg">No recent activity.</div>

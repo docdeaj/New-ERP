@@ -29,7 +29,7 @@ export class QuickPeekComponent {
   pdfPreviewContainer = viewChild<ElementRef<HTMLDivElement>>('pdfPreviewContainer');
   previewScale = signal(1);
 
-  recentActivity = signal<(Invoice | PurchaseOrder)[]>([]);
+  recentActivity = signal<(Invoice | PurchaseOrder | Receipt | Quotation)[]>([]);
   isActivityLoading = signal(false);
   
   invoicePayments = signal<Receipt[]>([]);
@@ -238,6 +238,36 @@ export class QuickPeekComponent {
       if (!contact || contact.type !== 'supplier') return;
       this.uiStateService.openDrawer('new-po', { supplier: contact });
       this.onClose();
+  }
+
+  getActivityStatus(activity: Invoice | PurchaseOrder | Receipt | Quotation): string {
+    if ('method' in activity) { // This implies it is a Receipt
+      return activity.method;
+    }
+    return activity.status;
+  }
+  
+  getActivityAmount(activity: Invoice | PurchaseOrder | Receipt | Quotation): number {
+    if ('method' in activity) { // This implies it is a Receipt
+      return activity.amount_lkr;
+    }
+    return activity.total_lkr;
+  }
+
+  getIconForActivity(activity: Invoice | PurchaseOrder | Receipt | Quotation): string {
+    if (activity.number.startsWith('INV')) {
+      return 'fa-solid fa-file-invoice-dollar text-primary-400';
+    }
+    if (activity.number.startsWith('PO')) {
+      return 'fa-solid fa-cart-shopping text-purple-400';
+    }
+    if (activity.number.startsWith('REC')) {
+      return 'fa-solid fa-receipt text-green-400';
+    }
+    if (activity.number.startsWith('QUO')) {
+      return 'fa-solid fa-file-lines text-yellow-400';
+    }
+    return 'fa-solid fa-file-alt';
   }
 
   asInvoice(item: any): Invoice { return item as Invoice; }

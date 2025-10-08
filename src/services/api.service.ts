@@ -1,3 +1,6 @@
+
+
+
 import { Injectable, signal } from '@angular/core';
 import {
   Invoice, Product, Contact, Kpi, InventoryItem, Quotation, Receipt, Cheque, PurchaseOrder, MediaItem, Expense, ReceiptPaymentMethod, LineItem, RecurringExpense, LocationKey, ReportSummary, SalesTrend, TopProductReport, ArAgingRow, ApAgingRow, PnlRow, InventoryValuationRow, InventorySnapshot, RecurringForecastRow, TaxSummaryRow, ReportView, ReportQuery, ReportResult, ReportSchema, LogEntry, LogSeverity, CashflowSnapshot, QuotationStatus, ContactType, SalesByCustomerRow, StockOnHandRow, SalesByProductRow, BalanceSheetRow, PurchasesBySupplierRow, CashFlowStatementRow, TrialBalanceRow, GeneralLedgerEntry
@@ -88,8 +91,8 @@ export class ApiService {
     getKpis: async (): Promise<{ sales: Kpi, expenses: Kpi }> => {
       await this.delay();
       const today = new Date().toISOString().split('T')[0];
-      const todaySales = this._receipts().filter(r => r.issue_date.startsWith(today)).reduce((sum, r) => sum + r.amount_lkr, 0);
-      const todayExpenses = this._expenses().filter(e => e.date.startsWith(today)).reduce((sum, e) => sum + e.amount_lkr, 0);
+      const todaySales = this._receipts().filter(r => r.issue_date.startsWith(today)).reduce((sum: number, r) => sum + r.amount_lkr, 0);
+      const todayExpenses = this._expenses().filter(e => e.date.startsWith(today)).reduce((sum: number, e) => sum + e.amount_lkr, 0);
       return {
         sales: { value: todaySales, delta: 12.5, previousValue: todaySales / 1.125 },
         expenses: { value: todayExpenses, delta: -5.2, previousValue: todayExpenses / 0.948 }
@@ -101,8 +104,8 @@ export class ApiService {
     },
     getArApSummary: async (): Promise<{ar: { total: number, overdue: number }, ap: { total: number, overdue: number }}> => {
       await this.delay();
-      const arTotal = this._invoices().reduce((sum, inv) => sum + inv.balance_lkr, 0);
-      const arOverdue = this._invoices().filter(i => i.status === 'Overdue').reduce((sum, inv) => sum + inv.balance_lkr, 0);
+      const arTotal = this._invoices().reduce((sum: number, inv) => sum + inv.balance_lkr, 0);
+      const arOverdue = this._invoices().filter(i => i.status === 'Overdue').reduce((sum: number, inv) => sum + inv.balance_lkr, 0);
       return {
         ar: { total: arTotal, overdue: arOverdue },
         ap: { total: 1250000, overdue: 300000 }
@@ -218,8 +221,8 @@ export class ApiService {
     },
     getPnlData: async (): Promise<PnlRow[]> => {
       await this.delay(500);
-      const totalRevenue = this._invoices().filter(i => i.status === 'Paid').reduce((sum, i) => sum + i.subtotal_lkr, 0);
-      const totalExpenses = this._expenses().reduce((sum, e) => sum + e.amount_lkr, 0);
+      const totalRevenue = this._invoices().filter(i => i.status === 'Paid').reduce((sum: number, i) => sum + i.subtotal_lkr, 0);
+      const totalExpenses = this._expenses().reduce((sum: number, e) => sum + e.amount_lkr, 0);
       const netIncome = totalRevenue - totalExpenses;
 
       return [
@@ -236,8 +239,10 @@ export class ApiService {
     },
     getBalanceSheet: async (): Promise<BalanceSheetRow[]> => {
         await this.delay(550);
-        const totalReceivables = this._invoices().reduce((sum, i) => sum + i.balance_lkr, 0);
-        const inventoryValue = this._products().reduce((sum, p) => sum + (p.cost_lkr * Object.values(p.onHand).reduce((a,b) => a+b, 0)), 0);
+        // FIX: Explicitly cast `i.balance_lkr` to a number to prevent type errors from potential data pollution.
+        const totalReceivables = this._invoices().reduce((sum: number, i) => sum + Number(i.balance_lkr), 0);
+        // FIX: Cast `p.cost_lkr` to `Number` to prevent type errors in arithmetic operations due to potential data pollution.
+        const inventoryValue = this._products().reduce((sum: number, p) => sum + (Number(p.cost_lkr) * Object.values(p.onHand).reduce((a: number, b: number) => a + b, 0)), 0);
         const cash = 50000000;
         const totalAssets = totalReceivables + inventoryValue + cash;
         const totalLiabilities = 1250000;
@@ -269,7 +274,8 @@ export class ApiService {
                 }
             }
             if (supplierPurchases[po.party_id]) {
-                supplierPurchases[po.party_id].totalPurchases += po.total_lkr;
+                // FIX: Explicitly cast `po.total_lkr` to a number to prevent type errors. Also fixed logic to increment `poCount`.
+                supplierPurchases[po.party_id].totalPurchases += Number(po.total_lkr);
                 supplierPurchases[po.party_id].poCount++;
             }
         });
@@ -285,14 +291,15 @@ export class ApiService {
      getInventoryValuation: async (): Promise<InventoryValuationRow[]> => {
       await this.delay(300);
       return this._products().map(p => {
-        const onHand = Object.values(p.onHand).reduce((a,b) => a + b, 0);
+        const onHand = Object.values(p.onHand).reduce((a: number, b: number) => a + b, 0);
         return {
           id: p.id,
           productName: p.name,
           sku: p.sku,
           onHand: onHand,
           costPerUnit: p.cost_lkr,
-          totalValue: onHand * p.cost_lkr
+          // FIX: Cast `p.cost_lkr` to `Number` to prevent type errors in arithmetic operations.
+          totalValue: onHand * Number(p.cost_lkr)
         };
       });
     },
@@ -327,7 +334,7 @@ export class ApiService {
     getStockOnHand: async (): Promise<StockOnHandRow[]> => {
         await this.delay(200);
         return this._products().map(p => {
-            const total = Object.values(p.onHand).reduce((a,b) => a + b, 0);
+            const total = Object.values(p.onHand).reduce((a: number, b: number) => a + b, 0);
             return {
                 id: p.id,
                 productName: p.name,
@@ -341,10 +348,10 @@ export class ApiService {
     },
     getTaxSummary: async (): Promise<TaxSummaryRow[]> => {
         await this.delay(350);
-        const taxableSales = this._invoices().reduce((sum, inv) => sum + inv.subtotal_lkr, 0);
-        const taxCollected = this._invoices().reduce((sum, inv) => sum + inv.tax_lkr, 0);
-        const taxablePurchases = this._expenses().reduce((sum, exp) => sum + exp.amount_lkr, 0);
-        const taxPaid = this._expenses().reduce((sum, exp) => sum + (exp.tax_lkr || 0), 0);
+        const taxableSales = this._invoices().reduce((sum: number, inv) => sum + inv.subtotal_lkr, 0);
+        const taxCollected = this._invoices().reduce((sum: number, inv) => sum + inv.tax_lkr, 0);
+        const taxablePurchases = this._expenses().reduce((sum: number, exp) => sum + exp.amount_lkr, 0);
+        const taxPaid = this._expenses().reduce((sum: number, exp) => sum + (exp.tax_lkr || 0), 0);
 
         return [{
             period: 'This Month',
@@ -357,8 +364,8 @@ export class ApiService {
     },
     getCashFlowStatement: async (): Promise<CashFlowStatementRow[]> => {
         await this.delay(600);
-        const cashFromSales = this._receipts().reduce((sum, r) => sum + r.amount_lkr, 0);
-        const cashPaidForExpenses = this._expenses().reduce((sum, e) => sum + e.amount_lkr + (e.tax_lkr || 0), 0);
+        const cashFromSales = this._receipts().reduce((sum: number, r) => sum + r.amount_lkr, 0);
+        const cashPaidForExpenses = this._expenses().reduce((sum: number, e) => sum + e.amount_lkr + (e.tax_lkr || 0), 0);
         const netCashFromOps = cashFromSales - cashPaidForExpenses;
         
         return [
@@ -466,7 +473,7 @@ export class ApiService {
             po.items.forEach(item => {
                 const productIndex = newProducts.findIndex(p => p.id === item.product_id);
                 if (productIndex !== -1) {
-                    const updatedProduct = { ...newProducts[productIndex] };
+                    const updatedProduct: Product = { ...newProducts[productIndex] };
                     updatedProduct.onHand = { ...updatedProduct.onHand };
                     updatedProduct.onHand.mainWarehouse += item.qty;
                     newProducts[productIndex] = updatedProduct;
@@ -483,11 +490,23 @@ export class ApiService {
 
   contacts = {
     ...this.createCrudService<Contact>(this._contacts),
-    getRecentActivity: async (contact: Contact): Promise<(Invoice | PurchaseOrder)[]> => {
+    getRecentActivity: async (contact: Contact): Promise<(Invoice | PurchaseOrder | Receipt | Quotation)[]> => {
       await this.delay();
       const invoices = this._invoices().filter(i => i.party_id === contact.id);
       const pos = this._purchaseOrders().filter(p => p.party_id === contact.id);
-      return [...invoices, ...pos].slice(0, 5);
+      const quotations = this._quotations().filter(q => q.party_id === contact.id);
+      
+      const contactInvoiceIds = new Set(invoices.map(i => i.id));
+      const receipts = this._receipts().filter(r => contactInvoiceIds.has(r.invoice_id));
+
+      const allActivity: (Invoice | PurchaseOrder | Receipt | Quotation)[] = [...invoices, ...pos, ...receipts, ...quotations];
+
+      allActivity.sort((a, b) => {
+        // All types have issue_date
+        return new Date(b.issue_date).getTime() - new Date(a.issue_date).getTime()
+      });
+      
+      return allActivity.slice(0, 10);
     },
   };
 
@@ -550,8 +569,8 @@ export class ApiService {
   // --- Authoritative Actions ---
 
   private calculateTotals(items: LineItem[], tax_rate: number, discount_lkr: number = 0): { subtotal_lkr: number, tax_lkr: number, total_lkr: number } {
-    const subtotal_before_line_discounts = items.reduce((sum, item) => sum + (item.unit_price_lkr * item.qty), 0);
-    const total_line_discount = items.reduce((sum, item) => sum + (item.line_discount_lkr || 0), 0);
+    const subtotal_before_line_discounts = items.reduce((sum: number, item) => sum + (item.unit_price_lkr * item.qty), 0);
+    const total_line_discount = items.reduce((sum: number, item) => sum + (item.line_discount_lkr || 0), 0);
     const subtotal_lkr = subtotal_before_line_discounts - total_line_discount;
     const subtotal_after_doc_discount = subtotal_lkr - discount_lkr;
     const tax_lkr = Math.round(subtotal_after_doc_discount * (tax_rate / 100));
@@ -566,7 +585,7 @@ export class ApiService {
       if (!product) {
         throw new Error(`Product "${item.name}" not found.`);
       }
-      const availableStock = Object.values(product.onHand).reduce((a, b) => a + b, 0) - Object.values(product.committed).reduce((a, b) => a + b, 0);
+      const availableStock = Object.values(product.onHand).reduce((a: number, b: number) => a + b, 0) - Object.values(product.committed).reduce((a: number, b: number) => a + b, 0);
       if (item.qty > availableStock) {
         throw new Error(`Insufficient stock for ${product.name}. Only ${availableStock} available.`);
       }
@@ -700,9 +719,17 @@ export class ApiService {
         const productIndex = newProducts.findIndex(p => String(p.id) === String(id));
         if (productIndex > -1) {
           const product = newProducts[productIndex];
-          const qtyToMove = params.quantity === 'All' ? product.onHand[params.from] : params.quantity;
+          // FIX: The type of qtyToMove was inferred as `number | 'All'`, causing a type error in arithmetic operations.
+          // By declaring it as a number and using an if/else block, we ensure type safety through control flow analysis.
+          let qtyToMove: number;
+          if (params.quantity === 'All') {
+            qtyToMove = product.onHand[params.from];
+          } else {
+            qtyToMove = params.quantity;
+          }
           
-          if(product.onHand[params.from] >= qtyToMove) {
+          // FIX: Explicitly cast `product.onHand` values to Number to prevent type errors from potential data pollution.
+          if(Number(product.onHand[params.from]) >= qtyToMove) {
             product.onHand[params.from] -= qtyToMove;
             product.onHand[params.to] += qtyToMove;
           }

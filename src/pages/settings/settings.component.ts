@@ -36,7 +36,8 @@ export class SettingsComponent {
         'Appearance': 'fa-solid fa-palette'
     };
 
-    const sections = [...new Set(this.allSettings().map(s => s.section))].sort((a,b) => a.localeCompare(b));
+// FIX: Explicitly type the sort function parameters as string to resolve `unknown` type error.
+    const sections = [...new Set(this.allSettings().map(s => s.section))].sort((a: string, b: string) => a.localeCompare(b));
     
     const links: NavLink[] = [];
     if (sections.includes('Organization') || sections.includes('Regional & Tax')) {

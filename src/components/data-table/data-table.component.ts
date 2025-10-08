@@ -308,7 +308,8 @@ export class DataTableComponent<T extends { id: any, amount?: number }> {
   onBulkAction(action: string) {
     const selectedIds = Array.from(this.selectedIds());
     if (action === 'export-csv') {
-      this.exportAsCsv(selectedIds);
+// FIX: Cast the result of `Array.from` to `(string | number)[]` to resolve the type mismatch. The compiler was inferring `unknown[]` due to potential type pollution from `any` in other parts of the component.
+      this.exportAsCsv(selectedIds as (string | number)[]);
     } else {
       this.bulkAction.emit({ action, selectedIds });
     }
@@ -342,7 +343,7 @@ export class DataTableComponent<T extends { id: any, amount?: number }> {
   }
 
   toggleSelectAll() {
-    const allIds = this.data().map(item => item.id);
+    const allIds = this.data().map(item => item.id as (string | number));
     this.selectedIds.update(currentSet => {
       if (this.isAllSelected()) {
         return new Set();
